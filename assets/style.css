@@ -1,0 +1,24 @@
+BODY {
+    background-color: #CCC;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    overflow-y: hidden;
+}
+
+#terminal {
+    /* flex-grow: 1; */
+    height: 100vh;
+    overflow-y: hidden;
+}
+
+/* hide ugly scrollbar on windows */
+.xterm-viewport::-webkit-scrollbar{
+    display: none;
+}
+
+#cross-document-container {
+    display: none;
+}
