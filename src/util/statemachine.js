@@ -1,32 +1,37 @@
+import { disallowAccessToUndefined } from "./lang.js";
+
 export class StatefulProcessor {
     constructor (params) {
-        this.state = 'start';
         for ( const k in params ) this[k] = params[k];
+
+        let lastState = null;
     }
     async run (imports) {
-        this.externals = {};
+        this.state = 'start';
+        imports = imports ?? {};
+        const externals = {};
         for ( const k in this.externals ) {
             if ( this.externals[k].required && ! imports[k] ) {
                 throw new Error(`missing required external: ${k}`);
             }
             if ( ! imports[k] ) continue;
-            this.externals[k] = imports[k];
+            externals[k] = imports[k];
         }
 
         const ctx = {
-            consts: this.constants,
-            externs: imports,
+            consts: disallowAccessToUndefined(this.constants),
+            externs: externals,
             vars: this.createVariables_(),
-            setState: this.setState_.bind(this),
+            setState: this.setState_.bind(this)
         };
-        this.externals = imports;
-        this.variables = this.createVariables_();
 
         for ( ;; ) {
             if ( this.state === 'end' ) break;
 
             await this.iter_(ctx);
         }
+
+        return ctx.vars;
     }
     setState_ (newState) {
         this.state = newState;
@@ -37,9 +42,15 @@ export class StatefulProcessor {
             locals: {}
         };
 
-        if ( this.transitions.hasOwnProperty(this.state) ) {
-            for ( const handler of this.transitions[this.state] ) {
-                await handler(ctx);
+        ctx.trigger = name => {
+            return this.actions[name](ctx);
+        }
+        if ( this.state !== this.lastState ) {
+            this.lastState = this.state;
+            if ( this.transitions.hasOwnProperty(this.state) ) {
+                for ( const handler of this.transitions[this.state] ) {
+                    await handler(ctx);
+                }
             }
         }
         

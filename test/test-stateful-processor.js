@@ -63,5 +63,27 @@ describe('StatefulProcessor', async () => {
             'before', 'start', 'before', 'intermediate'
         ]);
     });
+    it ('should fail when export is missing', async () => {
+        const messages = [];
+        const processor = new StatefulProcessorBuilder()
+            .external('test3', { required: true })
+            .state('start', async ctx => {
+                ctx.setState('end');
+            })
+            .build();
+        await assert.rejects(processor.run());
+    });
+    it ('should succeed when export is provided', async () => {
+        const messages = [];
+        const processor = new StatefulProcessorBuilder()
+            .external('test3', { required: true })
+            .state('start', async ctx => {
+                messages.push(ctx.externs.test3)
+                ctx.setState('end');
+            })
+            .build();
+        await processor.run({ test3: 'test4' });
+        assert.deepEqual(messages, ['test4']);
+    });
 })
 
