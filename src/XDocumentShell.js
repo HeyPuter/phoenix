@@ -18,10 +18,8 @@ export class XDocumentShell {
         const ptt = this.internal_.ptt;
 
         window.addEventListener('message', evt => {
-            console.log('from somewhere:', evt);
             if ( evt.source !== contentWindow ) return;
 
-            console.log('from iframe:', evt.data);
             ptt.out.write(evt.data);
         });
 

@@ -8,7 +8,7 @@ export class Log {
         if ( item instanceof Uint8Array ) {
             return [...item]
                 .map(x => x.toString(16).padStart(2, '0'))
-                .join('');
+                .join(' ');
         }
 
         return item;
