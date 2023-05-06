@@ -1,6 +1,7 @@
 import { Uint8List } from "../util/bytes";
 import { Log } from "../util/log";
 import { StatefulProcessorBuilder } from "../util/statemachine";
+import { CSI_HANDLERS } from "./rl_csi_handlers";
 
 const decoder = new TextDecoder();
 
@@ -10,6 +11,7 @@ const CHAR_CR = '\r'.charCodeAt(0);
 const ReadlineProcessorBuilder = builder => builder
     .constant('CHAR_LF', '\n'.charCodeAt(0))
     .constant('CHAR_CR', '\r'.charCodeAt(0))
+    .constant('CHAR_CSI', '['.charCodeAt(0))
     .constant('CHAR_ESC', 0x1B)
     .constant('CSI_F_0', 0x40, {
         documentation: 'beginning of CSI Final Byte range'
@@ -18,6 +20,7 @@ const ReadlineProcessorBuilder = builder => builder
         documentation: 'end of CSI Final Byte range (exclusive)'
     })
     .variable('result', { getDefaultValue: () => '' })
+    .variable('cursor', { getDefaultValue: () => 0 })
     .external('out', { required: true })
     .external('in_', { required: true })
     .beforeAll('get-byte', async ctx => {
@@ -44,9 +47,33 @@ const ReadlineProcessorBuilder = builder => builder
             return;
         }
 
-        externs.out.write(locals.byteBuffer);
         const part = decoder.decode(locals.byteBuffer);
-        vars.result = vars.result + part;
+
+        if ( vars.cursor === vars.result.length ) {
+            // output
+            externs.out.write(locals.byteBuffer);
+            // update buffer
+            vars.result = vars.result + part;
+            // update cursor
+            vars.cursor += part.length;
+            console.log('new cursor', vars.cursor)
+        } else {
+            // output
+            const insertSequence = new Uint8Array([
+                consts.CHAR_ESC,
+                consts.CHAR_CSI,
+                '@'.charCodeAt(0),
+                ...locals.byteBuffer
+            ]);
+            externs.out.write(insertSequence);
+            // update buffer
+            vars.result =
+                vars.result.slice(0, vars.cursor) +
+                part +
+                vars.result.slice(vars.cursor)
+            // update cursor
+            vars.cursor += part.length;
+        }
     })
     .onTransitionTo('ESC-CSI', async ctx => {
         console.log('initialized control sequence')
@@ -70,8 +97,6 @@ const ReadlineProcessorBuilder = builder => builder
     .state('ESC-CSI', async ctx => {
         const { consts, locals, vars } = ctx;
 
-        vars.controlSequence.append(locals.byte);
-
         if (
             locals.byte >= consts.CSI_F_0 &&
             locals.byte <  consts.CSI_F_E
@@ -80,11 +105,42 @@ const ReadlineProcessorBuilder = builder => builder
             ctx.setState('start');
             return;
         }
+
+        vars.controlSequence.append(locals.byte);
     })
     .action('ESC-CSI.post', async ctx => {
-        const { vars } = ctx;
+        const { vars, externs, locals } = ctx;
+
+        const finalByte = locals.byte;
         const controlSequence = vars.controlSequence.toArray();
+
         Log.log('controlSequence', controlSequence);
+
+        if ( ! CSI_HANDLERS.hasOwnProperty(finalByte) ) {
+            return;
+        }
+
+        const csiCtx = {
+            controlSequence,
+            cursor: vars.cursor,
+            result: vars.result,
+            moveCursor: n => {
+                console.log('cursor move', n);
+                ctx.vars.cursor += n;
+            },
+            vars: { doWrite: false }
+        };
+        CSI_HANDLERS[finalByte](csiCtx);
+
+        if ( csiCtx.vars.doWrite ) {
+            externs.out.write(new Uint8Array([
+                ctx.consts.CHAR_ESC,
+                ctx.consts.CHAR_CSI,
+                ...controlSequence,
+                finalByte
+            ]))
+            Log.log('CS', controlSequence)
+        }
     })
     .build();
 

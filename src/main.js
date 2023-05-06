@@ -29,12 +29,6 @@ class XTermIO {
             Enter: () => {
                 pty.out.write('\n');
             },
-            ArrowRight: () => {
-                pty.out.write('\x1B[C');
-            },
-            ArrowLeft: () => {
-                pty.out.write('\x1B[D');
-            },
             Backspace: () => {
                 pty.out.write('\x08');
             },
