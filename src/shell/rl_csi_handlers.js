@@ -13,6 +13,16 @@
 // --- util ---
 const cc = chr => chr.charCodeAt(0);
 
+const CHAR_DEL = 127;
+const CHAR_ESC = 0x1B;
+
+// TODO: import theses constants from a package
+const consts = {
+    CHAR_DEL,
+    CHAR_ESC: 0x1B,
+    CHAR_CSI: cc('['),
+};
+
 // --- convenience function decorators ---
 const CSI_INT_ARG = delegate => ctx => {
     const controlSequence = ctx.controlSequence;
@@ -24,10 +34,25 @@ const CSI_INT_ARG = delegate => ctx => {
     delegate({ ...ctx, num });
 };
 
+// --- PC-Style Function Key handles (see `~` final byte in CSI_HANDLERS) ---
+export const PC_FN_HANDLERS = {
+    // delete key
+    3: ctx => {
+        const deleteSequence = new Uint8Array([
+            consts.CHAR_ESC, consts.CHAR_CSI, cc('P')
+        ]);
+        // ctx.moveCursor(-1);
+        ctx.out.write(deleteSequence);
+    }
+};
+
 // --- CSI handlers: this is the last definition in this file ---
 export const CSI_HANDLERS = {
     // cursor back
     [cc('D')]: CSI_INT_ARG(ctx => {
+        if ( ctx.cursor === 0 ) {
+            return;
+        }
         ctx.moveCursor(-1 * ctx.num);
         ctx.vars.doWrite = true;        
     }),
@@ -39,4 +64,12 @@ export const CSI_HANDLERS = {
         ctx.moveCursor(ctx.num);
         ctx.vars.doWrite = true;        
     }),
+    // PC-Style Function Keys
+    [cc('~')]: CSI_INT_ARG(ctx => {
+        if ( ! PC_FN_HANDLERS.hasOwnProperty(ctx.num) ) {
+            console.error(`unrecognized PC Function: ${ctx.num}`);
+            return;
+        }
+        PC_FN_HANDLERS[ctx.num](ctx);
+    })
 };

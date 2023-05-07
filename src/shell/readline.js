@@ -8,11 +8,15 @@ const decoder = new TextDecoder();
 const CHAR_LF = '\n'.charCodeAt(0);
 const CHAR_CR = '\r'.charCodeAt(0);
 
+const cc = chr => chr.charCodeAt(0);
+
 const ReadlineProcessorBuilder = builder => builder
+    // TODO: import these constants from a package
     .constant('CHAR_LF', '\n'.charCodeAt(0))
     .constant('CHAR_CR', '\r'.charCodeAt(0))
     .constant('CHAR_CSI', '['.charCodeAt(0))
     .constant('CHAR_ESC', 0x1B)
+    .constant('CHAR_DEL', 0x7F)
     .constant('CSI_F_0', 0x40, {
         documentation: 'beginning of CSI Final Byte range'
     })
@@ -44,6 +48,31 @@ const ReadlineProcessorBuilder = builder => builder
         if ( locals.byte === consts.CHAR_ESC ) {
             console.log('this happened');
             ctx.setState('ESC');
+            return;
+        }
+
+        // (note): DEL is actually the backspace key
+        // [explained here](https://en.wikipedia.org/wiki/Backspace#Common_use)
+        // TOOD: very similar to delete in CSI_HANDLERS; how can this be unified?
+        if ( locals.byte === consts.CHAR_DEL ) {
+            // can't backspace at beginning of line
+            if ( vars.cursor === 0 ) return;
+
+            vars.result = vars.result.slice(0, vars.cursor - 1) +
+                vars.result.slice(vars.cursor)
+
+            vars.cursor--;
+
+            // TODO: maybe wrap these CSI codes in a library
+            const backspaceSequence = new Uint8Array([
+                // consts.CHAR_ESC, consts.CHAR_CSI, cc('s'), // save cur
+                consts.CHAR_ESC, consts.CHAR_CSI, cc('D'), // left
+                consts.CHAR_ESC, consts.CHAR_CSI, cc('P'),
+                // consts.CHAR_ESC, consts.CHAR_CSI, cc('u'), // restore cur
+                // consts.CHAR_ESC, consts.CHAR_CSI, cc('D'), // left
+            ]);
+
+            externs.out.write(backspaceSequence);
             return;
         }
 
@@ -128,7 +157,8 @@ const ReadlineProcessorBuilder = builder => builder
                 console.log('cursor move', n);
                 ctx.vars.cursor += n;
             },
-            vars: { doWrite: false }
+            vars: { doWrite: false },
+            out: externs.out,
         };
         CSI_HANDLERS[finalByte](csiCtx);
 

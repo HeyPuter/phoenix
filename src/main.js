@@ -29,12 +29,12 @@ class XTermIO {
             Enter: () => {
                 pty.out.write('\n');
             },
-            Backspace: () => {
-                pty.out.write('\x08');
-            },
-            Delete: () => {
-                pty.out.write('\x1B[3~');
-            },
+            // Backspace: () => {
+            //     pty.out.write('\x08');
+            // },
+            // Delete: () => {
+            //     pty.out.write('\x1B[3~');
+            // },
             Home: () => {
                 pty.out.write('\x1B[H');
             },
