@@ -25,3 +25,100 @@ as though it were any other ANSI shell provided by a third-party service.
 This will also keep these things loosely coupled so we can separate the
 adapter in the future and allow other terminal emulators to take
 advantage of it.
+
+## 2023-05-06
+
+### The Context
+
+In creating the state processor I made a variable called
+`ctx`, representing contextual information for state functions.
+
+The context has a few properties on it:
+- constants
+- locals
+- vars
+- externs
+
+#### constants
+
+Constants are immutable values tied to the context.
+They can be overriden when a context is constructed but
+cannot be overwritten within an instance of the context.
+
+#### variables
+
+Variabes are mutable context values which the caller providing
+the context might be able to access.
+
+#### locals
+
+Locals are the same as varaibles but the state processor
+exports them. This might not have been a good idea;
+maybe to the user of a context these should appear
+to be the same as variables, because the code using a
+context doesn't care what the longevity of locals is
+vs variables.
+
+Perhaps locals could be a useful concept for values that
+only change under a sub-context, but this is already
+true about constants since sub-contexts can override
+them. After all, I can't think of a compelling reason
+not to allow overridding constants when you're creating
+a sub-context.
+
+#### externs
+
+Externs are like constants in that they're not mutable to
+the code using a context. However, unlike constants they're
+not limited to primitive values. They can be objects and
+these objects can have side-effects.
+
+### How to make the context better moving forward?
+
+#### Composing contexts
+
+The ability to compose context would be useful. For example
+the readline function could have a context that's a composition
+of the ANSI context (containing ANSI constantsl maybe also
+library functions in the future), an outputter context since
+it outputs characters to the terminal, as well as a context
+specific to handlers under the readline utility.
+
+#### Additional reflection
+This idea of contexts and compositing contexts is actually
+something I've been thinking about for a long time. Contexts
+are an essential component in FOAM for example. However, this
+idea of separating **constants**, **imports**, and
+**side-effect varibles** (that is, variables something else
+is able to access),
+is not something I thought about until I looked at the source
+code for ash (an implementation of `sh`), and considered how
+I might make that source code more portable by repreasting
+it as language-agnostic data.
+
+## 2023-05-07
+
+### Conclusion of Context Thing from Yesterday
+
+I just figured something out after re-reading yesterday's
+devlog entry.
+
+While the State Processor needs a separate concept of
+variables vs locals, even the state functions don't care
+about this distinction. It's only there so certain values
+are cleared at each iteration of the state processor.
+
+This means a context can be composed at each iteration
+containing both the instance variables and the transient
+variables.
+
+### When Contexts are Equivalent to Pure Functions
+
+In pure-functional logic functions do not have side effects.
+This means they would never change a value by reference, but
+they would return a value.
+
+When a subcontext is created prior to a function call, this
+is equivalent to a pure function under certain conditions:
+- the values which may be changed must be explicity stated
+- the immediate consequences of updating any value are known

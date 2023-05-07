@@ -22,24 +22,28 @@ const { consts } = ANSIContext;
 
 // --- convenience function decorators ---
 const CSI_INT_ARG = delegate => ctx => {
-    const controlSequence = ctx.controlSequence;
+    const controlSequence = ctx.locals.controlSequence;
 
     const str = new TextDecoder().decode(controlSequence);
     let num = str === '' ? 1 : Number.parseInt(str);
     if ( Number.isNaN(num) ) num = 0;
 
-    delegate({ ...ctx, num });
+    ctx.locals.num = num;
+
+    return delegate(ctx);
 };
 
 // --- PC-Style Function Key handles (see `~` final byte in CSI_HANDLERS) ---
 export const PC_FN_HANDLERS = {
     // delete key
     3: ctx => {
+        const { vars } = ctx;
         const deleteSequence = new Uint8Array([
             consts.CHAR_ESC, consts.CHAR_CSI, cc('P')
         ]);
-        // ctx.moveCursor(-1);
-        ctx.out.write(deleteSequence);
+        vars.result = vars.result.slice(0, vars.cursor) +
+            vars.result.slice(vars.cursor + 1);
+        ctx.externs.out.write(deleteSequence);
     }
 };
 
@@ -50,23 +54,24 @@ export const CSI_HANDLERS = {
         if ( ctx.cursor === 0 ) {
             return;
         }
-        ctx.moveCursor(-1 * ctx.num);
-        ctx.vars.doWrite = true;        
+        ctx.vars.cursor -= ctx.locals.num;
+        ctx.locals.doWrite = true;        
     }),
     // cursor forward
     [cc('C')]: CSI_INT_ARG(ctx => {
-        if ( ctx.cursor >= ctx.result.length ) {
+        console.log('!@#', ctx.vars.cursor, ctx.vars.result)
+        if ( ctx.vars.cursor >= ctx.vars.result.length ) {
             return;
         }
-        ctx.moveCursor(ctx.num);
-        ctx.vars.doWrite = true;        
+        ctx.vars.cursor += ctx.locals.num;
+        ctx.locals.doWrite = true;        
     }),
     // PC-Style Function Keys
     [cc('~')]: CSI_INT_ARG(ctx => {
-        if ( ! PC_FN_HANDLERS.hasOwnProperty(ctx.num) ) {
-            console.error(`unrecognized PC Function: ${ctx.num}`);
+        if ( ! PC_FN_HANDLERS.hasOwnProperty(ctx.locals.num) ) {
+            console.error(`unrecognized PC Function: ${ctx.locals.num}`);
             return;
         }
-        PC_FN_HANDLERS[ctx.num](ctx);
+        PC_FN_HANDLERS[ctx.locals.num](ctx);
     })
 };

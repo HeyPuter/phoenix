@@ -1,3 +1,4 @@
+import { Context } from "../context/context";
 import { Uint8List } from "../util/bytes";
 import { Log } from "../util/log";
 import { StatefulProcessorBuilder } from "../util/statemachine";
@@ -14,6 +15,16 @@ const cc = chr => chr.charCodeAt(0);
 const ReadlineProcessorBuilder = builder => builder
     // TODO: import these constants from a package
     .installContext(ANSIContext)
+    .installContext(new Context({
+        variables: {
+            result: { value: '' },
+            cursor: { value: 0 },
+        },
+        imports: {
+            out: {},
+            in_: {}
+        }
+    }))
     .variable('result', { getDefaultValue: () => '' })
     .variable('cursor', { getDefaultValue: () => 0 })
     .external('out', { required: true })
@@ -140,20 +151,11 @@ const ReadlineProcessorBuilder = builder => builder
             return;
         }
 
-        const csiCtx = {
-            controlSequence,
-            cursor: vars.cursor,
-            result: vars.result,
-            moveCursor: n => {
-                console.log('cursor move', n);
-                ctx.vars.cursor += n;
-            },
-            vars: { doWrite: false },
-            out: externs.out,
-        };
-        CSI_HANDLERS[finalByte](csiCtx);
+        ctx.locals.controlSequence = controlSequence;
+        ctx.locals.doWrite = false;
+        CSI_HANDLERS[finalByte](ctx);
 
-        if ( csiCtx.vars.doWrite ) {
+        if ( ctx.locals.doWrite ) {
             externs.out.write(new Uint8Array([
                 ctx.consts.CHAR_ESC,
                 ctx.consts.CHAR_CSI,

@@ -9,9 +9,5 @@ export const ANSIContext = new Context({
         CHAR_DEL: 0x7F,
         CSI_F_0: 0x40,
         CSI_F_E: 0x7F,
-    },
-
-    imports: {
-        out: {}
     }
 });

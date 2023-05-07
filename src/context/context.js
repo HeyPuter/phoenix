@@ -1,30 +1,50 @@
-export class Context {
-    constructor (spec) {
-        this.spec = spec;
-
-        this.instance_ = {};
-    }
-
+export class AbstractContext {
     get constants () {
-        if ( this.instance_.hasOwnProperty('constants') ) {
-            return this.instance_.constants;
-        }
-
-        return this._init_constants();
+        return this.instance_.constants;
     }
-
     get consts () {
         return this.constants;
     }
+    get variables () {
+        return this.instance_.valuesAccessor;
+    }
+    get vars () {
+        return this.variables;
+    }
+}
 
-    _init_constants () {
-        this.instance_.constants = {};
+// export class SubContext extends AbstractContext {
+//     constructor ({ parent, changes }) {
+//         for ( const k in parent.spec )
+//     }
+// }
+
+export class Context extends AbstractContext {
+    constructor (spec) {
+        super();
+        this.spec = { ...spec };
+
+        this.instance_ = {};
+
+        if ( ! spec.constants ) spec.constants = {};
+
+        const constants = {};
         for ( const k in this.spec.constants ) {
-            Object.defineProperty(this.instance_.constants, k, {
+            Object.defineProperty(constants, k, {
                 value: this.spec.constants[k],
                 enumerable: true
             })
         }
-        return this.instance_.constants;
+        this.instance_.constants = constants;
+
+        // const values = {};
+        // for ( const k in this.spec.variables ) {
+        //     Object.defineProperty(values, k, {
+        //         value: this.spec.variables[k],
+        //         enumerable: true,
+        //         writable: true
+        //     });
+        // }
+        // this.instance_.values = values;
     }
 }
