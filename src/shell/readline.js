@@ -1,6 +1,7 @@
 import { Uint8List } from "../util/bytes";
 import { Log } from "../util/log";
 import { StatefulProcessorBuilder } from "../util/statemachine";
+import { ANSIContext } from "./ANSIContext";
 import { CSI_HANDLERS } from "./rl_csi_handlers";
 
 const decoder = new TextDecoder();
@@ -12,17 +13,7 @@ const cc = chr => chr.charCodeAt(0);
 
 const ReadlineProcessorBuilder = builder => builder
     // TODO: import these constants from a package
-    .constant('CHAR_LF', '\n'.charCodeAt(0))
-    .constant('CHAR_CR', '\r'.charCodeAt(0))
-    .constant('CHAR_CSI', '['.charCodeAt(0))
-    .constant('CHAR_ESC', 0x1B)
-    .constant('CHAR_DEL', 0x7F)
-    .constant('CSI_F_0', 0x40, {
-        documentation: 'beginning of CSI Final Byte range'
-    })
-    .constant('CSI_F_E', 0x7F, {
-        documentation: 'end of CSI Final Byte range (exclusive)'
-    })
+    .installContext(ANSIContext)
     .variable('result', { getDefaultValue: () => '' })
     .variable('cursor', { getDefaultValue: () => 0 })
     .external('out', { required: true })

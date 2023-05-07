@@ -90,6 +90,13 @@ export class StatefulProcessorBuilder {
         }
     }
 
+    installContext (context) {
+        for ( const k in context.constants ) {
+            this.constant(k, context.constants[k]);
+        }
+        return this;
+    }
+
     constant (name, value) {
         Object.defineProperty(this.constants, name, {
             value

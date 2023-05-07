@@ -8,6 +8,8 @@
 - [Wikipedia](https://en.wikipedia.org/wiki/ANSI_escape_code)
 */
 
+import { ANSIContext } from "./ANSIContext";
+
 // TODO: potentially include metadata in handlers
 
 // --- util ---
@@ -16,12 +18,7 @@ const cc = chr => chr.charCodeAt(0);
 const CHAR_DEL = 127;
 const CHAR_ESC = 0x1B;
 
-// TODO: import theses constants from a package
-const consts = {
-    CHAR_DEL,
-    CHAR_ESC: 0x1B,
-    CHAR_CSI: cc('['),
-};
+const { consts } = ANSIContext;
 
 // --- convenience function decorators ---
 const CSI_INT_ARG = delegate => ctx => {
