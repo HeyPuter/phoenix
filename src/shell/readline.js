@@ -120,8 +120,12 @@ const ReadlineProcessorBuilder = builder => builder
             return;
         }
 
-        if ( locals.byte === '['.charCodeAt(0) ) {
+        if ( locals.byte === ctx.consts.CHAR_CSI ) {
             ctx.setState('ESC-CSI');
+            return;
+        }
+        if ( locals.byte === ctx.consts.CHAR_OSC ) {
+            ctx.setState('ESC-OSC');
             return;
         }
     })
@@ -133,6 +137,24 @@ const ReadlineProcessorBuilder = builder => builder
             locals.byte <  consts.CSI_F_E
         ) {
             ctx.trigger('ESC-CSI.post');
+            ctx.setState('start');
+            return;
+        }
+
+        vars.controlSequence.append(locals.byte);
+    })
+    .state('ESC-OSC', async ctx => {
+        const { consts, locals, vars } = ctx;
+
+        // TODO: ESC\ can also end an OSC sequence according
+        //       to sources, but this has not been implemented
+        //       because it would add another state.
+        //       This should be implemented when there's a
+        //       simpler solution ("peek" & "scan" functionality)
+        if (
+            locals.byte === 0x07
+        ) {
+            // ctx.trigger('ESC-OSC.post');
             ctx.setState('start');
             return;
         }

@@ -13,8 +13,10 @@ export const ANSIContext = new Context({
         CHAR_LF: '\n'.charCodeAt(0),
         CHAR_CR: '\r'.charCodeAt(0),
         CHAR_CSI: '['.charCodeAt(0),
+        CHAR_OSC: ']'.charCodeAt(0),
         CHAR_ESC: 0x1B,
         CHAR_DEL: 0x7F,
+        CHAR_BEL: 0x07,
         CSI_F_0: 0x40,
         CSI_F_E: 0x7F,
         ...keyboardModifierBits
