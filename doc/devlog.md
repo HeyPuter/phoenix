@@ -194,3 +194,27 @@ Sent by terminal emulator after shell is loaded.
 All `variables` are currently keys from the querystring
 but this may change as the authorization mechanism and
 available shell features mature.
+
+## 2023-05-09
+
+### Parsing CLI arguments
+
+Node has a bulit-in utility, but using this would be
+unreliable because it's allowed to depend on system-provided
+APIs which won't be available in a browser.
+
+There's
+[a polyfill](https://github.com/pkgjs/parseargs/tree/main)
+which doesn't appear to depend on any node builtins.
+It does not support sub-commands, nor does it generate
+helptext, but it's a starting point.
+
+If each command specifies a parser for CLI arguments, and also
+provides configuration in a format specific to that parser,
+there are a few advantages:
+- easy to migrate away from this polyfill later by creating an
+  adapter or updating the commands which use it.
+- easy to add custom argument processors for commands which
+  have an interface that isn't strictly adherent to convention.
+- auto-complete and help can be generated with knowledge of how
+  CLI arguments are processed by a particular command.

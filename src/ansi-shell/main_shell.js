@@ -3,6 +3,18 @@ import { Context } from "../context/context";
 import { XDocumentPuterShell } from "./XDocumentPuterShell";
 import ReadlineLib from "./readline";
 
+// TODO: auto-gen command registry from files
+import CommandLS from '../puter-shell/coreutils/ls'
+const command_registry = {
+    ls: CommandLS
+};
+
+// TODO: auto-gen argument parser registry from files
+import SimpleArgParser from "./arg-parsers/simple-parser";
+const argparser_registry = {
+    [SimpleArgParser.name]: SimpleArgParser
+};
+
 export const main_shell = async () => {
     const ptt = new XDocumentPTT();
     const config = {};
@@ -64,6 +76,33 @@ export const main_shell = async () => {
 
     for ( ;; ) {
         const input = await readline('> ');
-        ptt.out.write('got input: ' + input + '\n');
+        // TODO: add proper tokenizer
+        const tokens = input.split(' ');
+        const cmd = tokens.shift();
+        if ( ! command_registry.hasOwnProperty(cmd) ) {
+            ptt.out.write(`no command: ${JSON.stringify(cmd)}\n`);
+            continue;
+        }
+
+        const command = command_registry[cmd];
+        const ctx = {
+            externs: {
+                out: ptt.out
+            },
+            locals: {
+                command,
+                args: tokens,
+                valid: true,
+            }
+        };
+        if ( command.args ) {
+            const argProcessorId = command.args.$;
+            const argProcessor = argparser_registry[argProcessorId];
+            const spec = { ...command.args };
+            delete spec.$;
+            argProcessor.process(ctx, spec);
+        }
+        if ( ! ctx.locals.valid ) continue;
+        command.invoke(ctx);
     }
 };
