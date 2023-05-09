@@ -110,21 +110,8 @@ window.main_term = () => {
 
     termObserver.observe(termEl);
 
-    // (async () => {
-    //     for ( ;; ) {
-    //         const chunk = (await ptt.in.read()).value;
-    //         console.log('got', chunk)
-    //         ptt.out.write('' + chunk.length);
-    //     }
-    // })();
-    // term.write('xterm test');
-
     const ioController = new XTermIO({ term, pty });
     ioController.bind();
-
-    // for ( let i=0; i < 100; i++ ) {
-    //     ptt.out.write(`Hello ${i}\n`);
-    // }
 };
 
 window.main_shell = main_shell;

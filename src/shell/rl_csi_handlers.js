@@ -85,7 +85,6 @@ export const CSI_HANDLERS = {
     }),
     // cursor forward
     [cc('C')]: CSI_INT_ARG(ctx => {
-        console.log('!@#', ctx.vars.cursor, ctx.vars.result)
         if ( ctx.vars.cursor >= ctx.vars.result.length ) {
             return;
         }

@@ -27,14 +27,6 @@ export const main_shell = async () => {
         console.error(`unrecognized window message`, evt);
     });
 
-    // (async () => {
-    //     for ( ;; ) {
-    //         const chunk = (await ptt.in.read()).value;
-    //         console.log('gott it', chunk);
-    //         ptt.out.write(chunk);
-    //     }
-    // })();
-
     const readline = ReadlineLib.create({
         in: ptt.in,
         out: ptt.out
