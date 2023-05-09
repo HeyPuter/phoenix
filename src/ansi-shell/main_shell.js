@@ -11,6 +11,7 @@ const command_registry = {
 
 // TODO: auto-gen argument parser registry from files
 import SimpleArgParser from "./arg-parsers/simple-parser";
+import { PuterANSIShell } from "../puter-shell/PuterANSIShell";
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
 };
@@ -23,6 +24,10 @@ export const main_shell = async () => {
         source: 'https://puter.local:8081'
     });
 
+    let resolveConfigured = null;
+    const configured_ = new Promise(rslv => {
+        resolveConfigured = rslv;
+    });
     window.addEventListener('message', evt => {
         if ( evt.source !== window.parent ) return;
         if ( evt.data instanceof Uint8Array ) {
@@ -42,6 +47,7 @@ export const main_shell = async () => {
                 config[k] = configValues[k];
             }
             puterShell.configure(config);
+            resolveConfigured();
             return;
         }
         console.error(`unrecognized window message`, evt);
@@ -74,35 +80,22 @@ export const main_shell = async () => {
     window.parent.postMessage({ $: 'ready' });
     console.log('the adapter said ready');
 
-    for ( ;; ) {
-        const input = await readline('> ');
-        // TODO: add proper tokenizer
-        const tokens = input.split(' ');
-        const cmd = tokens.shift();
-        if ( ! command_registry.hasOwnProperty(cmd) ) {
-            ptt.out.write(`no command: ${JSON.stringify(cmd)}\n`);
-            continue;
-        }
+    await configured_;
 
-        const command = command_registry[cmd];
-        const ctx = {
-            externs: {
-                out: ptt.out
-            },
-            locals: {
-                command,
-                args: tokens,
-                valid: true,
-            }
-        };
-        if ( command.args ) {
-            const argProcessorId = command.args.$;
-            const argProcessor = argparser_registry[argProcessorId];
-            const spec = { ...command.args };
-            delete spec.$;
-            argProcessor.process(ctx, spec);
+    const ctx = {
+        externs: {
+            config,
+            readline,
+            ptt
+        },
+        registries: {
+            commands: command_registry,
+            argparsers: argparser_registry,
         }
-        if ( ! ctx.locals.valid ) continue;
-        command.invoke(ctx);
+    };
+    const ansiShell = new PuterANSIShell(ctx);
+
+    for ( ;; ) {
+        await ansiShell.doPromptIteration();
     }
 };
