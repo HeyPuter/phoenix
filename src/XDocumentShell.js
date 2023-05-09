@@ -19,6 +19,7 @@ export class XDocumentShell {
 
         window.addEventListener('message', evt => {
             if ( evt.source !== contentWindow ) return;
+            if ( ! (evt.data instanceof Uint8Array) ) return;
 
             ptt.out.write(evt.data);
         });

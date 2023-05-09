@@ -66,6 +66,24 @@ window.main_term = () => {
     xdEl.appendChild(iframe);
     shell.attachToIframe(iframe);
 
+    const cw = iframe.contentWindow;
+    window.addEventListener('message', evt => {
+        if ( evt.source !== cw ) return;
+        if ( evt.data instanceof Uint8Array ) return;
+        // When the iframe reports it's ready, send configuration
+        if ( evt.data.$ === 'ready' ) {
+            const params = Object.fromEntries(
+                new URLSearchParams(window.location.search)
+                    .entries()
+            );
+            cw.postMessage({
+                $: 'config',
+                ...params
+            });
+            return;
+        }
+    });
+
     const termEl = document.createElement('div');
     termEl.id = 'terminal';
 

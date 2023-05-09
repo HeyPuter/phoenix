@@ -122,3 +122,75 @@ When a subcontext is created prior to a function call, this
 is equivalent to a pure function under certain conditions:
 - the values which may be changed must be explicity stated
 - the immediate consequences of updating any value are known
+
+## 2023-05-08
+
+### Sending authorization information to the shell
+
+Separating the terminal emulator from the shell currenly
+means that the terminal is a Puter app and the shell is
+a service being used by a Puter app, rather than natively
+being a Puter app.
+
+This may change in the future, but currently it means the
+terminal emulator needs to - not because it's the terminal
+emulator, but because it's the Puter application - configure
+the shell with authorization information.
+
+There are a few different approaches to this:
+- pass query string parameters onto the shell via url
+- send a non-binary postMessage with configuration
+- send an ANSI escape code followed by a binary-encoded
+  configuration message
+- construct a Form object in javascript and do a POST
+  request to the target iframe
+
+The last option seems like it could be a CORS nightmare since
+right now I'm testing in a situation where the shell happens
+to be under the same domain name as the terminal emulator, but
+this may not always be the case.
+
+Passing query string parameters over means authorization
+tokens are inside the DOM. While this is already true
+about the parent iframe I'd like to avoid this in case we
+find security issues with this approach under different
+situations. For example the parent iframe is in a situation
+where userselect and the default context menu are disabled,
+which may be preventing a user from accidentally putting
+sensitive html attributes in their clipboard.
+
+That leaves the two options for sending a postMessage:
+either binary, or a non-binary message. The binary approach
+would require finding handling an OSC escape sequence handler
+and creating some conventions for how to communicate with
+Puter's API using ANSI escape codes. While this might be useful
+in the future, it seems more practical to create a higher-level
+message protocol first and then eventually create an adapter
+for OSC codes in the future if need is found for one.
+
+So with that, here are window messages between Puter's
+ANSI terminal emulator and Puter's ANSI adapter for Puter's
+shell:
+
+#### Ready message
+
+Sent by shell when it's loaded.
+
+```
+{ $: 'ready' }
+```
+
+#### Config message
+
+Sent by terminal emulator after shell is loaded.
+
+```
+{
+  $: 'config',
+  ...variables
+}
+```
+
+All `variables` are currently keys from the querystring
+but this may change as the authorization mechanism and
+available shell features mature.

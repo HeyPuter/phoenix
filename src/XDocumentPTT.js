@@ -17,7 +17,7 @@ export class XDocumentPTT {
                 if (typeof chunk === 'string') {
                     chunk = encoder.encode(chunk);
                 }
-                window.top.postMessage(chunk);
+                window.parent.postMessage(chunk);
             }
         });
         this.out = this.writableStream.getWriter();
@@ -25,6 +25,7 @@ export class XDocumentPTT {
         this.in = new BetterReader({ delegate: this.in });
 
         window.addEventListener('message', evt => {
+            if ( ! (evt?.data instanceof Uint8Array) ) return;
             this.readController.enqueue(evt.data);
         });
     }
