@@ -86,7 +86,8 @@ export const main_shell = async () => {
         externs: {
             config,
             readline,
-            ptt
+            ptt,
+            puterShell,
         },
         registries: {
             commands: command_registry,

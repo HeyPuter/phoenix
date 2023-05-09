@@ -49,5 +49,30 @@ export class XDocumentPuterShell extends EventTarget {
             $: 'config'
         }, this.internal_.source);
     }
-}
 
+    async command (cmdName, command) {
+        const contentWindow = this.internal_.window;
+        let result;
+        const p = new Promise(rslv => {
+            const lis = evt => {
+                if ( evt.source !== contentWindow ) return;
+                if ( ! evt.data.$ ) {
+                    console.error('message without $ when waiting');
+                    return;
+                }
+                if ( evt.data.$ !== 'command-done' ) return;
+                result = evt.data.result;
+                rslv();
+                window.removeEventListener(lis);
+            }
+            window.addEventListener('message', lis);
+        });
+        contentWindow.postMessage({
+            ...command,
+            $: 'command',
+            $$: cmdName,
+        }, this.internal_.source);
+        await p;
+        return result;
+    }
+}

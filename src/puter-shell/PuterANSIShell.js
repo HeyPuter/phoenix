@@ -61,8 +61,10 @@ export class PuterANSIShell {
             externs: {
                 in: ptt.in,
                 out: ptt.out,
+                puterShell: this.ctx.externs.puterShell,
             },
             locals: {
+                pwd: this.variables.pwd,
                 command,
                 args: tokens,
                 valid: true,
@@ -76,7 +78,7 @@ export class PuterANSIShell {
             argProcessor.process(ctx, spec);
         }
         if ( ! ctx.locals.valid ) return;
-        await command.invoke(ctx);
+        await command.execute(ctx);
     }
 
     tokenize (cmdString) {
