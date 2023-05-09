@@ -20,15 +20,11 @@ export class BetterReader {
             return chunk;
         }
 
-        console.log('read with buffer', chunk, opt_buffer.length);
-
         this.chunks_.push(chunk);
 
         while ( this.getTotalBytesReady_() < opt_buffer.length ) {
             this.chunks_.push(await this.getChunk_())
         }
-
-        console.log('n chunks', this.chunks_.length);
 
         let offset = 0;
         for (;;) {
@@ -37,12 +33,9 @@ export class BetterReader {
                 throw new Error('calculation is wrong')
             }
             if ( offset + item.length > opt_buffer.length ) {
-                console.log('we got here', item.length);
                 const diff = opt_buffer.length - offset;
                 this.chunks_.unshift(item.subarray(diff));
                 item = item.subarray(0, diff);
-                console.log('item new length', item.length);
-                console.log('length of first chunk', this.chunks_[0].length);
             }
             opt_buffer.set(item, offset);
             offset += item.length;
@@ -53,11 +46,9 @@ export class BetterReader {
 
     async getChunk_() {
         if ( this.chunks_.length === 0 ) {
-            console.log('hit here')
             const { value } = await this.delegate.read();
             return value;
         }
-        console.log('oh?')
 
         const len = this.getTotalBytesReady_();
         const merged = new Uint8Array(len);

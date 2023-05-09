@@ -25,6 +25,7 @@ export class XDocumentPTT {
         this.in = new BetterReader({ delegate: this.in });
 
         window.addEventListener('message', evt => {
+            if ( ! evt.source === window.parent ) return;
             if ( ! (evt?.data instanceof Uint8Array) ) return;
             this.readController.enqueue(evt.data);
         });

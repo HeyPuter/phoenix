@@ -1,4 +1,4 @@
-export class XDocumentShell {
+export class XDocumentANSIShell {
     constructor (params) {
         this.internal_ = {};
         for ( const k in params ) this.internal_[k] = params[k];

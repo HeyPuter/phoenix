@@ -1,8 +1,8 @@
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { PTY } from 'dev-pty';
-import { XDocumentShell } from './XDocumentShell';
-import { main_shell } from './main_shell';
+import { XDocumentANSIShell } from './XDocumentANSIShell';
+import { main_shell } from './ansi-shell/main_shell';
 
 
 class XTermIO {
@@ -56,7 +56,7 @@ window.main_term = () => {
     const pty = new PTY();
     const ptt = pty.getPTT();
 
-    const shell = new XDocumentShell({
+    const shell = new XDocumentANSIShell({
         source: 'https://puter.local:8080/shell.html',
         ptt
     });
