@@ -1,4 +1,4 @@
-import { readtoken } from "../ansi-shell/readtoken";
+import { readtoken, TOKENS } from "../ansi-shell/readtoken";
 
 export class PuterANSIShell {
     constructor (ctx) {
@@ -79,6 +79,22 @@ export class PuterANSIShell {
         }
         if ( ! ctx.locals.valid ) return;
         await command.execute(ctx);
+    }
+
+    async createPipeline (tokens) {
+        const commands = [];
+
+        let buffer = [];
+        // single pass to split by pipe token
+        for ( let i=0 ; i < tokens.length ; i++ ) {
+            if ( tokens[i] === TOKENS['|'] ) {
+                commands.push(buffer);
+                buffer = [];
+                continue;
+            }
+
+            buffer.push(tokens[i]);
+        }
     }
 
     expandPromptString (str) {
