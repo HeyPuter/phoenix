@@ -12,11 +12,15 @@ const command_registry = {
 // TODO: auto-gen argument parser registry from files
 import SimpleArgParser from "./arg-parsers/simple-parser";
 import { PuterANSIShell } from "../puter-shell/PuterANSIShell";
+import { HiTIDE } from "hitide";
+
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
 };
 
 export const main_shell = async () => {
+    const hitide = new HiTIDE();
+
     const ptt = new XDocumentPTT();
     const config = {};
 

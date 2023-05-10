@@ -1,3 +1,5 @@
+import { readtoken } from "../ansi-shell/readtoken";
+
 export class PuterANSIShell {
     constructor (ctx) {
         this.ctx = ctx;
@@ -33,15 +35,13 @@ export class PuterANSIShell {
         const input = await readline(
             this.expandPromptString(this.env.PS1)
         );
-        // TODO: add proper tokenizer
-        const tokens = input.split(' ');
         
-        await this.runCommand(tokens);
+        await this.runCommand(input);
     }
 
     async runCommand (cmdOrTokens) {
         const tokens = typeof cmdOrTokens === 'string'
-            ? this.tokenize(cmdOrTokens)
+            ? readtoken(cmdOrTokens)
             : cmdOrTokens ;
 
         const cmd = tokens.shift();
@@ -81,14 +81,16 @@ export class PuterANSIShell {
         await command.execute(ctx);
     }
 
-    tokenize (cmdString) {
-        return cmdString.split(' ');
-    }
-
     expandPromptString (str) {
         str = str.replace('\\u', this.config['puter.auth.username']);
         str = str.replace('\\w', this.variables.pwd);
         str = str.replace('\\$', '$');
         return str;
+    }
+
+    async outputANSI (ctx) {
+        await ctx.iterate(async item => {
+            ctx.externs.out.write(item.name + '\n');
+        });
     }
 }
