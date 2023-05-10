@@ -1,5 +1,4 @@
 import { XDocumentPTT } from "../XDocumentPTT";
-import { Context } from "../context/context";
 import { XDocumentPuterShell } from "./XDocumentPuterShell";
 import ReadlineLib from "./readline";
 
@@ -13,6 +12,7 @@ const command_registry = {
 import SimpleArgParser from "./arg-parsers/simple-parser";
 import { PuterANSIShell } from "../puter-shell/PuterANSIShell";
 import { HiTIDE } from "hitide";
+import { Context } from "contextlink";
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
@@ -86,18 +86,15 @@ export const main_shell = async () => {
 
     await configured_;
 
-    const ctx = {
-        externs: {
-            config,
-            readline,
-            ptt,
-            puterShell,
-        },
-        registries: {
+    const ctx = new Context({
+        externs: new Context({
+            config, readline, ptt, puterShell
+        }),
+        registries: new Context({
             commands: command_registry,
             argparsers: argparser_registry,
-        }
-    };
+        })
+    });
     const ansiShell = new PuterANSIShell(ctx);
 
     for ( ;; ) {
