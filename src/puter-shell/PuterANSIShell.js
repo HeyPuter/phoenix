@@ -1,3 +1,4 @@
+import { Pipeline } from "../ansi-shell/pipeline/Pipeline";
 import { readtoken, TOKENS } from "../ansi-shell/readtoken";
 
 export class PuterANSIShell {
@@ -31,54 +32,82 @@ export class PuterANSIShell {
     }
 
     async doPromptIteration() {
+        console.log('prompt iteration');
         const { readline } = this.ctx.externs;
         const input = await readline(
             this.expandPromptString(this.env.PS1)
         );
         
-        await this.runCommand(input);
+        await this.runPipeline(input);
     }
 
-    async runCommand (cmdOrTokens) {
+    async runPipeline (cmdOrTokens) {
         const tokens = typeof cmdOrTokens === 'string'
             ? readtoken(cmdOrTokens)
             : cmdOrTokens ;
 
-        const cmd = tokens.shift();
-
-        const { commands, argparsers } = this.ctx.registries;
-        const { ptt } = this.ctx.externs;
+        if ( tokens.length === 0 ) return;
         
-        if ( ! commands.hasOwnProperty(cmd) ) {
-            ptt.out.write(`no command: ${JSON.stringify(cmd)}\n`);
+        let pipeline;
+        try {
+            pipeline = Pipeline.createFromTokens(this.ctx, tokens);
+        } catch (e) {
+            this.ctx.externs.out.write('error: ' + e.message + '\n');
             return;
         }
-        const command = commands[cmd];
+        
+        console.log('created pipeline');
 
-        const ctx = {
-            ...this.ctx,
+        const executionCtx = this.ctx.sub({
             vars: this.variables,
-            externs: {
-                in: ptt.in,
-                out: ptt.out,
-                puterShell: this.ctx.externs.puterShell,
-            },
             locals: {
                 pwd: this.variables.pwd,
-                command,
-                args: tokens,
-                valid: true,
             }
-        };
-        if ( command.args ) {
-            const argProcessorId = command.args.$;
-            const argProcessor = argparsers[argProcessorId];
-            const spec = { ...command.args };
-            delete spec.$;
-            argProcessor.process(ctx, spec);
-        }
-        if ( ! ctx.locals.valid ) return;
-        await command.execute(ctx);
+        });
+        
+        console.log('executing pipeline...');
+        await pipeline.execute(executionCtx);
+        console.log('...pipeline execution finished');
+
+        // const cmd = tokens.shift();
+
+        // const { commands, argparsers } = this.ctx.registries;
+        // const { out } = this.ctx.externs;
+        
+        // if ( ! commands.hasOwnProperty(cmd) ) {
+        //     out.write(`no command: ${JSON.stringify(cmd)}\n`);
+        //     return;
+        // }
+        // const command = commands[cmd];
+
+        // const ctx = this.ctx.sub({
+        //     vars: this.variables,
+        //     locals: {
+        //         pwd: this.variables.pwd,
+        //         command,
+        //         args: tokens,
+        //         valid: true,
+        //     }
+        // });
+
+        // // const ctx = {
+        // //     ...this.ctx,
+        // //     vars: this.variables,
+        // //     externs: {
+        // //         in: ptt.in,
+        // //         out: ptt.out,
+        // //         puterShell: this.ctx.externs.puterShell,
+        // //     },
+        // // };
+        // if ( command.args ) {
+        //     const argProcessorId = command.args.$;
+        //     const argProcessor = argparsers[argProcessorId];
+        //     const spec = { ...command.args };
+        //     delete spec.$;
+        //     argProcessor.process(ctx, spec);
+        // }
+        // if ( ! ctx.locals.valid ) return;
+        // await command.execute(ctx);
     }
 
     async createPipeline (tokens) {

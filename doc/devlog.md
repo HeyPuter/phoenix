@@ -218,3 +218,17 @@ there are a few advantages:
   have an interface that isn't strictly adherent to convention.
 - auto-complete and help can be generated with knowledge of how
   CLI arguments are processed by a particular command.
+
+## 2023-05-10
+
+### Kind of tangential, but synonyms are annoying
+
+The left side of a UNIX pipe is the
+- source, faucet, producer, upstream
+
+The right side of a UNIX pipe is the
+- target, sink, consumer, downstream
+
+I'm going to go with `source` and `target` for any cases like this
+because they have the same number of letters, and I like when similar
+lines of code are the same length because it's easier to spot errors.

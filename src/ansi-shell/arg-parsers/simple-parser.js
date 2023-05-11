@@ -9,11 +9,12 @@ export default {
         });
         let result;
         try {
+            if ( ! ctx.locals.args ) debugger;
             result = parseArgs({ ...spec, args: ctx.locals.args });
         } catch (e) {
             ctx.externs.out.write('error parsing arguments: ' +
                 e.message + '\n');
-            ctx.locals.valid = false;
+            ctx.cmdExecState.valid = false;
             return;
         }
         ctx.locals.values = result.values;

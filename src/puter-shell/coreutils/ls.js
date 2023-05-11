@@ -22,7 +22,7 @@ export default {
         for ( const path of paths ) {
             const result = await puterShell.command('list', { path });
             for ( const item of result ) {
-                ctx.externs.out.write(item.name + '\n');
+                await ctx.externs.out.write(item.name + '\n');
             }
         }
     }

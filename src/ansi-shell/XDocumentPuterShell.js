@@ -63,7 +63,7 @@ export class XDocumentPuterShell extends EventTarget {
                 if ( evt.data.$ !== 'command-done' ) return;
                 result = evt.data.result;
                 rslv();
-                window.removeEventListener(lis);
+                window.removeEventListener('message', lis);
             }
             window.addEventListener('message', lis);
         });

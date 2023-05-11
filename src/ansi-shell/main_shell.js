@@ -4,8 +4,10 @@ import ReadlineLib from "./readline";
 
 // TODO: auto-gen command registry from files
 import CommandLS from '../puter-shell/coreutils/ls'
+import CommandTail from '../puter-shell/coreutils/tail'
 const command_registry = {
-    ls: CommandLS
+    ls: CommandLS,
+    tail: CommandTail,
 };
 
 // TODO: auto-gen argument parser registry from files
@@ -88,12 +90,15 @@ export const main_shell = async () => {
 
     const ctx = new Context({
         externs: new Context({
-            config, readline, ptt, puterShell
+            config, readline, puterShell,
+            in: ptt.in,
+            out: ptt.out,
         }),
         registries: new Context({
             commands: command_registry,
             argparsers: argparser_registry,
-        })
+        }),
+        locals: new Context(),
     });
     const ansiShell = new PuterANSIShell(ctx);
 
