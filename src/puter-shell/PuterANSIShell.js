@@ -56,7 +56,6 @@ export class PuterANSIShell {
             return;
         }
         
-        console.log('created pipeline');
 
         const executionCtx = this.ctx.sub({
             vars: this.variables,
@@ -65,9 +64,7 @@ export class PuterANSIShell {
             }
         });
         
-        console.log('executing pipeline...');
         await pipeline.execute(executionCtx);
-        console.log('...pipeline execution finished');
 
         // const cmd = tokens.shift();
 

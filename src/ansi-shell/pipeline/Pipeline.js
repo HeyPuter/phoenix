@@ -33,9 +33,7 @@ export class PreparedCommand {
 
         const { commands } = ctx.registries;
 
-        console.log('will err happen?', cmd)
         if ( ! commands.hasOwnProperty(cmd) ) {
-            console.log('this error is happen')
             throw new Error('no command: ' + JSON.stringify(cmd));
         }
 
@@ -76,21 +74,15 @@ export class PreparedCommand {
         if ( command.args ) {
             const argProcessorId = command.args.$;
             const argProcessor = argparsers[argProcessorId];
-            console.log({
-                argparsers, argProcessorId
-            });
             const spec = { ...command.args };
             delete spec.$;
-            console.log('calling argprocessor process');
             argProcessor.process(ctx, spec);
         }
 
         if ( ! ctx.cmdExecState.valid ) {
-            console.log('parse not valid??')
             ctx.locals.exit = -1;
             return;
         }
-        console.log('executing the command', command)
         await command.execute(ctx);
 
         // ctx.externs.in?.close?.();
@@ -104,9 +96,7 @@ export class Pipeline {
         const preparedCommands = [];
 
         const tokensGroupedByCommand = splitArray(tokens, TOKENS['|']);
-        console.log(JSON.stringify(tokensGroupedByCommand, undefined, '  '));
         for ( const cmdTokens of tokensGroupedByCommand ) {
-            console.log('trying a command', cmdTokens);
             const command = PreparedCommand.createFromTokens(ctx, cmdTokens);
             preparedCommands.push(command);
         }
@@ -124,8 +114,6 @@ export class Pipeline {
 
         // TOOD: this will eventually defer piping of certain
         //       sub-pipelines to the Puter Shell.
-
-        console.log('preparedCommands', preparedCommands);
 
         for ( let i=0 ; i < preparedCommands.length ; i++ ) {
             const command = preparedCommands[i];
@@ -147,7 +135,6 @@ export class Pipeline {
         const commandPromises = [];
         for ( let i = preparedCommands.length - 1 ; i >= 0 ; i-- ) {
             const command = preparedCommands[i];
-            console.log('going to call start on: ', command)
             commandPromises.push(command.execute());
         }
         await Promise.all(commandPromises);
