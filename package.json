@@ -12,16 +12,17 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-replace": "^5.0.2",
     "mocha": "^10.2.0",
     "rollup": "^3.21.4",
     "rollup-plugin-copy": "^3.4.0"
   },
   "dependencies": {
     "@pkgjs/parseargs": "^0.11.0",
-    "xterm": "^5.1.0",
-    "xterm-addon-fit": "^0.7.0",
+    "contextlink": "file://../dev-contextlink",
     "hitide": "file://../dev-hitide",
-    "contextlink": "file://../dev-contextlink"
+    "xterm": "^5.1.0",
+    "xterm-addon-fit": "^0.7.0"
   },
   "workspaces": [
     "packages/pty"

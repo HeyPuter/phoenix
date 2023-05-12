@@ -27,7 +27,7 @@ export const main_shell = async () => {
     const config = {};
 
     const puterShell = new XDocumentPuterShell({
-        source: 'https://puter.local:8081'
+        source: __CONFIG__['shell.href']
     });
 
     let resolveConfigured = null;

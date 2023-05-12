@@ -57,7 +57,7 @@ window.main_term = () => {
     const ptt = pty.getPTT();
 
     const shell = new XDocumentANSIShell({
-        source: 'https://puter.local:8080/shell.html',
+        source: __CONFIG__.origin + `/shell.html`,
         ptt
     });
 
