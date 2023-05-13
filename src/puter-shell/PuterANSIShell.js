@@ -59,6 +59,7 @@ export class PuterANSIShell {
 
         const executionCtx = this.ctx.sub({
             vars: this.variables,
+            env: this.env,
             locals: {
                 pwd: this.variables.pwd,
             }
