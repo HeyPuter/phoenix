@@ -2,19 +2,7 @@ import { XDocumentPTT } from "../XDocumentPTT";
 import { XDocumentPuterShell } from "./XDocumentPuterShell";
 import ReadlineLib from "./readline";
 
-// TODO: auto-gen command registry from files
-import CommandLS from '../puter-shell/coreutils/ls'
-import CommandTail from '../puter-shell/coreutils/tail'
-import CommandCD from '../puter-shell/coreutils/cd'
-import CommandMkdir from '../puter-shell/coreutils/mkdir'
-import CommandRM from '../puter-shell/coreutils/rm'
-const command_registry = {
-    ls: CommandLS,
-    tail: CommandTail,
-    cd: CommandCD,
-    mkdir: CommandMkdir,
-    rm: CommandRM,
-};
+import command_registry from '../puter-shell/coreutils/__exports__';
 
 // TODO: auto-gen argument parser registry from files
 import SimpleArgParser from "./arg-parsers/simple-parser";
