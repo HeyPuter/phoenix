@@ -70,6 +70,9 @@ export const readtoken = str => {
             buffer += str[i];
         },
         quote_esc: i => {
+            if ( str[i] !== quoteType ) {
+                buffer += '\\';
+            }
             buffer += str[i];
             state = states.quote;
         }

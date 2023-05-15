@@ -284,3 +284,23 @@ pseudo terminal target, instead of giving the last command this
 writer directly. This allows the command to close its output pipe
 without affecting subsequent functionality of the terminal.
 
+### Behaviour of echo escapes
+
+#### behaviour of `\\` should be verified
+Based on experimentation in Bash:
+- `\\` is always seen by echo as `\`
+  - this means `\\a` and `\a` are the same
+
+#### difference between `\x` and `\0`
+
+In echo, `\0` initiates an octal escape while `\x` initiates
+a hexadecimal escape.
+
+However, `\0` without being followed by a valid octal sequence
+is considered to be `NULL`, while `\x` will be outputted literally
+if not followed with a valid hexadecimal sequence.
+
+If either of these escapes has at least one valid character
+for its respective numeric base, it will be processed with that
+value. So, for example, `echo -en "\xag" | hexdump -C` shows
+bytes `0A 67`, as does the same with `\x0ag` instead of `\xag`.
