@@ -7,6 +7,9 @@ export class Coupler {
     constructor (source, target) {
         this.source = source;
         this.target = target;
+        this.isDone = new Promise(rslv => {
+            this.resolveIsDone = rslv;
+        })
         this.listenLoop_();
     }
 
@@ -18,6 +21,7 @@ export class Coupler {
                 this.source = null;
                 this.target = null;
                 this.active = false;
+                this.resolveIsDone();
                 break;
             }
             await this.target.write(value);

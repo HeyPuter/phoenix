@@ -130,7 +130,7 @@ export class Pipeline {
         }
 
 
-        new Coupler(lastPipe.out, ctx.externs.out);
+        const coupler = new Coupler(lastPipe.out, ctx.externs.out);
 
         const commandPromises = [];
         for ( let i = preparedCommands.length - 1 ; i >= 0 ; i-- ) {
@@ -138,5 +138,7 @@ export class Pipeline {
             commandPromises.push(command.execute());
         }
         await Promise.all(commandPromises);
+
+        await coupler.isDone;
     }
 }

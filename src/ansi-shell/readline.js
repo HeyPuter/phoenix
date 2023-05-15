@@ -197,7 +197,7 @@ class Readline {
         const out = this.internal_.out;
         const in_ = this.internal_.in;
 
-        out.write(prompt);
+        await out.write(prompt);
 
         const {
             result

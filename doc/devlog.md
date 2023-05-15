@@ -304,3 +304,21 @@ If either of these escapes has at least one valid character
 for its respective numeric base, it will be processed with that
 value. So, for example, `echo -en "\xag" | hexdump -C` shows
 bytes `0A 67`, as does the same with `\x0ag` instead of `\xag`.
+
+## 2023-05-15
+
+### Synchronization bug in Coupler
+
+[this issue](https://github.com/HeyPuter/dev-ansi-terminal/issues/1)
+was caused by an issue where the `Coupler` between a pipeline and
+stdout was still writing after the command was completed.
+This happens because the listener loop in the Coupler is async and
+might defer writing until after the pipeline has returned.
+
+This was fixed by adding a member to Coupler called `isDone` which
+provides a promise that resolves when the Coupler receives the end
+of the stream. As a consequence of this it is very important to
+ensure that the stream gets closed when commands are finished
+executing; right now the `PreparedCommand` class is responsible for
+this behaviour, so all commands should be executed via
+`PreparedCommand`.
