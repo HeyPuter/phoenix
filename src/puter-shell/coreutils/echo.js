@@ -38,6 +38,11 @@ export default {
             output = processEscapes(output);
         }
 
-        ctx.externs.out.write(output);
+        const lines = output.split('\n');
+        for ( let i=0 ; i < lines.length ; i++ ) {
+            const line = lines[i];
+            const isLast = i === lines.length - 1;
+            await ctx.externs.out.write(line + (isLast ? '' : '\n'));
+        }
     }
 }

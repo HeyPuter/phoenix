@@ -322,3 +322,21 @@ ensure that the stream gets closed when commands are finished
 executing; right now the `PreparedCommand` class is responsible for
 this behaviour, so all commands should be executed via
 `PreparedCommand`.
+
+### tail, and echo output chunking
+
+Right now `tail` outputs the last two items sent over the stream,
+and doesn't care if these items contain line breaks. For this
+implementation to work the same as the "real" tail, it must be
+asserted that each item over the stream is a separate line.
+
+Since `ls` is outputting each line on a separate call to
+`out.write` it is working correctly with tail, but echo is not.
+This could be fixed in `tail` itself, having it check each item
+for line breaks while iterating backwards, but I would rather have
+metadata on each command specifying how it expects its input
+to be chunked so that the shell can accommodate; although this isn't
+how it works in "real" bash, it wouldn't affect the behaviour of
+shell scripts or input and it's closer to the model of Puter's shell
+for JSON-like structured data, which may help with improved
+interoperability and better code reuse.
