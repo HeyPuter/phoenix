@@ -232,3 +232,55 @@ The right side of a UNIX pipe is the
 I'm going to go with `source` and `target` for any cases like this
 because they have the same number of letters, and I like when similar
 lines of code are the same length because it's easier to spot errors.
+
+## 2023-05-14
+
+### Retro: Terminal Architecture
+
+#### class: PreparedCommand
+
+A prepared command contains information about a command which will
+be invoked within a pipeline, including:
+- the command to be invoked
+- the arguments for the command (as tokens)
+- the context that the command will be run under
+
+A prepared command is created using the static method
+`PreparedCommand.createFromTokens`. It does not have a
+context until `setContext` is later called.
+
+#### class Pipeline
+
+A pipeline contains PreparedCommand instances which represent the
+commands that will be run together in a pipeline.
+
+A pipeline is created using the static method
+`Pipeline.createFromTokens`, which accepts a context under which
+the pipeline will be constructed. The pipeline's `execute` method
+will also be passed a context when the pipeline should begin running,
+and this context can be different. (this is also the context that
+will be passed to each `PreparedCommand` instance before each
+respective `execute` method is called).
+
+#### class Pipe
+
+A pipe is composed of a readable stream and a writable stream.
+A respective `reader` and `writer` are exposed as
+`out` and `in` respectively.
+
+The readable stream and writable stream are tied together.
+
+#### class Coupler
+
+A coupler aggregates a reader and a writer and begins actively
+reading, relaying all items to the writer.
+
+This behaviour allows a coupler to be used as a way of connecting
+two pipes together.
+
+At the time of writing this, it's used to tie the pipe that is
+created after the last command in a pipeline to the writer of the
+pseudo terminal target, instead of giving the last command this
+writer directly. This allows the command to close its output pipe
+without affecting subsequent functionality of the terminal.
+
