@@ -70,6 +70,7 @@ window.main_term = () => {
     window.addEventListener('message', evt => {
         if ( evt.source !== cw ) return;
         if ( evt.data instanceof Uint8Array ) return;
+        if ( ! evt.data.hasOwnProperty('$') ) return;
         // When the iframe reports it's ready, send configuration
         if ( evt.data.$ === 'ready' ) {
             const params = Object.fromEntries(

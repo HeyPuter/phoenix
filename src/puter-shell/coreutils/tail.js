@@ -1,5 +1,8 @@
 export default {
     name: 'tail',
+    input: {
+        syncLines: true
+    },
     args: {
         $: 'simple-parser',
         allowPositionals: true,

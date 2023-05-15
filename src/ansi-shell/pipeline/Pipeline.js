@@ -1,4 +1,6 @@
+import { SyncLinesReader } from "../ioutil/SyncLinesReader";
 import { TOKENS } from "../readtoken";
+import { ByteWriter } from "../ioutil/ByteWriter";
 import { Coupler } from "./Coupler";
 import { CommandStdinDecorator } from "./iowrappers";
 import { Pipe } from "./Pipe";
@@ -117,11 +119,18 @@ export class Pipeline {
 
         for ( let i=0 ; i < preparedCommands.length ; i++ ) {
             const command = preparedCommands[i];
+
+            if ( command.command.input?.syncLines ) {
+                nextIn = new SyncLinesReader({ delegate: nextIn });
+            }
+
             const cmdCtx = { externs: { in_: nextIn } };
 
             const pipe = new Pipe();
             lastPipe = pipe;
-            cmdCtx.externs.out = pipe.in;
+            let cmdOut = pipe.in;
+            cmdOut = new ByteWriter({ delegate: cmdOut });
+            cmdCtx.externs.out = cmdOut;
             nextIn = pipe.out;
 
             // TODO: need to consider redirect from out to err
