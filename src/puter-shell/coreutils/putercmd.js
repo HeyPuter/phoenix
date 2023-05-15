@@ -28,6 +28,6 @@ export default {
             return;
         }
 
-        ctx.externs.out.write(JSON.stringify(data, undefined, '  ') + '\n');
+        ctx.externs.out.write(JSON.stringify(result, undefined, '  ') + '\n');
     }
 }
