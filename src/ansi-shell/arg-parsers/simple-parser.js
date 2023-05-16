@@ -12,8 +12,10 @@ export default {
             if ( ! ctx.locals.args ) debugger;
             result = parseArgs({ ...spec, args: ctx.locals.args });
         } catch (e) {
-            ctx.externs.out.write('error parsing arguments: ' +
-                e.message + '\n');
+            ctx.externs.out.write(
+                '\x1B[31;1m' +
+                'error parsing arguments: ' +
+                e.message + '\x1B[0m\n');
             ctx.cmdExecState.valid = false;
             return;
         }

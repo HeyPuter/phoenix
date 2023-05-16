@@ -83,9 +83,20 @@ export class PreparedCommand {
 
         if ( ! ctx.cmdExecState.valid ) {
             ctx.locals.exit = -1;
+            ctx.externs.out.close();
             return;
         }
-        await command.execute(ctx);
+        
+        try {
+            await command.execute(ctx);
+        } catch (e) {
+            await ctx.externs.err.write(
+                '\x1B[31;1m' +
+                command.name + ': ' +
+                e.toString() + '\x1B[0m\n'
+            );
+            ctx.locals.exit = -1;
+        }
 
         // ctx.externs.in?.close?.();
         // ctx.externs.out?.close?.();
