@@ -20,15 +20,18 @@ const ReadlineProcessorBuilder = builder => builder
             result: { value: '' },
             cursor: { value: 0 },
         },
+        // TODO: dormant configuration; waiting on ContextSignature
         imports: {
             out: {},
-            in_: {}
+            in_: {},
+            history: {}
         }
     }))
     .variable('result', { getDefaultValue: () => '' })
     .variable('cursor', { getDefaultValue: () => 0 })
     .external('out', { required: true })
     .external('in_', { required: true })
+    .external('history', { required: true })
     .beforeAll('get-byte', async ctx => {
         const { locals, externs } = ctx;
 
@@ -162,7 +165,7 @@ const ReadlineProcessorBuilder = builder => builder
         const finalByte = locals.byte;
         const controlSequence = vars.controlSequence.toArray();
 
-        // Log.log('controlSequence', controlSequence);
+        // Log.log('controlSequence', finalByte, controlSequence);
 
         if ( ! CSI_HANDLERS.hasOwnProperty(finalByte) ) {
             return;
@@ -187,10 +190,27 @@ const ReadlineProcessor = ReadlineProcessorBuilder(
     new StatefulProcessorBuilder()
 );
 
+class HistoryManager {
+    constructor () {
+        this.items = [];
+        this.index = 0;
+    }
+
+    get () {
+        return this.items[this.index];
+    }
+
+    save (data) {
+        this.items[this.index] = data;
+    }
+}
+
 class Readline {
     constructor (params) {
         this.internal_ = {};
         for ( const k in params ) this.internal_[k] = params[k];
+
+        this.history = new HistoryManager();
     }
 
     async readline (prompt) {
@@ -201,39 +221,16 @@ class Readline {
 
         const {
             result
-        } = await ReadlineProcessor.run({ out, in_ });
+        } = await ReadlineProcessor.run({
+            out, in_,
+            history: this.history
+        });
+
+        this.history.save(result);
+        this.history.index++;
 
         return result;
     }
-
-    // async readline (prompt) {
-    //     const out = this.internal_.out;
-    //     const in_ = this.internal_.in;
-
-    //     out.write(prompt);
-
-    //     let text = '';
-
-    //     const decoder = new TextDecoder();
-
-    //     while ( true ) {
-    //         const byteBuffer = new Uint8Array(1);
-    //         await in_.read(byteBuffer);
-
-    //         const byte = byteBuffer[0];
-    //         if ( byte === CHAR_LF ) {
-    //             out.write('\n');
-    //             break;
-    //         }
-
-    //         out.write(byteBuffer);
-    //         const part = decoder.decode(byteBuffer);
-    //         text += part;
-    //     }
-
-    //     // const text = await in_.readLine({ stream: out });
-    //     return text;
-    // }
 }
 
 export default class ReadlineLib {

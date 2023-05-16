@@ -59,8 +59,71 @@ export const PC_FN_HANDLERS = {
     }
 };
 
+const save_history = ctx => {
+    const { history } = ctx.externs;
+    history.save(ctx.vars.result);
+};
+
+const correct_cursor = (ctx, oldCursor) => {
+    // TODO: make this work differently if oldCursor is not defined
+
+    const amount = ctx.vars.cursor - oldCursor;
+    ctx.vars.cursor = ctx.vars.result.length;
+    const L = amount < 0 ? 'D' : 'C';
+    if ( amount === 0 ) return;
+    const moveSequence = new Uint8Array([
+        consts.CHAR_ESC, consts.CHAR_CSI,
+        ...(new TextEncoder().encode('' + Math.abs(amount))),
+        cc(L)
+    ]);
+    ctx.externs.out.write(moveSequence);
+};
+
+const home = ctx => {
+    const amount = ctx.vars.cursor;
+    ctx.vars.cursor = 0;
+    const moveSequence = new Uint8Array([
+        consts.CHAR_ESC, consts.CHAR_CSI,
+        ...(new TextEncoder().encode('' + amount)),
+        cc('D')
+    ]);
+    if ( amount !== 0 ) ctx.externs.out.write(moveSequence);
+};
+
+const select_current_history = ctx => {
+        const { history } = ctx.externs;
+    home(ctx);
+    ctx.vars.result = history.get();
+    ctx.vars.cursor = ctx.vars.result.length;
+    const clearToEndSequence = new Uint8Array([
+        consts.CHAR_ESC, consts.CHAR_CSI,
+        ...(new TextEncoder().encode('0')),
+        cc('K')
+    ]);
+    ctx.externs.out.write(clearToEndSequence);
+    ctx.externs.out.write(history.get());
+};
+
 // --- CSI handlers: this is the last definition in this file ---
 export const CSI_HANDLERS = {
+    [cc('A')]: CSI_INT_ARG(ctx => {
+        save_history(ctx);
+        const { history } = ctx.externs;
+
+        if ( history.index === 0 ) return;
+
+        history.index--;
+        select_current_history(ctx);
+    }),
+    [cc('B')]: CSI_INT_ARG(ctx => {
+        save_history(ctx);
+        const { history } = ctx.externs;
+
+        if ( history.index === history.items.length - 1 ) return;
+
+        history.index++;
+        select_current_history(ctx);
+    }),
     // cursor back
     [cc('D')]: CSI_INT_ARG(ctx => {
         if ( ctx.vars.cursor === 0 ) {
@@ -115,14 +178,7 @@ export const CSI_HANDLERS = {
     }),
     // Home
     [cc('H')]: ctx => {
-        const amount = ctx.vars.cursor;
-        ctx.vars.cursor = 0;
-        const moveSequence = new Uint8Array([
-            consts.CHAR_ESC, consts.CHAR_CSI,
-            ...(new TextEncoder().encode('' + amount)),
-            cc('D')
-        ]);
-        ctx.externs.out.write(moveSequence);
+        home(ctx);
     },
     // End
     [cc('F')]: ctx => {
@@ -133,6 +189,6 @@ export const CSI_HANDLERS = {
             ...(new TextEncoder().encode('' + amount)),
             cc('C')
         ]);
-        ctx.externs.out.write(moveSequence);
+        if ( amount !== 0 ) ctx.externs.out.write(moveSequence);
     },
 };
