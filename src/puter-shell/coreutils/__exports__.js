@@ -8,6 +8,7 @@ import module_mv from './mv.js'
 import module_putercmd from './putercmd.js'
 import module_rm from './rm.js'
 import module_tail from './tail.js'
+import module_touch from './touch.js'
 
 export default {
     "cat": module_cat,
@@ -19,4 +20,5 @@ export default {
     "putercmd": module_putercmd,
     "rm": module_rm,
     "tail": module_tail,
+    "touch": module_touch,
 };
