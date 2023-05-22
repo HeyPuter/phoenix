@@ -26,6 +26,7 @@ export class BetterReader {
             this.chunks_.push(await this.getChunk_())
         }
 
+        // TODO: need to handle EOT condition in this loop
         let offset = 0;
         for (;;) {
             let item = this.chunks_.shift();
@@ -42,6 +43,8 @@ export class BetterReader {
 
             if ( offset == opt_buffer.length ) break;
         }
+
+        // return opt_buffer.length;
     }
 
     async getChunk_() {

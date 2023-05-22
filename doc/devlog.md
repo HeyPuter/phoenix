@@ -340,3 +340,50 @@ how it works in "real" bash, it wouldn't affect the behaviour of
 shell scripts or input and it's closer to the model of Puter's shell
 for JSON-like structured data, which may help with improved
 interoperability and better code reuse.
+
+## 2023-05-22
+
+### Catching Up
+
+There hasn't been much to log in the past few days; most updates
+to the terminal have been basic command additions.
+
+The next step is adding the redirect operators (`<` and `>`),
+which should involve some information written in this dev log.
+
+### Multiple Output Redirect
+
+In Bash, the redirect operator has precedence over pipes. This is
+sensible but also results in some situations where a prompt entry
+has dormant pieces, for example two output redirects (only one of
+them will be used), or an output redirect and a pipe (the pipe will
+receive nothing from stdout of the left-hand process).
+
+Here's an example with two output redirects:
+
+```
+some-command > a_file.txt > b_file.txt
+```
+
+In Puter's ANSI shell we could allow this as a way of splitting
+the output. Although, this only really makes sense if stdout will
+also be passed through the pipeline instead of consumed by a
+redirect, otherwise the behaviour is counterintuitive.
+
+Maybe for this purpose we can have a couple modes of interpretation,
+one where the Puter ANSI Shell behaves how Bash would and another
+where it behaves in a more convenient way. Shell scripts with no
+hashbang would be interpreted the Bash-like way while shell scripts
+with a puter-specific hashbang would be interpreted in this more
+convenient way.
+
+For now I plan to prioritize the way that seems more logical as it
+will help keep the logic of the shell less complicated. I think it's
+likely that we'll reach full POSIX compatibility via Bash running in
+containers or emulators before the Puter ANSI shell itself reaches
+full POSIX compatibility, so for this reason it makes sense to
+prioritize making the Puter ANSI shell convenient and powerful over
+making it behave like Bash. Additionally, we have a unique situation
+where we're not so bound to backwards compatibility as is a
+distribution of a personal computer operating system, so we should
+take advantage of that where we can.

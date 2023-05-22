@@ -1,9 +1,22 @@
+import path_ from "path-browserify";
+
+// DRY: used by commands as well
+const resolve = (ctx, relPath) => {
+    if ( relPath.startsWith('/') ) {
+        return relPath;
+    }
+    return path_.resolve(ctx.vars.pwd, relPath);
+};
+
 import { SyncLinesReader } from "../ioutil/SyncLinesReader";
 import { TOKENS } from "../readtoken";
 import { ByteWriter } from "../ioutil/ByteWriter";
 import { Coupler } from "./Coupler";
 import { CommandStdinDecorator } from "./iowrappers";
 import { Pipe } from "./Pipe";
+import { MemReader } from "../ioutil/MemReader";
+import { MemWriter } from "../ioutil/MemWriter";
+import { MultiWriter } from "../ioutil/MultiWriter";
 
 // TODO: move to a utility module
 const splitArray = (items, delimiter) => {
@@ -31,7 +44,6 @@ const splitArray = (items, delimiter) => {
 export class PreparedCommand {
     static createFromTokens (ctx, tokens) {
         const cmd = tokens[0];
-        const args = tokens.slice(1);
 
         const { commands } = ctx.registries;
 
@@ -41,14 +53,54 @@ export class PreparedCommand {
 
         const command = commands[cmd];
 
+        const outputRedirects = [];
+        let   inputRedirect = null;
+        
+        let args = tokens.slice(1);
+        let redirectTokensIndex = tokens.length;
+        for ( let i=0 ; i < args.length ; i++ ) {
+            if ( args[i] !== TOKENS['<'] && args[i] !== TOKENS['>'] ) {
+                continue;
+            }
+            redirectTokensIndex = i;
+            break;
+        }
+
+        for ( let i=0 ; i < args.length ; i++ ) {
+            if ( args[i] !== TOKENS['<'] && args[i] !== TOKENS['>'] ) {
+                continue;
+            }
+
+            if ( i+1 >= args.length ) {
+                throw new Error(`syntax error: expected operand for redirect`);
+            }
+
+            const path = args[i + 1];
+
+            if ( args[i] === TOKENS['<'] ) {
+                if ( this.inputRedirect ) {
+                    // TODO: structured data error objects
+                    throw new Error(`semantic error: only one input redirect is allowed`);
+                }
+                inputRedirect = { path };
+            }
+            outputRedirects.push({ path });
+        }
+
+        args = args.slice(0, redirectTokensIndex);
+
         return new PreparedCommand({
-            command, args
+            command, args,
+            inputRedirect,
+            outputRedirects,
         });
     }
 
-    constructor ({ command, args }) {
+    constructor ({ command, args, inputRedirect, outputRedirects }) {
         this.command = command;
         this.args = args;
+        this.inputRedirect = inputRedirect;
+        this.outputRedirects = outputRedirects;
     }
 
     setContext (ctx) {
@@ -60,9 +112,46 @@ export class PreparedCommand {
 
         const { argparsers } = this.ctx.registries;
 
+        let in_ = this.ctx.externs.in_;
+        if ( this.inputRedirect ) {
+            const { puterShell } = this.ctx.externs;
+            const response = await puterShell.command(
+                'call-puter-api', {
+                    command: 'read',
+                    params: {
+                        path: resolve(this.ctx, this.inputRedirect.path),
+                    },
+                }
+            );
+            if ( response.$ !== 'message' ) {
+                throw new Error(
+                    // TODO: elaborate
+                    `error: could not get input file`
+                );
+            }
+            console.log('INPUTT CONTESNTSSS...', response.message);
+            in_ = new MemReader(response.message);
+        }
+        if ( command.input?.syncLines ) {
+            in_ = new SyncLinesReader({ delegate: in_ });
+        }
+        in_ = new CommandStdinDecorator(in_);
+
+        let out = this.ctx.externs.out;
+        const outputMemWriters = [];
+        if ( this.outputRedirects.length > 0 ) {
+            for ( let i=0 ; i < this.outputRedirects.length ; i++ ) {
+                outputMemWriters.push(new MemWriter());
+            }
+            out = new MultiWriter({
+                delegates: [...outputMemWriters, out],
+            });
+        }
+
         const ctx = this.ctx.sub({
             externs: {
-                in_: new CommandStdinDecorator(this.ctx.externs.in_)
+                in_,
+                out,
             },
             cmdExecState: {
                 valid: true
@@ -101,6 +190,28 @@ export class PreparedCommand {
         // ctx.externs.in?.close?.();
         // ctx.externs.out?.close?.();
         ctx.externs.out.close();
+
+        // TODO: need write command from puter-shell before this can be done
+        // for ( let i=0 ; i < this.outputRedirects.length ; i++ ) {
+        //     const outputRedirect = this.outputRedirects[i];
+        //     const path = resolve(ctx, outputRedirect.path);
+        //     const response = await puterShell.command(
+        //         'call-puter-api', {
+        //             command: 'write',
+        //             params: {
+        //                 path
+        //             },
+        //         }
+        //     );
+        //     if ( response.$ !== 'message' ) {
+        //         throw new Error(
+        //             // TODO: elaborate
+        //             `error: could not get input file`
+        //         );
+        //     }
+        // }
+
+        console.log('OUTPUT WRITERS', outputMemWriters);
     }
 }
 
@@ -131,9 +242,9 @@ export class Pipeline {
         for ( let i=0 ; i < preparedCommands.length ; i++ ) {
             const command = preparedCommands[i];
 
-            if ( command.command.input?.syncLines ) {
-                nextIn = new SyncLinesReader({ delegate: nextIn });
-            }
+            // if ( command.command.input?.syncLines ) {
+            //     nextIn = new SyncLinesReader({ delegate: nextIn });
+            // }
 
             const cmdCtx = { externs: { in_: nextIn } };
 
