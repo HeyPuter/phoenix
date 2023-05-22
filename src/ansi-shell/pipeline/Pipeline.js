@@ -83,7 +83,9 @@ export class PreparedCommand {
                     throw new Error(`semantic error: only one input redirect is allowed`);
                 }
                 inputRedirect = { path };
+                continue;
             }
+
             outputRedirects.push({ path });
         }
 
@@ -192,24 +194,22 @@ export class PreparedCommand {
         ctx.externs.out.close();
 
         // TODO: need write command from puter-shell before this can be done
-        // for ( let i=0 ; i < this.outputRedirects.length ; i++ ) {
-        //     const outputRedirect = this.outputRedirects[i];
-        //     const path = resolve(ctx, outputRedirect.path);
-        //     const response = await puterShell.command(
-        //         'call-puter-api', {
-        //             command: 'write',
-        //             params: {
-        //                 path
-        //             },
-        //         }
-        //     );
-        //     if ( response.$ !== 'message' ) {
-        //         throw new Error(
-        //             // TODO: elaborate
-        //             `error: could not get input file`
-        //         );
-        //     }
-        // }
+        for ( let i=0 ; i < this.outputRedirects.length ; i++ ) {
+            console.log('output redirect??', this.outputRedirects[i]);
+            const { puterShell } = this.ctx.externs;
+            const outputRedirect = this.outputRedirects[i];
+            const path = resolve(ctx, outputRedirect.path);
+            // TODO: error handling here
+            await puterShell.command(
+                'call-puter-api', {
+                    command: 'write',
+                    params: {
+                        path: path,
+                        file: outputMemWriters[i].getAsBlob(),
+                    },
+                }
+            );
+        }
 
         console.log('OUTPUT WRITERS', outputMemWriters);
     }
