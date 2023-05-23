@@ -3,7 +3,8 @@ import { Uint8List } from "../util/bytes";
 import { Log } from "../util/log";
 import { StatefulProcessorBuilder } from "../util/statemachine";
 import { ANSIContext } from "./ANSIContext";
-import { CSI_HANDLERS, sequence_home } from "./rl_csi_handlers";
+import { readline_comprehend } from "./rl_comprehend";
+import { CSI_HANDLERS } from "./rl_csi_handlers";
 
 const decoder = new TextDecoder();
 
@@ -59,6 +60,18 @@ const ReadlineProcessorBuilder = builder => builder
             if ( invCurPos !== 0 ) {
                 externs.out.write(`\x1B[${invCurPos}D`);
             }
+            return;
+        }
+
+        if ( locals.byte === consts.CHAR_TAB ) {
+            const inputState = readline_comprehend(ctx.sub({
+                params: {
+                    input: vars.result,
+                    cursor: vars.cursor
+                }
+            }));
+            // NEXT: get tab completer for input state
+            console.log('input state', inputState);
             return;
         }
 

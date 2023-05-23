@@ -1,4 +1,5 @@
 import { disallowAccessToUndefined } from "./lang.js";
+import { Context } from "contextlink";
 
 export class StatefulProcessor {
     constructor (params) {
@@ -18,12 +19,12 @@ export class StatefulProcessor {
             externals[k] = imports[k];
         }
 
-        const ctx = {
+        const ctx = new Context({
             consts: disallowAccessToUndefined(this.constants),
             externs: externals,
             vars: this.createVariables_(),
             setState: this.setState_.bind(this)
-        };
+        });
 
         for ( ;; ) {
             if ( this.state === 'end' ) break;
@@ -37,10 +38,9 @@ export class StatefulProcessor {
         this.state = newState;
     }
     async iter_ (runContext) {
-        const ctx = {
-            ...runContext,
+        const ctx = runContext.sub({
             locals: {}
-        };
+        });
 
         ctx.trigger = name => {
             return this.actions[name](ctx);
