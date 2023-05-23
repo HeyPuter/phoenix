@@ -387,3 +387,115 @@ making it behave like Bash. Additionally, we have a unique situation
 where we're not so bound to backwards compatibility as is a
 distribution of a personal computer operating system, so we should
 take advantage of that where we can.
+
+## 2023-05-23
+
+### Adding more coreutils
+
+- `clear` was very easy; it's just an escape code
+- `printenv` was also very easy; most of the effort was already done
+
+### First steps to handling tab-completion
+
+#### Getting desired tab-completion behaviour from input state
+Tab-completion needs information about the type of command arguments.
+Since commands are modelled, it's possible the model of a command can
+provide this information. For example a registered command could
+implement `getTabCompleterFor(ARG_SPEC)`.
+
+`ARG_SPEC` would be an identifier for an argument that is understood
+by readline. Ex: `{ $: 'positional', pos: 0 }` for the first positional
+argument, or `{ $: 'named', name: 'verbose' }` for a named parameter
+called `verbose`.
+
+The command model already has a nested model specifying how arguments
+are parsed, so this model could describe the behaviour for a
+`getArgSpecFromInputState(input, i)`, where `input` is the
+current text in readline's buffer and `i` is the cursor position.
+This separates the concern of knowing what parameter the user is
+typing in from readline, allowing modelled commands to support tab
+completion for arbitrary syntaxes.
+
+**revision**
+
+It's better if the command model has just one method which
+readline needs to call, ex: `getTabCompleterFromInputState`.
+I've left the above explanation as-is however because it's easier
+to explain the two halves if its functionality separately.
+
+### Trigger background readdir call on PWD change
+
+When working on the FUSE driver for Puter's filesystem I noticed that
+tab completion makes a readdir call upon the user pressing tab which
+blocks the tab completion behaviour until the call is finished.
+While this works fine on local filesystems, it's very confusing on
+remote filesystems where the ping delay will - for a moment - make it
+look like tab completion isn't working at all.
+
+Puter's shell can handle this a bit better. Triggering a readdir call
+whenever PWD changes will allow tab-completion to have a quicker
+response time. However, there's a caveat; the information about what
+nodes exist in that directory might be outdated by the time the user
+tries to use tab completion.
+
+My first thought was for "tab twice" to invoke a readdir to get the
+most recent result, however this conflicts with pressing tab once to
+get the completed path and then pressing tab a second time to get
+a list of files within that path.
+
+My second thougfht is using ctrl + tab. The terminal will need to
+provide some indication to the user that they can do this and what
+is happening.
+
+Here are a few thoughts on how to do this with ideal UX:
+
+- after pressing tab:
+  - complete the text if possible
+  - highlight the completed portion in a **bright** color
+    - a dim colour would convey that the completion wasn't input yet
+  - display in a **hint bar** the following items:
+    - `[Ctrl+Tab]: re-complete with recent data`
+    - `[Ctrl+Enter]: more options`
+
+### Implementation of background readdir
+
+The background `readdir` could be invoked in two ways:
+- when the current working directory changes
+- at a poll interval
+
+These means the **action** of invoking background readdir needs
+to be separate from the method by which it is called.
+
+Also, results from a previous `readdir` need to be marked invalid
+when the current working directory changes.
+
+There is a possibility that the user might use tab completion before
+the first `readdir` is called for a given pwd, which means the method
+to get path completions must be async.
+
+if `readdir` is called because of a pwd change, the poll timer should
+be reset so that it's not called again too quickly or at the same
+time.
+
+#### Concern Mapping
+
+- **PuterANSIShell**
+  - does not need to be aware of this feature
+- **readline**
+  - needs to trap Tab
+  - needs to recognize what command is being entered
+  - needs to delegate tab completion logic to the command's model
+  - does not need to be aware of how tab completion is implemented
+- **readdir action**
+  - needs WRITE to cached dir lists
+- **readdir poll timer**
+  - needs READ to cached dir lists to check when they were
+    updated
+  - needs the path to be polled
+
+#### Order of implementation
+
+- First implementation will **not** have **background readdir**.
+  - Interfaces should be appropriate to implement this after.
+- When tab completion is working for paths, then readdir caching
+  can be implemented.
