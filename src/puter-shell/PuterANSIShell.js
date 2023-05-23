@@ -1,11 +1,30 @@
 import { Pipeline } from "../ansi-shell/pipeline/Pipeline";
 import { readtoken, TOKENS } from "../ansi-shell/readtoken";
 
-export class PuterANSIShell {
+export class PuterANSIShell extends EventTarget {
     constructor (ctx) {
+        super();
+
         this.ctx = ctx;
-        this.variables = {};
+        this.variables_ = {};
         this.config = ctx.externs.config;
+
+        const self = this;
+        this.variables = new Proxy(this.variables_, {
+            get (target, k) {
+                return Reflect.get(target, k);
+            },
+            set (target, k, v) {
+                const oldval = target[k];
+                const retval = Reflect.set(target, k, v);
+                self.dispatchEvent(new CustomEvent('shell-var-change', {
+                    key: k,
+                    oldValue: oldval,
+                    newValue: target[k],
+                }))
+                return retval;
+            }
+        })
 
         this.env = {};
 
