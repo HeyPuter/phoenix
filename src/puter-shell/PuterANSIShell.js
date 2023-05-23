@@ -18,17 +18,26 @@ export class PuterANSIShell {
 
     initializeReasonableDefaults() {
         const home = '/' + this.config['puter.auth.username'];
+        const user = this.config['puter.auth.username'];
         this.variables.pwd = home;
 
         // Computed values
         Object.defineProperty(this.env, 'PWD', {
+            enumerable: true,
             get: () => this.variables.pwd,
             set: v => this.variables.pwd = v
         })
 
         // Default values
         this.export_('HOME', home);
+        this.export_('USER', user);
+        this.export_('TERM', 'xterm-256color');
+        this.export_('TERM_PROGRAM', 'puter-ansi');
         this.export_('PS1', '[\\u@puter.com \\w]\\$ ');
+        // TODO: determine how localization will affect this
+        this.export_('LANG', 'en_US.UTF-8');
+        // TODO: add TERM_PROGRAM_VERSION
+        // TODO: add OLDPWD
     }
 
     async doPromptIteration() {
