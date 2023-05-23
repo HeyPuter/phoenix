@@ -17,6 +17,7 @@ export const ANSIContext = new Context({
         CHAR_ESC: 0x1B,
         CHAR_DEL: 0x7F,
         CHAR_BEL: 0x07,
+        CHAR_FF: 0x0C,
         CSI_F_0: 0x40,
         CSI_F_E: 0x7F,
         ...keyboardModifierBits

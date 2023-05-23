@@ -3,7 +3,7 @@ import { Uint8List } from "../util/bytes";
 import { Log } from "../util/log";
 import { StatefulProcessorBuilder } from "../util/statemachine";
 import { ANSIContext } from "./ANSIContext";
-import { CSI_HANDLERS } from "./rl_csi_handlers";
+import { CSI_HANDLERS, sequence_home } from "./rl_csi_handlers";
 
 const decoder = new TextDecoder();
 
@@ -32,6 +32,7 @@ const ReadlineProcessorBuilder = builder => builder
     .external('out', { required: true })
     .external('in_', { required: true })
     .external('history', { required: true })
+    .external('prompt', { required: true })
     .beforeAll('get-byte', async ctx => {
         const { locals, externs } = ctx;
 
@@ -46,6 +47,18 @@ const ReadlineProcessorBuilder = builder => builder
         if ( locals.byte === consts.CHAR_LF ) {
             externs.out.write('\n');
             ctx.setState('end');
+            return;
+        }
+
+        if ( locals.byte === consts.CHAR_FF ) {
+            externs.out.write('\x1B[H\x1B[2J');
+            externs.out.write(externs.prompt);
+            externs.out.write(vars.result);
+            const invCurPos = vars.result.length - vars.cursor;
+            console.log(invCurPos)
+            if ( invCurPos !== 0 ) {
+                externs.out.write(`\x1B[${invCurPos}D`);
+            }
             return;
         }
 
@@ -222,6 +235,7 @@ class Readline {
         const {
             result
         } = await ReadlineProcessor.run({
+            prompt,
             out, in_,
             history: this.history
         });
