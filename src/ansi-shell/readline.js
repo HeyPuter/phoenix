@@ -1,4 +1,5 @@
 import { Context } from "../context/context";
+import { FileCompleter } from "../puter-shell/completers/file_completer";
 import { Uint8List } from "../util/bytes";
 import { Log } from "../util/log";
 import { StatefulProcessorBuilder } from "../util/statemachine";
@@ -34,6 +35,7 @@ const ReadlineProcessorBuilder = builder => builder
     .external('in_', { required: true })
     .external('history', { required: true })
     .external('prompt', { required: true })
+    .external('commandCtx', { required: true })
     .beforeAll('get-byte', async ctx => {
         const { locals, externs } = ctx;
 
@@ -72,6 +74,65 @@ const ReadlineProcessorBuilder = builder => builder
             }));
             // NEXT: get tab completer for input state
             console.log('input state', inputState);
+            
+            let completer = null;
+            if ( inputState.$ === 'redirect' ) {
+                completer = new FileCompleter();
+            }
+
+            // TODO: try to get a completer from the command
+            if ( inputState.$ === 'command' ) {
+                completer = new FileCompleter();
+            }
+
+            if ( completer === null ) return;
+            
+            const completions = await completer.getCompetions(
+                externs.commandCtx,
+                inputState,
+            );
+            
+            const applyCompletion = txt => {
+                const p1 = vars.result.slice(0, vars.cursor);
+                const p2 = vars.result.slice(vars.cursor);
+                console.log({ p1, p2 });
+                vars.result = p1 + txt + p2;
+                vars.cursor += txt.length;
+                externs.out.write(txt);
+            };
+
+            if ( completions.length === 0 ) return;
+
+            if ( completions.length === 1 ) {
+                applyCompletion(completions[0]);
+            }
+
+            if ( completions.length > 1 ) {
+                let inCommon = '';
+                for ( let i=0 ; true ; i++ ) {
+                    if ( ! completions.every(completion => {
+                        return completion.length > i;
+                    }) ) break;
+
+                    let matches = true;
+
+                    const chrFirst = completions[0][i];
+                    for ( let ci=1 ; ci < completions.length ; ci++ ) {
+                        const chrOther = completions[ci][i];
+                        if ( chrFirst !== chrOther ) {
+                            matches = false;
+                            break;
+                        }
+                    }
+                
+                    if ( ! matches ) break;
+                    inCommon += chrFirst;
+                }
+
+                if ( inCommon.length > 0 ) {
+                    applyCompletion(inCommon);
+                }
+            }
             return;
         }
 
@@ -239,7 +300,7 @@ class Readline {
         this.history = new HistoryManager();
     }
 
-    async readline (prompt) {
+    async readline (prompt, commandCtx) {
         const out = this.internal_.out;
         const in_ = this.internal_.in;
 
@@ -250,7 +311,8 @@ class Readline {
         } = await ReadlineProcessor.run({
             prompt,
             out, in_,
-            history: this.history
+            history: this.history,
+            commandCtx,
         });
 
         this.history.save(result);

@@ -62,8 +62,17 @@ export class PuterANSIShell extends EventTarget {
     async doPromptIteration() {
         console.log('prompt iteration');
         const { readline } = this.ctx.externs;
+        // DRY: created the same way in runPipeline
+        const executionCtx = this.ctx.sub({
+            vars: this.variables,
+            env: this.env,
+            locals: {
+                pwd: this.variables.pwd,
+            }
+        });
         const input = await readline(
-            this.expandPromptString(this.env.PS1)
+            this.expandPromptString(this.env.PS1),
+            executionCtx,
         );
         
         await this.runPipeline(input);

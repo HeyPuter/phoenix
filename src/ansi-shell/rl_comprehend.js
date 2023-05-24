@@ -108,6 +108,8 @@ export const readline_comprehend = (ctx) => {
         $: 'command',
         id: tokens[0],
         tokens: argTokens,
+        input: endsWithWhitespace ?
+            '' : argTokens[argTokens.length - 1],
         endsWithWhitespace,
     };
 };
