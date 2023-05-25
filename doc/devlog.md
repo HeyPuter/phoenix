@@ -499,3 +499,114 @@ time.
   - Interfaces should be appropriate to implement this after.
 - When tab completion is working for paths, then readdir caching
   can be implemented.
+
+## 2023-05-25
+
+### Revising the boundary between ANSI view and Puter Shell
+
+Now there are several coreutil commands and a few key shell
+features, so it's a good time to take a look at the architecture
+and see if the boundary between the ANSI view and Puter Shell
+corresponds to the original intention.
+
+| Shell        | I/O   | instructions |
+| ------------ | ----- | ------------ |
+| ANSI Adapter | TTY   | text         |
+| Puter Shell  | JSON  | logical tree |
+
+Note from the above table that the Puter Shell itself should
+be "syntax agnostic" - i.e. it needs the ANSI adapter or a
+GUI on top of it to be useful at the UI boundary.
+
+#### Pipelines
+
+The ANSI view should be concerned with pipe syntax, while
+pipeline execution should be a concern of the syntax-agnostic
+shell. However, currently the ANSI view is responsible for
+both. This is because there is no intermediate format for
+parsed pipeline instructions.
+
+##### to improve
+- create intermediate representation of pipelines and redirects
+
+#### Command IO
+
+The ANSI shell does IO in terms of either bytes or strings. When
+commands output strings instead of bytes, their output is adapted
+to the Uint8Array type to prevent commands further in the pipeline
+from misbehaving due to an unexpected input type.
+
+Since pipeline I/O should be handled at the Puter shell, this kind
+of adapting will happen at that level also.
+
+#### to improve
+- ANSI view should send full pipeline to Puter Shell
+- Puter Shell protocol should be improved so that the
+  client/view can specify a desired output format
+  (i.e. streams vs objects)
+
+### Pipeline IR
+
+The following is an intermediate representation for pipelines
+which separates the concern of the ANSI shell syntax from the
+logical behaviour that it respresents.
+
+```javascript
+{
+  $: 'pipeline',
+  nodes: [
+    {
+      $: 'command',
+      id: 'ls',
+      positionals: [
+        '/ed/Documents'
+      ]
+    },
+    {
+      $: 'command',
+      id: 'tail',
+      params: {
+        n: 2
+      }
+    }
+  ]
+}
+```
+
+The `$` property identifies the type of a particular node.
+The space of other properties including the `$` symbol is reserved
+for meta information about nodes; for example properties like
+`$origin` and `$whitespace` could turn this AST into a
+CST.
+
+For the same of easier explanation here I'm going to coin the
+term "Abstract Logic Tree" (ALT) and use it along with the
+conventional terms as follows:
+
+| Abrv | Name                 | Represents           |
+| ---- | -------------------- | -------------------- |
+| ALT  | Abstract Logic Tree  | What it does         |
+| AST  | Abstract Syntax Tree | How it was described |
+| CST  | Concrete Syntax Tree | How it was formatted |
+
+The pipeline format described above is an AST for the
+input that was understood by the ANSI shell adapter.
+It could be converted to an ALT if the Puter Shell is
+designed to understand pipelines a little differently.
+
+```javascript
+{
+  $: 'tail',
+  subject: {
+    $: 'list',
+    subject: {
+      $: 'filepath',
+      id: '/ed/Documents'
+    }
+  }
+}
+```
+
+This is not final, but shows how the AST for pipeline
+syntax can be developed in the ANSI shell adapter without
+constraining how the Puter Shell itself works.
