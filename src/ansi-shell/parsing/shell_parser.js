@@ -1,32 +1,31 @@
-export class SymbolParserImpl {
+const list_ws = [' ', '\n', '\t'];
+const list_stoptoken = [
+    '|','>','<','&','\\','#',';','(',')',
+    ...list_ws
+];
+
+export class UnquotedTokenParserImpl {
     static meta = {
         inputs: 'bytes',
         outputs: 'node'
     }
     static data = {
-        rexp0: /[A-Za-z_]/,
-        rexpN: /[A-Za-z0-9_]/,
+        excludes: list_stoptoken
     }
     parse (lexer) {
-        let { done, value } = lexer.look();
-        if ( done ) return;
-
-        const { rexp0, rexpN } = this.constructor.data;
-
-        value = String.fromCharCode(value);
-        if ( ! rexp0.test(value) ) return;
-
-        let text = '' + value;
-        lexer.next();
+        const { excludes } = this.constructor.data;
+        let text = '';
 
         for ( ;; ) {
-            ({ done, value } = lexer.look());
+            const { done, value } = lexer.look();
             if ( done ) break;
-            value = String.fromCharCode(value);
-            if ( ! rexpN.test(value) ) break;
-            text += value;
+            const str = String.fromCharCode(value);
+            if ( excludes.includes(str) ) break;
+            text += str;
             lexer.next();
         }
+
+        if ( text.length === 0 ) return;
         
         return { $: 'symbol', text };
     }

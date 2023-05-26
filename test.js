@@ -9,7 +9,7 @@ import {
     StrataParser,
     ParserFactory,
 } from 'strataparse';
-import { SymbolParserImpl } from './src/ansi-shell/parsing/shell_parser.js';
+import { UnquotedTokenParserImpl } from './src/ansi-shell/parsing/shell_parser.js';
 import { MergeWhitespacePStratumImpl } from 'strataparse/strata_impls/MergeWhitespacePStratumImpl.js';
 
 
@@ -31,7 +31,7 @@ sp.add(
             cstParserFac.create(LiteralParserImpl, { value: '|' }, {
                 assign: { $: 'pipe' }
             }),
-            cstParserFac.create(SymbolParserImpl),
+            cstParserFac.create(UnquotedTokenParserImpl),
         ]
     })
 );
