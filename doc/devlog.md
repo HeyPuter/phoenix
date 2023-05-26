@@ -782,3 +782,108 @@ The following layers will exist for the shell:
   AST nodes. For example, this is when successive instances
   of the `|` (pipe) operator will be converted into
   a pipeline construct.
+
+
+### First results from the parser
+
+It appears that the methods I described above are very effective
+for implementing a parser with support for concrete syntax trees.
+
+By wrapping implementations of `Parser` and `PStratum` in facades
+it was possible to provide additional functionality for all
+implementations in one place:
+- `fork` and `join` is implemented by PStratum; each implementation
+  does not need to be aware of this feature.
+- the `look` function (AKA "peek" behaviour) is implemented by
+  PStratum as well.
+- A PStratum implementation can implement the behaviour to reach
+  for previous values, but PStratum has a default implementation.
+  The BytesPStratumImpl overrides this to provide Uint8Arrays instead
+  of arrays of Number values.
+- If parser implementations don't return a value, Parser will
+  create the ParseResult that represents an unrecognized input.
+
+It was also possible to add a Parser factory which adds additional
+functionality to the sub-parsers that it creates:
+- track the tokens each parser gets from the delegate PStratum
+  and keep a record of what lower-level tokens were composed to
+  produce higher-level tokens
+- track how many tokens each parser has read for CST metadata
+
+A layer called `MergeWhitespacePStratumImpl` completes this by
+reading the source bytes for each token and using it to compute
+a line and column number. After this, the overall parser is
+capable of starting the start byte, end byte, line number, and
+column number for each token, as well as preserve this information
+for each composite token created at higher levels.
+
+The following parser configuration with a hard-coded input was
+tested:
+
+```javascript
+sp.add(
+    new StringPStratumImpl(`
+        ls | tail -n 2 > "test \\"file\\".txt"
+    `)
+);
+sp.add(
+    new FirstRecognizedPStratumImpl({
+        parsers: [
+            cstParserFac.create(WhitespaceParserImpl),
+            cstParserFac.create(LiteralParserImpl, { value: '|' }, {
+                assign: { $: 'pipe' }
+            }),
+            cstParserFac.create(UnquotedTokenParserImpl),
+        ]
+    })
+);
+sp.add(
+    new MergeWhitespacePStratumImpl()
+)
+```
+
+Note that the multiline string literal begins with whitespace.
+It is therefore expected that each token will start on line 1,
+and `ls` will start on column 8.
+
+The following is the output of the parser:
+
+```javascript
+[
+  {
+    '$': 'symbol',
+    text: 'ls',
+    '$cst': { start: 9, end: 11, line: 1, col: 8 },
+    '$source': Uint8Array(2) [ 108, 115 ]
+  },
+  {
+    '$': 'pipe',
+    text: '|',
+    '$cst': { start: 12, end: 13, line: 1, col: 11 },
+    '$source': Uint8Array(1) [ 124 ]
+  },
+  {
+    '$': 'symbol',
+    text: 'tail',
+    '$cst': { start: 14, end: 18, line: 1, col: 13 },
+    '$source': Uint8Array(4) [ 116, 97, 105, 108 ]
+  },
+  {
+    '$': 'symbol',
+    text: '-n',
+    '$cst': { start: 19, end: 21, line: 1, col: 18 },
+    '$source': Uint8Array(2) [ 45, 110 ]
+  },
+  {
+    '$': 'symbol',
+    text: '2',
+    '$cst': { start: 22, end: 23, line: 1, col: 21 },
+    '$source': Uint8Array(1) [ 50 ]
+  }
+]
+```
+
+No errors were observed in this output, so I can now continue
+adding more layers to the parser to get higher-level
+representations of redirects, pipelines, and other syntax
+constructs that the shell needs to understand.
