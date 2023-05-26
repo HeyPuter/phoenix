@@ -8,8 +8,11 @@ import {
     StringPStratumImpl,
     StrataParser,
     ParserFactory,
+    SequenceParserImpl,
+    ChoiceParserImpl,
+    RepeatParserImpl,
 } from 'strataparse';
-import { UnquotedTokenParserImpl } from './src/ansi-shell/parsing/shell_parser.js';
+import { UnquotedTokenParserImpl } from './src/ansi-shell/parsing/UnquotedTokenParserImpl.js';
 import { MergeWhitespacePStratumImpl } from 'strataparse/strata_impls/MergeWhitespacePStratumImpl.js';
 
 
@@ -21,9 +24,10 @@ cstParserFac.rememberSource = true;
 
 sp.add(
     new StringPStratumImpl(`
-        ls | tail -n 2 > "test \\"file\\".txt"
+        ls | tail -n 2 "a" "te\\"st"
     `)
 );
+
 sp.add(
     new FirstRecognizedPStratumImpl({
         parsers: [
@@ -32,6 +36,22 @@ sp.add(
                 assign: { $: 'pipe' }
             }),
             cstParserFac.create(UnquotedTokenParserImpl),
+            cstParserFac.create(SequenceParserImpl, {
+                parsers: [
+                    cstParserFac.create(LiteralParserImpl, { value: '"' }),
+                    cstParserFac.create(RepeatParserImpl, {
+                        delegate: cstParserFac.create(ChoiceParserImpl, {
+                            parsers: [
+                                cstParserFac.create(UnquotedTokenParserImpl),
+                                cstParserFac.create(LiteralParserImpl, {
+                                    value: '\\"'
+                                }, { assign: { $: 'string.escape' } }),
+                            ]
+                        }),
+                    }),
+                    cstParserFac.create(LiteralParserImpl, { value: '"' }),
+                ]
+            })
         ]
     })
 );
@@ -53,6 +73,7 @@ sp.add(
 // const result = tdp.next();
 const result = sp.parse();
 console.log(result);
+// console.log(result && JSON.stringify(result, undefined, '  '));
 if ( sp.error ) {
     console.log('has error:', sp.error);
 }

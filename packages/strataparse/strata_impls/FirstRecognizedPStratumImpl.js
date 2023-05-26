@@ -1,6 +1,6 @@
 import { ParseResult, Parser } from "../parse.js";
 
-export class FirstRecognizedPStratumImpl {
+export default class FirstRecognizedPStratumImpl {
     static meta = {
         description: `
             Implements a layer of top-down parsing by

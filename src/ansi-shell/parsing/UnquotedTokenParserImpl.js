@@ -1,7 +1,9 @@
 const list_ws = [' ', '\n', '\t'];
+const list_quot = [`"`, `'`];
 const list_stoptoken = [
     '|','>','<','&','\\','#',';','(',')',
-    ...list_ws
+    ...list_ws,
+    ...list_quot
 ];
 
 export class UnquotedTokenParserImpl {

@@ -10,6 +10,12 @@ export { default as WhitespaceParserImpl } from './parse_impls/whitespace.js';
 export { default as LiteralParserImpl } from './parse_impls/literal.js';
 
 export {
+    SequenceParserImpl,
+    ChoiceParserImpl,
+    RepeatParserImpl,
+} from './parse_impls/combinators.js';
+
+export {
     PStratum,
     TerminalPStratumImplType,
     DelegatingPStratumImplType,
@@ -21,8 +27,8 @@ export {
 } from './strata_impls/terminals.js';
 
 export {
-    FirstRecognizedPStratumImpl,
-} from './strata_impls/logical.js';
+    default as FirstRecognizedPStratumImpl,
+} from './strata_impls/FirstRecognizedPStratumImpl.js';
 
 export class StrataParser {
     constructor () {
