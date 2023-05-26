@@ -610,3 +610,175 @@ designed to understand pipelines a little differently.
 This is not final, but shows how the AST for pipeline
 syntax can be developed in the ANSI shell adapter without
 constraining how the Puter Shell itself works.
+
+### Syntaxes
+
+#### Why CST tokenization in a shell would be useful
+
+There are a lot of decisions to make at every single level
+of syntax parsing. For example, consider the following:
+
+```
+ls | tail -n 2 > "some \"data\".txt"
+```
+
+Tokens can be interpreted at different levels of detail.
+A standard shell tokenizer would likely eliminate information
+about escape characters within quoted strings at this point.
+For example, right now the Puter ANSI shell adapter takes
+after what a standard shell does and goes for the second
+option described here:
+
+```
+[
+  'ls', '|', 'tail', '-n', '2', '>',
+  // now do we do [","some ", "\\\"", ...],
+  // or do we do ["some \"data\".txt"] ?
+]
+```
+
+This is great for processing and executing commands because
+this information is no longer relevant at that stage.
+
+However, suppose you wanted to add support for syntax highlighting,
+or tell a component responsible for a specific context of tab
+completion where the cursor is with respect to the tokenized
+information. This is no longer feasible.
+
+For the latter case, the ANSI shell adapter works around this
+issue by only parsing the commandline input up to the cursor
+location - meaning the last token will always represent the
+input up to the cursor location. The input after is truncated
+however, leading to the familiar inconvenient situation seen in
+many terminals where tab completion does something illogical with
+respect the text after your cursor.
+
+i.e. the following, with the cursor position represented by `X`:
+
+```
+echo "hello" > some_Xfile.txt
+```
+
+will be transformed into the following:
+
+```
+echo "hello" > some_file.txtXfile.txt
+```
+
+What would be more helpful:
+- terminal bell, because `some_file.txt` is already complete
+- `some_other_Xfile.txt` if `some_other_file.txt` exists
+
+So syntax highlighting and tab completion are two reasons why
+the CST is useful. There may be other uses as well that I
+haven't thought of. So this seems like a reasonable idea.
+
+#### Choosing monolithic or composite lexers
+
+Next step, there are also a lot of decisions to make
+about processing the text into tokens.
+
+For example, we can take after the very feature that make
+shells so versatile - pipelines - and apply this concept
+to the lexer.
+
+```
+Level 1 lexer produces:
+  ls, |, tail, -n, 2, >, ", some , \", data, \", .txt
+
+Level 2 lexer produces:
+  ls, |, tail, -n, 2, >, "some \"data\".txt"
+
+```
+
+This creates another decision fork, actually. It raises the
+question of how to associate the token "some \"data\".txt"
+with the tokens it was composed from at the previous level
+or lexing, if this should be done at all, and otherwise if
+CST information should be stored with the composite token.
+
+If lexers provide verbose meta information there might be
+a concern about efficiency, however lexers could be
+configurable in this respect. Furthermore, lexers could be
+defined separately from their implementation and JIT-compiled
+based on configuration so you actually get an executable bytecode
+which doesn't produce metadata (for when it's not needed).
+
+While designing JIT-compilable lexer definitions is incredibly
+out of scope for now, the knowledge that it's possible justifies
+the decision to have lexers produce verbose metadata.
+
+If the "Level 1 lexer" in the example above stores CST information
+in each token, the "Level 2 lexer" can simply let this information
+propagate as it stores information about what tokens were composed
+to produce a higher-level token. This means concern about
+whitespace and formatting is limited to the lowest-level lexer which
+makes the rest of the lexer stack much easier to maintain.
+
+#### An interesting philosophical point about lexers and parsers
+
+Consider a stack of lexers that builds up to high-level constructs
+like "pipeline", "command", "condition", etc. The line between a
+parser and a lexer becomes blurry, as this is in fact a bottom-up
+parser composed of layers, each of which behaves like a lexer.
+
+I'm going to call the layers `PStrata` (singular: `PStratum`)
+to avoid collision with these concepts.
+
+### The "Implicit Interface Aggregator"
+
+Vanilla javascript doesn't have interfaces, which sometimes seems
+to make it difficult to have guarantees about type methods an
+object will implement, what values they'll be able to handle, etc.
+
+To solve some of the drawbacks of not having interfaces, I'm going
+to use a pattern which Chat GPT just named the
+Implicit Interface Aggregator Pattern.
+
+The idea is simple. Instead of having an interface, you have a class
+which acts as the user-facing API, and holds the real implementation
+by aggregation. While this doesn't fix everything, it leaves the
+doors open for multiple options in the future, such as using
+typescript or a modelling framework, without locking either of these
+doors too early. Since we're potentially developing on a lot of
+low-level concepts, perhaps we'll even have our own technology that
+we'd like to use to describe and validate the interfaces of the code
+we write at some point in the future.
+
+This class can
+handle concerns such as adapting different types of inputs and
+outputs; things which an implementation doesn't need to be concerned
+with. Generally this kind of separation of concerns would be done
+using an abstract class, but this is an imperfect separation of
+concerns because the implementor needs to be aware of the abstract
+class. Granted, this isn't usually a big deal, but what if the
+abstract class and implementors are compiled separately? It may be
+advantageous that implementors don't need to have all the build
+dependencies of the abstract class.
+
+The biggest drawback of this approach is that while the aggregating
+class can implement runtime assertions, it doesn't solve the issue
+of the lack of build-time assertions, which are able to prevent
+type errors from getting to releases entirely. However, it does
+leave room to add type definitions for this class and its
+implementors (turning it into the facade pattern), or apply model
+definitions (or schemas) to the aggregator and the output of a
+static analysis to the implmentors (turning it into a model
+definition).
+
+#### Where this will be used
+
+The first use of this pattern will be `PStratum`.
+PStratum is a facade which aggregates a PStratumImplementor using
+the pattern described above.
+
+The following layers will exist for the shell:
+- StringPStratum will take a string and provide bytes.
+- LowLexPStratum will take bytes and identify all syntax
+  tokens and whitespace.
+- HiLexPStratum will create composite tokens for values
+  such as string literals
+- LogicPStratum will take tokens as input and produce
+  AST nodes. For example, this is when successive instances
+  of the `|` (pipe) operator will be converted into
+  a pipeline construct.
