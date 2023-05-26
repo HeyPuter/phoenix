@@ -17,6 +17,7 @@ const sp = new StrataParser();
 
 const cstParserFac = new ParserFactory()
 cstParserFac.concrete = true;
+cstParserFac.rememberSource = true;
 
 sp.add(
     new StringPStratumImpl(`

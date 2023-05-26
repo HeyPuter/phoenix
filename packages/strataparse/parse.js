@@ -56,13 +56,32 @@ class ConcreteSyntaxParserDecorator {
     }
 }
 
+class RememberSourceParserDecorator {
+    constructor (delegate) {
+        this.delegate = delegate;
+    }
+    parse (lexer, ...a) {
+        const start = lexer.seqNo;
+        const result = this.delegate.parse(lexer, ...a);
+        if ( result.status === ParseResult.VALUE ) {
+            const end = lexer.seqNo;
+            result.value.$source = lexer.reach(start, end);
+        }
+        return result;
+    }
+}
+
 export class ParserFactory {
     constructor () {
         this.concrete = false;
+        this.rememberSource = false;
     }
     decorate (obj) {
         if ( this.concrete ) {
             obj = new ConcreteSyntaxParserDecorator(obj);
+        }
+        if ( this.rememberSource ) {
+            obj = new RememberSourceParserDecorator(obj);
         }
 
         return obj;

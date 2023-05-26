@@ -1,3 +1,5 @@
+const decoder = new TextDecoder();
+
 export class MergeWhitespacePStratumImpl {
     static meta = {
         inputs: 'node',
@@ -8,6 +10,19 @@ export class MergeWhitespacePStratumImpl {
         this.line = 0;
         this.col = 0;
     }
+    countChar (c) {
+        if ( c === '\n' ) {
+            this.line++;
+            this.col = 0;
+            return;
+        }
+        if ( c === '\t' ) {
+            this.col += this.tabWidth;
+            return;
+        }
+        if ( c === '\r' ) return;
+        this.col++;
+    }
     next (api) {
         const lexer = api.delegate;
 
@@ -17,17 +32,7 @@ export class MergeWhitespacePStratumImpl {
             
             if ( value.$ === 'whitespace' ) {
                 for ( const c of value.text ) {
-                    if ( c === '\n' ) {
-                        this.line++;
-                        this.col = 0;
-                        continue;
-                    }
-                    if ( c === '\t' ) {
-                        this.col += this.tabWidth;
-                        continue;
-                    }
-                    if ( c === '\r' ) continue;
-                    this.col++;
+                    this.countChar(c);
                 }
                 continue;
             }
@@ -37,11 +42,17 @@ export class MergeWhitespacePStratumImpl {
                 line: this.line,
                 col: this.col,
             };
-
-            if ( ! value.hasOwnProperty('$cst') ) {
-                console.warn('missing CST data: CST might be inaccurate');
+            
+            if ( value.hasOwnProperty('$source') ) {
+                let source = value.$source;
+                if ( source instanceof Uint8Array ) {
+                    source = decoder.decode(source);
+                }
+                for ( let c of source ) {
+                    this.countChar(c);
+                }
             } else {
-                this.col += value.$cst.end - value.$cst.start;
+                console.warn('source missing; can\'t count position');
             }
 
             return { value, done: false };

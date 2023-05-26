@@ -21,6 +21,9 @@ export class BytesPStratumImpl {
     join (api, forked) {
         this.i = forked.i;
     }
+    reach (api, start, end) {
+        return this.bytes.slice(start, end);
+    }
 }
 
 export class StringPStratumImpl {
@@ -40,5 +43,8 @@ export class StringPStratumImpl {
     }
     join (...a) {
         return this.delegate.join(...a);
+    }
+    reach (...a) {
+        return this.delegate.reach(...a);
     }
 }

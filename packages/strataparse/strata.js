@@ -34,6 +34,10 @@ export class PStratum {
 
         this.lookValue = null;
         this.seqNo = 0;
+
+        this.history = [];
+        // TODO: make this configurable
+        this.historyOn = ! this.impl.reach;
     }
 
     setDelegate (delegate) {
@@ -51,11 +55,15 @@ export class PStratum {
 
     next () {
         this.seqNo++;
+        let toReturn;
         if ( this.looking ) {
             this.looking = false;
-            return this.lookValue;
+            toReturn = this.lookValue;
+        } else {
+            toReturn = this.impl.next(this.api);
         }
-        return this.impl.next(this.api);
+        this.history.push(toReturn.value);
+        return toReturn;
     }
 
     fork () {
@@ -65,6 +73,7 @@ export class PStratum {
         fork.looking = this.looking;
         fork.lookValue = this.lookValue;
         fork.seqNo = this.seqNo;
+        fork.history = [...this.history];
         return fork;
     }
 
@@ -73,6 +82,16 @@ export class PStratum {
         this.looking = friend.looking;
         this.lookValue = friend.lookValue;
         this.seqNo = friend.seqNo;
+        this.history = friend.history;
         this.impl.join(this.api, friend.impl);
+    }
+
+    reach (start, end) {
+        if ( this.impl.reach ) {
+            return this.impl.reach(this.api, start, end)
+        }
+        if ( this.historyOn ) {
+            return this.history.slice(start, end);
+        }
     }
 }
