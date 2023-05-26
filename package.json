@@ -26,6 +26,7 @@
     "xterm-addon-fit": "^0.7.0"
   },
   "workspaces": [
-    "packages/pty"
+    "packages/pty",
+    "packages/strataparse"
   ]
 }
