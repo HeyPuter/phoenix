@@ -1,5 +1,14 @@
 export const SHELL_VERSIONS = [
     {
+        v: '0.1.9',
+        changes: [
+            'add help command',
+            'add changelog command',
+            'add ioctl messages for window size',
+            'add env.ROWS and env.COLS',
+        ]
+    },
+    {
         v: '0.1.8',
         changes: [
             'add neofetch command',
