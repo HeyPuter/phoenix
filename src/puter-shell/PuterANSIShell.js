@@ -26,6 +26,10 @@ export class PuterANSIShell extends EventTarget {
             }
         })
 
+        this.addEventListener('signal.window-resize', evt => {
+            this.variables.size = evt.detail;
+        })
+
         this.env = {};
 
         this.initializeReasonableDefaults();
@@ -45,6 +49,14 @@ export class PuterANSIShell extends EventTarget {
             enumerable: true,
             get: () => this.variables.pwd,
             set: v => this.variables.pwd = v
+        })
+        Object.defineProperty(this.env, 'ROWS', {
+            enumerable: true,
+            get: () => this.variables.size?.rows ?? 0
+        })
+        Object.defineProperty(this.env, 'COLS', {
+            enumerable: true,
+            get: () => this.variables.size?.cols ?? 0
         })
 
         // Default values

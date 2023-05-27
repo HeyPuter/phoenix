@@ -66,6 +66,8 @@ window.main_term = () => {
     xdEl.appendChild(iframe);
     shell.attachToIframe(iframe);
 
+    let initialSize;
+
     const cw = iframe.contentWindow;
     window.addEventListener('message', evt => {
         if ( evt.source !== cw ) return;
@@ -80,6 +82,10 @@ window.main_term = () => {
             cw.postMessage({
                 $: 'config',
                 ...params
+            });
+            if ( initialSize ) cw.postMessage({
+                $: 'ioctl.set',
+                windowSize: initialSize
             });
             return;
         }
@@ -96,7 +102,12 @@ window.main_term = () => {
     term.loadAddon(fitAddon);
 
     term.onResize(evt => {
-        // console.log(evt)
+        console.log('got this', evt)
+        initialSize = evt,
+        cw.postMessage({
+            $: 'ioctl.set',
+            windowSize: evt
+        });
     })
 
     fitAddon.fit();

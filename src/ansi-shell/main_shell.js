@@ -9,6 +9,7 @@ import SimpleArgParser from "./arg-parsers/simple-parser";
 import { PuterANSIShell } from "../puter-shell/PuterANSIShell";
 import { HiTIDE } from "hitide";
 import { Context } from "contextlink";
+import { SHELL_VERSIONS } from "../meta/versions";
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
@@ -37,20 +38,16 @@ export const main_shell = async () => {
             console.error(`unrecognized window message`, evt);
             return;
         }
-        // ???: This is the only valid type right now;
-        //      in the future there may be more valid messages(?)
-        if ( evt.data.$ === 'config' ) {
-            console.log('received configuration at ANSI shell');
-            const configValues = { ...evt.data };
-            delete configValues.$;
-            for ( const k in configValues ) {
-                config[k] = configValues[k];
-            }
-            puterShell.configure(config);
-            resolveConfigured();
-            return;
+        if ( evt.data.$ !== 'config' ) return;
+
+        console.log('received configuration at ANSI shell');
+        const configValues = { ...evt.data };
+        delete configValues.$;
+        for ( const k in configValues ) {
+            config[k] = configValues[k];
         }
-        console.error(`unrecognized window message`, evt);
+        puterShell.configure(config);
+        resolveConfigured();
     });
 
     // let readyQueue = Promise.resolve();
@@ -95,6 +92,47 @@ export const main_shell = async () => {
         locals: new Context(),
     });
     const ansiShell = new PuterANSIShell(ctx);
+
+    // TODO: move ioctl to PTY
+    window.addEventListener('message', evt => {
+        if ( evt.source !== window.parent ) return;
+        if ( evt.data instanceof Uint8Array ) {
+            return;
+        }
+        if ( ! evt.data.hasOwnProperty('$') ) {
+            console.error(`unrecognized window message`, evt);
+            return;
+        }
+        if ( evt.data.$ !== 'ioctl.set' ) return;
+        
+        
+        ansiShell.dispatchEvent(new CustomEvent('signal.window-resize', {
+            detail: {
+                ...evt.data.windowSize
+            }
+        }))
+    });
+
+    ctx.externs.out.write(
+        `\x1B[35;1mPuter Shell\x1B[0m [v${SHELL_VERSIONS[0].v}]\n` +
+        `⛷  try typing \x1B[34;1mhelp\x1B[0m or ` +
+        `\x1B[34;1mchangelog\x1B[0m to get started.\n`
+    );
+
+    if ( ! config.hasOwnProperty('puter.auth.token') ) {
+        ctx.externs.out.write('\n');
+        ctx.externs.out.write(
+            `\x1B[33;1m⚠\x1B[0m` +
+            `\x1B[31;1m` +
+            ' You are not running this terminal or shell within puter.com\n' +
+            `\x1B[0m` +
+            'Use of the shell outside of puter.com is still experimental. You \n' +
+            'will experience incomplete features and bugs.\n' +
+            ''
+        );
+    }
+
+    ctx.externs.out.write('\n');
 
     for ( ;; ) {
         await ansiShell.doPromptIteration();

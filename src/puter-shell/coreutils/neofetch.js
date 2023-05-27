@@ -1,3 +1,5 @@
+import { SHELL_VERSIONS } from "../../meta/versions";
+
 const logo = `
              ▄████▄  ▄▄█████▄_
     _▄███▀▀██▀    ▐██▀¬     '▀█▄
@@ -51,6 +53,9 @@ export default {
             COL + 'puter.com' + END;
         lines[1] += '-----------------';
         lines[2] += COL + 'OS' + END + ': Puter'
+        lines[3] += COL + 'Shell' + END + ': Puter Shell v' + SHELL_VERSIONS[0].v
+        lines[4] += COL + 'Window' + END + `: ${ctx.env.COLS}x${ctx.env.ROWS}`
+        lines[5] += COL + 'Commands' + END + `: ${Object.keys(ctx.registries.commands).length}`
 
         const colors = [[],[]];
         for ( let i=0 ; i < 16 ; i++ ) {
