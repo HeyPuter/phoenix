@@ -1,15 +1,12 @@
 import { FirstRecognizedPStratumImpl, ParserBuilder, ParserFactory, StrUntilParserImpl, StrataParseFacade, WhitespaceParserImpl } from "strataparse";
 import { UnquotedTokenParserImpl } from "./UnquotedTokenParserImpl.js";
 import { PARSE_CONSTANTS } from "./PARSE_CONSTANTS.js";
+import { MergeWhitespacePStratumImpl } from "strataparse/strata_impls/MergeWhitespacePStratumImpl.js";
 
 const parserConfigProfiles = {
     syntaxHighlighting: { cst: true },
     interpreting: { cst: false }
 };
-
-// NEXT: ALT: 1. until(delegate, list)
-//            2. think of something else
-// NEXT: buildParserSecondHalf
 
 export const buildParserFirstHalf = (sp, profile) => {
     const options = profile ? parserConfigProfiles[profile]
@@ -35,7 +32,7 @@ export const buildParserFirstHalf = (sp, profile) => {
                 // TODO: replace this with proper parser
                 parserFactory.create(StrUntilParserImpl, {
                     stopChars: ['\\', quote],
-                }),
+                }, { assign: { $: 'string.segment' } }),
                 a.sequence(
                     a.literal('\\'),
                     a.choice(
@@ -62,5 +59,9 @@ export const buildParserFirstHalf = (sp, profile) => {
                 parserBuilder.def(buildStringParserDef(`'`)),
             ]
         })
+    )
+
+    sp.add(
+        new MergeWhitespacePStratumImpl()
     )
 };

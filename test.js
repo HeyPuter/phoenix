@@ -1,22 +1,10 @@
 import {
-    Parser,
-    ParseResult,
-    WhitespaceParserImpl,
-    LiteralParserImpl,
-    PStratum,
-    FirstRecognizedPStratumImpl,
     StringPStratumImpl,
     StrataParser,
     ParserFactory,
-    SequenceParserImpl,
-    ChoiceParserImpl,
-    RepeatParserImpl,
-    ParserBuilder,
-    StrataParseFacade,
 } from 'strataparse';
-import { UnquotedTokenParserImpl } from './src/ansi-shell/parsing/UnquotedTokenParserImpl.js';
-import { MergeWhitespacePStratumImpl } from 'strataparse/strata_impls/MergeWhitespacePStratumImpl.js';
 import { buildParserFirstHalf } from './src/ansi-shell/parsing/buildParserFirstHalf.js';
+import { buildParserSecondHalf } from './src/ansi-shell/parsing/buildParserSecondHalf.js';
 
 
 const sp = new StrataParser();
@@ -27,20 +15,13 @@ cstParserFac.rememberSource = true;
 
 sp.add(
     new StringPStratumImpl(`
-        ls | tail -n 2 "a" > "te\\"st"
+        ls | tail -n 2 "ab" > "te\\"st"
     `)
 );
 
-const parserBuilder = new ParserBuilder({
-    parserFactory: cstParserFac,
-    parserRegistry: StrataParseFacade.getDefaultParserRegistry()
-});
-
-buildParserFirstHalf(sp, 'syntaxHighlighting');
-
-sp.add(
-    new MergeWhitespacePStratumImpl()
-)
+// buildParserFirstHalf(sp, 'syntaxHighlighting');
+buildParserFirstHalf(sp, 'interpreting');
+buildParserSecondHalf(sp);
 
 // let wsp = new WhitespaceParserImpl();
 // let lex = new StringPStratumImpl('   test');
@@ -54,8 +35,8 @@ sp.add(
 
 // const result = tdp.next();
 const result = sp.parse();
-console.log(result);
-// console.log(result && JSON.stringify(result, undefined, '  '));
+// console.log(result);
+console.log(result && JSON.stringify(result, undefined, '  '));
 if ( sp.error ) {
     console.log('has error:', sp.error);
 }

@@ -21,6 +21,7 @@ export class SequenceParserImpl {
                 return;
             }
             if ( result.status === ParseResult.INVALID ) {
+                // TODO: this is wrong
                 return { done: true, value: result };
             }
             lexer.join(subLexer);
@@ -50,10 +51,11 @@ export class ChoiceParserImpl {
                 continue;
             }
             if ( result.status === ParseResult.INVALID ) {
+                // TODO: this is wrong
                 return { done: true, value: result };
             }
             lexer.join(subLexer);
-            return { done: false, value: result.value };
+            return result.value;
         }
 
         return;
