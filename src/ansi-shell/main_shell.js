@@ -74,7 +74,7 @@ export const main_shell = async () => {
     await readyQueue;
 
     console.log('the adapter is saying ready');
-    window.parent.postMessage({ $: 'ready' });
+    window.parent.postMessage({ $: 'ready' }, '*');
     console.log('the adapter said ready');
 
     await configured_;

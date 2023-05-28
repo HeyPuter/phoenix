@@ -27,7 +27,7 @@ export class XDocumentANSIShell {
         (async () => {
             for ( ;; ) {
                 const chunk = (await ptt.in.read()).value;
-                contentWindow.postMessage(chunk);
+                contentWindow.postMessage(chunk, this.internal_.source);
             }
         })();
     }

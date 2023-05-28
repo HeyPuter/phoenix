@@ -17,7 +17,7 @@ export class XDocumentPTT {
                 if (typeof chunk === 'string') {
                     chunk = encoder.encode(chunk);
                 }
-                window.parent.postMessage(chunk);
+                window.parent.postMessage(chunk, '*');
             }
         });
         this.out = this.writableStream.getWriter();
