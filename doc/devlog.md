@@ -887,3 +887,71 @@ No errors were observed in this output, so I can now continue
 adding more layers to the parser to get higher-level
 representations of redirects, pipelines, and other syntax
 constructs that the shell needs to understand.
+
+## 2023-05-28
+
+### Abstracting away communication layers
+
+As of now the ANSI shell layer and terminal emulator are separate
+from each other. To recap, the ANSI shell layer and object-oriented
+shell layer are also separate from each other, but the ANSI shell
+layer current holds more functionality than is ideal; most commands
+have been implemented at the ANSI shell layer in order to get more
+functionality earlier in development.
+
+Although the ANSI shell layer and object-oriented shell layer are
+separate, they are both coupled with the communication layer that's
+currently used between them: cross-document messaging. This is ideal
+for communication between the terminal emulator and ANSI shell, but
+less ideal for that between that ANSI shell and OO shell. The terminal
+emulator is a web app and will always be run in a browser environment,
+which makes the dependency on cross-document messaging acceptable.
+Furthermore it's a small body of code and it can easily be extended
+upon to support multiple protocols of communication in the future
+rather than just cross-document messaging. The ANSI shell on the other
+hand, which currently communications with the OO shell using
+cross-document messaging, will not always be run in a browser
+environment. It is also completely dependent on the OO shell, so it
+would make sense to bundle the OO shell with it in some environments.
+
+The dependency between the ANSI shell and OO shell is not bidirectional.
+The OO shell layer is intended to be useful even without the ANSI shell
+layer; for example a GUI for constructing and executing pipelines would
+be more elegant built upon the OO shell than the ANSI shell, since there
+wouldn't be a layer text processing between two layers of
+object-oriented logic. When also considering that in Puter any
+alternative layer on top of the OO shell is likely to be built to run
+in a browser environment, it makes sense to allow the OO shell to be
+communicated with via cross-document messaging.
+
+The following ASCII diagram describes the communication relationships
+between various components described above:
+
+```
+note: "XD" means cross-document messaging
+
+[web terminal]
+    |
+   (XD)
+    |
+    |- (stdio) --- [local terminal]
+    |
+[ANSI Shell]
+    |
+  (direct calls / XD)
+    |
+    |-- (XD) --- [web power tool]
+    |
+ [OO Shell]
+
+```
+
+It should be interpreted as follows:
+- OO shell can communicate with a web power tool via
+  cross-document messaging
+- the OO shell and ANSI shell should communicate via
+  either direct calls (when bundled) or cross-document
+  messaging (when not bundled together)
+- the ANSI shell can be used under a web terminal via
+  cross-document messaging, or a local terminal via
+  the standard I/O mechanism of the host operating system.
