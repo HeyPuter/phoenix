@@ -1,3 +1,4 @@
+import { ParserRegistry } from './dsl/ParserRegistry.js';
 import { PStratum } from './strata.js';
 
 export {
@@ -6,14 +7,24 @@ export {
     ParserFactory,
 } from './parse.js';
 
-export { default as WhitespaceParserImpl } from './parse_impls/whitespace.js';
-export { default as LiteralParserImpl } from './parse_impls/literal.js';
+import WhitespaceParserImpl from './parse_impls/whitespace.js';
+import LiteralParserImpl from './parse_impls/literal.js';
+import StrUntilParserImpl from './parse_impls/StrUntilParserImpl.js';
 
-export {
+import {
     SequenceParserImpl,
     ChoiceParserImpl,
     RepeatParserImpl,
 } from './parse_impls/combinators.js';
+
+export {
+    WhitespaceParserImpl,
+    LiteralParserImpl,
+    SequenceParserImpl,
+    ChoiceParserImpl,
+    RepeatParserImpl,
+    StrUntilParserImpl,
+}
 
 export {
     PStratum,
@@ -29,6 +40,20 @@ export {
 export {
     default as FirstRecognizedPStratumImpl,
 } from './strata_impls/FirstRecognizedPStratumImpl.js';
+
+export { ParserBuilder } from './dsl/ParserBuilder.js';
+
+export class StrataParseFacade {
+    static getDefaultParserRegistry() {
+        const r = new ParserRegistry();
+        r.register('sequence', SequenceParserImpl);
+        r.register('choice', ChoiceParserImpl);
+        r.register('repeat', RepeatParserImpl);
+        r.register('literal', LiteralParserImpl);
+
+        return r;
+    }
+}
 
 export class StrataParser {
     constructor () {

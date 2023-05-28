@@ -1,13 +1,16 @@
-import { Parser, ParseResult } from "../parse.js";
+import { ParserConfigDSL } from "../dsl/ParserBuilder.js";
+import { AcceptParserUtil, Parser, ParseResult } from "../parse.js";
 
 export class SequenceParserImpl {
+    static createFunction ({ parserFactory }) {
+        return (...parsers) => {
+            const conf = new ParserConfigDSL(parserFactory, this);
+            conf.parseParams({ parsers });
+            return conf;
+        };
+    }
     constructor ({ parsers }) {
-        this.parsers = parsers.map(parser => {
-            if ( ! (parser instanceof Parser) ) {
-                return new Parser({ impl: parser });
-            }
-            return parser;
-        });
+        this.parsers = parsers.map(AcceptParserUtil.adapt);
     }
     parse (lexer) {
         const results = [];
@@ -29,13 +32,15 @@ export class SequenceParserImpl {
 }
 
 export class ChoiceParserImpl {
+    static createFunction ({ parserFactory }) {
+        return (...parsers) => {
+            const conf = new ParserConfigDSL(parserFactory, this);
+            conf.parseParams({ parsers });
+            return conf;
+        };
+    }
     constructor ({ parsers }) {
-        this.parsers = parsers.map(parser => {
-            if ( ! (parser instanceof Parser) ) {
-                return new Parser({ impl: parser });
-            }
-            return parser;
-        });
+        this.parsers = parsers.map(AcceptParserUtil.adapt);
     }
     parse (lexer) {
         for ( const parser of this.parsers ) {
@@ -56,10 +61,15 @@ export class ChoiceParserImpl {
 }
 
 export class RepeatParserImpl {
+    static createFunction ({ parserFactory }) {
+        return (delegate) => {
+            const conf = new ParserConfigDSL(parserFactory, this);
+            conf.parseParams({ delegate });
+            return conf;
+        };
+    }
     constructor ({ delegate }) {
-        if ( ! (delegate instanceof Parser) ) {
-            delegate = new Parser({ impl: delegate });
-        }
+        delegate = AcceptParserUtil.adapt(delegate);
         this.delegate = delegate;
     }
 

@@ -102,3 +102,21 @@ export class ParserFactory {
         return this.decorate(parser);
     }
 }
+
+export class SingleParserFactory {
+    create () {
+        throw new Error('abstract create() must be implemented');
+    }
+}
+
+export class AcceptParserUtil {
+    static adapt (parser) {
+        if ( parser instanceof SingleParserFactory ) {
+            parser = parser.create();
+        }
+        if ( ! (parser instanceof Parser) ) {
+            parser = new Parser({ impl: parser });
+        }
+        return parser;
+    }
+}

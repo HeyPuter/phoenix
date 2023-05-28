@@ -1,3 +1,5 @@
+import { ParserConfigDSL } from "../dsl/ParserBuilder.js";
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -5,6 +7,13 @@ export default class LiteralParserImpl {
     static meta = {
         inputs: 'bytes',
         outputs: 'node'
+    }
+    static createFunction ({ parserFactory }) {
+        return (value) => {
+            const conf = new ParserConfigDSL(parserFactory, this);
+            conf.parseParams({ value });
+            return conf;
+        };
     }
     constructor ({ value }) {
         // adapt value

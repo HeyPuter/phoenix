@@ -11,9 +11,12 @@ import {
     SequenceParserImpl,
     ChoiceParserImpl,
     RepeatParserImpl,
+    ParserBuilder,
+    StrataParseFacade,
 } from 'strataparse';
 import { UnquotedTokenParserImpl } from './src/ansi-shell/parsing/UnquotedTokenParserImpl.js';
 import { MergeWhitespacePStratumImpl } from 'strataparse/strata_impls/MergeWhitespacePStratumImpl.js';
+import { buildParserFirstHalf } from './src/ansi-shell/parsing/buildParserFirstHalf.js';
 
 
 const sp = new StrataParser();
@@ -24,37 +27,16 @@ cstParserFac.rememberSource = true;
 
 sp.add(
     new StringPStratumImpl(`
-        ls | tail -n 2 "a" "te\\"st"
+        ls | tail -n 2 "a" > "te\\"st"
     `)
 );
 
-sp.add(
-    new FirstRecognizedPStratumImpl({
-        parsers: [
-            cstParserFac.create(WhitespaceParserImpl),
-            cstParserFac.create(LiteralParserImpl, { value: '|' }, {
-                assign: { $: 'pipe' }
-            }),
-            cstParserFac.create(UnquotedTokenParserImpl),
-            cstParserFac.create(SequenceParserImpl, {
-                parsers: [
-                    cstParserFac.create(LiteralParserImpl, { value: '"' }),
-                    cstParserFac.create(RepeatParserImpl, {
-                        delegate: cstParserFac.create(ChoiceParserImpl, {
-                            parsers: [
-                                cstParserFac.create(UnquotedTokenParserImpl),
-                                cstParserFac.create(LiteralParserImpl, {
-                                    value: '\\"'
-                                }, { assign: { $: 'string.escape' } }),
-                            ]
-                        }),
-                    }),
-                    cstParserFac.create(LiteralParserImpl, { value: '"' }),
-                ]
-            })
-        ]
-    })
-);
+const parserBuilder = new ParserBuilder({
+    parserFactory: cstParserFac,
+    parserRegistry: StrataParseFacade.getDefaultParserRegistry()
+});
+
+buildParserFirstHalf(sp, 'syntaxHighlighting');
 
 sp.add(
     new MergeWhitespacePStratumImpl()

@@ -1,4 +1,4 @@
-import { ParseResult, Parser } from "../parse.js";
+import { AcceptParserUtil, ParseResult, Parser } from "../parse.js";
 
 export default class FirstRecognizedPStratumImpl {
     static meta = {
@@ -10,12 +10,7 @@ export default class FirstRecognizedPStratumImpl {
         `
     }
     constructor ({ parsers }) {
-        this.parsers = parsers.map(parser => {
-            if ( ! (parser instanceof Parser) ) {
-                return new Parser({ impl: parser });
-            }
-            return parser;
-        });
+        this.parsers = parsers.map(AcceptParserUtil.adapt);
         this.valid = true;
     }
     next (api) {
