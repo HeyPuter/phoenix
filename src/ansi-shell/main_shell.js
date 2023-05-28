@@ -10,6 +10,7 @@ import { PuterANSIShell } from "../puter-shell/PuterANSIShell";
 import { HiTIDE } from "hitide";
 import { Context } from "contextlink";
 import { SHELL_VERSIONS } from "../meta/versions";
+import { PuterShellParser } from "./parsing/PuterShellParser";
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
@@ -84,6 +85,7 @@ export const main_shell = async () => {
             config, readline, puterShell,
             in: ptt.in,
             out: ptt.out,
+            parser: new PuterShellParser()
         }),
         registries: new Context({
             commands: command_registry,

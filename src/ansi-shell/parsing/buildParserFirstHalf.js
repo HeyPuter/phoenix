@@ -25,6 +25,7 @@ export const buildParserFirstHalf = (sp, profile) => {
         parserRegistry,
     });
 
+
     const buildStringParserDef = quote => {
         return a => a.sequence(
             a.literal(quote),
@@ -37,9 +38,10 @@ export const buildParserFirstHalf = (sp, profile) => {
                     a.literal('\\'),
                     a.choice(
                         a.literal(quote),
-                        a.literal('n'),
-                        a.literal('r'),
-                        a.literal('t'),
+                        ...Object.keys(
+                            PARSE_CONSTANTS.escapeSubstitutions
+                        ).map(chr => a.literal(chr))
+                        // TODO: \u[4],\x[2],\0[3]
                     )
                 ).assign({ $: 'string.escape' })
             )),

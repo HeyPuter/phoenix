@@ -98,6 +98,39 @@ export class PreparedCommand {
         });
     }
 
+    static createFromAST (ctx, ast) {
+        if ( ast.$ !== 'command' ) {
+            throw new Error('expected command node');
+        }
+        
+        // TODO: check that node for command name is of a
+        //       supported type - maybe use adapt pattern
+        const cmd = ast.command.text;
+
+        const { commands } = ctx.registries;
+
+        if ( ! commands.hasOwnProperty(cmd) ) {
+            throw new Error('no command: ' + JSON.stringify(cmd));
+        }
+
+        const command = commands[cmd];
+
+        // TODO: test this
+        const inputRedirect = ast.inputRedirects.length > 0 ?
+            { path: ast.inputRedirects[0].text } : null;
+        // TODO: test this
+        const outputRedirects = ast.outputRedirects.map(rdirNode => {
+            return { path: rdirNode.text };
+        });
+
+        return new PreparedCommand({
+            command,
+            args: ast.args.map(node => node.text),
+            inputRedirect,
+            outputRedirects,
+        });
+    }
+
     constructor ({ command, args, inputRedirect, outputRedirects }) {
         this.command = command;
         this.args = args;
@@ -222,6 +255,20 @@ export class Pipeline {
         const tokensGroupedByCommand = splitArray(tokens, TOKENS['|']);
         for ( const cmdTokens of tokensGroupedByCommand ) {
             const command = PreparedCommand.createFromTokens(ctx, cmdTokens);
+            preparedCommands.push(command);
+        }
+
+        return new Pipeline({ preparedCommands });
+    }
+    static createFromAST (ctx, ast) {
+        if ( ast.$ !== 'pipeline' ) {
+            throw new Error('expected pipeline node');
+        }
+
+        const preparedCommands = [];
+
+        for ( const cmdNode of ast.components ) {
+            const command = PreparedCommand.createFromAST(ctx, cmdNode);
             preparedCommands.push(command);
         }
 

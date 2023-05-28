@@ -9,6 +9,8 @@ export class PuterANSIShell extends EventTarget {
         this.variables_ = {};
         this.config = ctx.externs.config;
 
+        this.debugFeatures = {};
+
         const self = this;
         this.variables = new Proxy(this.variables_, {
             get (target, k) {
@@ -86,20 +88,73 @@ export class PuterANSIShell extends EventTarget {
             this.expandPromptString(this.env.PS1),
             executionCtx,
         );
+
+        // Specially-processed inputs for debug features
+        if ( input.startsWith('%%%') ) {
+            this.ctx.externs.out.write('%%%: interpreting as debug instruction\n');
+            const [prefix, flag, onOff] = input.split(' ');
+            const isOn = onOff === 'on' ? true : false;
+            this.ctx.externs.out.write(
+                `%%%: Setting ${JSON.stringify(flag)} to ` +
+                (isOn ? 'ON' : 'OFF') + '\n'
+            )
+            this.debugFeatures[flag] = isOn;
+            return; // don't run as a pipeline
+        }
         
+        // TODO: catch here, but errors need to be more structured first
         await this.runPipeline(input);
+    }
+
+    readtoken (str) {
+        return this.ctx.externs.parser.parseLineForProcessing(str);
     }
 
     async runPipeline (cmdOrTokens) {
         const tokens = typeof cmdOrTokens === 'string'
-            ? readtoken(cmdOrTokens)
+            ? (() => {
+                // TODO: move to doPromptIter with better error objects
+                try {
+                    return this.readtoken(cmdOrTokens)
+                } catch (e) {
+                    this.ctx.externs.out.write('error: ' +
+                        e.message + '\n');
+                    return;
+                }
+            })()
             : cmdOrTokens ;
 
         if ( tokens.length === 0 ) return;
+
+        if ( tokens.length > 1 ) {
+            // TODO: as exception instead, and more descriptive
+            this.ctx.externs.out.write(
+                "something went wrong...\n"
+            );
+            return;
+        }
+
+        let ast = tokens[0];
+
+        // wrap an individual command in a pipeline
+        // TODO: should this be done here, or elsewhere?
+        if ( ast.$ === 'command' ) {
+            ast = {
+                $: 'pipeline',
+                components: [ast]
+            };
+        }
+        
+        if ( this.debugFeatures['show-ast'] ) {
+            this.ctx.externs.out.write(
+                JSON.stringify(tokens, undefined, '  ') + '\n'
+            );
+            return;
+        }
         
         let pipeline;
         try {
-            pipeline = Pipeline.createFromTokens(this.ctx, tokens);
+            pipeline = Pipeline.createFromAST(this.ctx, ast);
         } catch (e) {
             this.ctx.externs.out.write('error: ' + e.message + '\n');
             return;

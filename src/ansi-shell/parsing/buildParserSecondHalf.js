@@ -1,5 +1,8 @@
 import { ParserBuilder, ParserFactory, StrataParseFacade } from "strataparse"
 
+import { PARSE_CONSTANTS } from "./PARSE_CONSTANTS.js";
+const escapeSubstitutions = PARSE_CONSTANTS.escapeSubstitutions;
+
 const splitTokens = (items, delimPredicate) => {
     const result = [];
     {
@@ -41,7 +44,12 @@ class ReducePrimitivesPStratumImpl {
                 }
                 if ( item.$ === 'string.escape' ) {
                     const [escChar, escValue] = item.results;
-                    text += escValue.text;
+                    if ( escValue.$ === 'literal' ) {
+                        text += escapeSubstitutions[escValue.text];
+                    } // else
+                    if ( escValue.$ === 'sequence' ) {
+                        // TODO: \u[4],\x[2],\0[3]
+                    }
                 }
             }
 
@@ -86,7 +94,7 @@ class ShellConstructsPStratumImpl {
                 splitTokens(tokens, t => t.$ === 'op.pipe')
                 .map(tokens => this.consolidateTokens(tokens));
             
-            return { done: false, value: { $: 'pipeline', components } };
+            return { $: 'pipeline', components };
         }
     
         const command = tokens.shift();
