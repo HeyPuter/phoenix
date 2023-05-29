@@ -1,5 +1,12 @@
 export const SHELL_VERSIONS = [
     {
+        v: '0.1.10',
+        changes: [
+            'new input parser',
+            'add pwd command',
+        ]
+    },
+    {
         v: '0.1.9',
         changes: [
             'add help command',
