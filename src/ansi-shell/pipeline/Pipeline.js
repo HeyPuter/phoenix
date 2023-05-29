@@ -117,10 +117,10 @@ export class PreparedCommand {
 
         // TODO: test this
         const inputRedirect = ast.inputRedirects.length > 0 ?
-            { path: ast.inputRedirects[0].text } : null;
+            { path: ast.inputRedirects[0].path.text } : null;
         // TODO: test this
         const outputRedirects = ast.outputRedirects.map(rdirNode => {
-            return { path: rdirNode.text };
+            return { path: rdirNode.path.text };
         });
 
         return new PreparedCommand({
