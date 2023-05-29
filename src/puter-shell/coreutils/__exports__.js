@@ -12,6 +12,7 @@ import module_mv from './mv.js'
 import module_neofetch from './neofetch.js'
 import module_printenv from './printenv.js'
 import module_putercmd from './putercmd.js'
+import module_pwd from './pwd.js'
 import module_rm from './rm.js'
 import module_tail from './tail.js'
 import module_touch from './touch.js'
@@ -30,6 +31,7 @@ export default {
     "neofetch": module_neofetch,
     "printenv": module_printenv,
     "putercmd": module_putercmd,
+    "pwd": module_pwd,
     "rm": module_rm,
     "tail": module_tail,
     "touch": module_touch,
