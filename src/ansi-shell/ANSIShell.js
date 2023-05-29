@@ -1,7 +1,6 @@
-import { Pipeline } from "../ansi-shell/pipeline/Pipeline";
-import { readtoken, TOKENS } from "../ansi-shell/readtoken";
+import { Pipeline } from "./pipeline/Pipeline";
 
-export class PuterANSIShell extends EventTarget {
+export class ANSIShell extends EventTarget {
     constructor (ctx) {
         super();
 
@@ -170,62 +169,6 @@ export class PuterANSIShell extends EventTarget {
         });
         
         await pipeline.execute(executionCtx);
-
-        // const cmd = tokens.shift();
-
-        // const { commands, argparsers } = this.ctx.registries;
-        // const { out } = this.ctx.externs;
-        
-        // if ( ! commands.hasOwnProperty(cmd) ) {
-        //     out.write(`no command: ${JSON.stringify(cmd)}\n`);
-        //     return;
-        // }
-        // const command = commands[cmd];
-
-        // const ctx = this.ctx.sub({
-        //     vars: this.variables,
-        //     locals: {
-        //         pwd: this.variables.pwd,
-        //         command,
-        //         args: tokens,
-        //         valid: true,
-        //     }
-        // });
-
-        // // const ctx = {
-        // //     ...this.ctx,
-        // //     vars: this.variables,
-        // //     externs: {
-        // //         in: ptt.in,
-        // //         out: ptt.out,
-        // //         puterShell: this.ctx.externs.puterShell,
-        // //     },
-        // // };
-        // if ( command.args ) {
-        //     const argProcessorId = command.args.$;
-        //     const argProcessor = argparsers[argProcessorId];
-        //     const spec = { ...command.args };
-        //     delete spec.$;
-        //     argProcessor.process(ctx, spec);
-        // }
-        // if ( ! ctx.locals.valid ) return;
-        // await command.execute(ctx);
-    }
-
-    async createPipeline (tokens) {
-        const commands = [];
-
-        let buffer = [];
-        // single pass to split by pipe token
-        for ( let i=0 ; i < tokens.length ; i++ ) {
-            if ( tokens[i] === TOKENS['|'] ) {
-                commands.push(buffer);
-                buffer = [];
-                continue;
-            }
-
-            buffer.push(tokens[i]);
-        }
     }
 
     expandPromptString (str) {

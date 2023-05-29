@@ -1,22 +1,22 @@
 import { XDocumentPTT } from "../XDocumentPTT";
 import { XDocumentPuterShell } from "./XDocumentPuterShell";
-import ReadlineLib from "./readline";
+import ReadlineLib from "../ansi-shell/readline/readline";
 
-import command_registry from '../puter-shell/coreutils/__exports__';
+import command_registry from './coreutils/__exports__';
 
 // TODO: auto-gen argument parser registry from files
-import SimpleArgParser from "./arg-parsers/simple-parser";
-import { PuterANSIShell } from "../puter-shell/PuterANSIShell";
+import SimpleArgParser from "../ansi-shell/arg-parsers/simple-parser";
+import { ANSIShell } from "../ansi-shell/ANSIShell";
 import { HiTIDE } from "hitide";
 import { Context } from "contextlink";
 import { SHELL_VERSIONS } from "../meta/versions";
-import { PuterShellParser } from "./parsing/PuterShellParser";
+import { PuterShellParser } from "../ansi-shell/parsing/PuterShellParser";
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
 };
 
-export const main_shell = async () => {
+export const launchPuterShell = async () => {
     const hitide = new HiTIDE();
 
     const ptt = new XDocumentPTT();
@@ -93,7 +93,7 @@ export const main_shell = async () => {
         }),
         locals: new Context(),
     });
-    const ansiShell = new PuterANSIShell(ctx);
+    const ansiShell = new ANSIShell(ctx);
 
     // TODO: move ioctl to PTY
     window.addEventListener('message', evt => {

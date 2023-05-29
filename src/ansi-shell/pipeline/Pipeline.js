@@ -9,7 +9,7 @@ const resolve = (ctx, relPath) => {
 };
 
 import { SyncLinesReader } from "../ioutil/SyncLinesReader";
-import { TOKENS } from "../readtoken";
+import { TOKENS } from "../readline/readtoken";
 import { ByteWriter } from "../ioutil/ByteWriter";
 import { Coupler } from "./Coupler";
 import { CommandStdinDecorator } from "./iowrappers";

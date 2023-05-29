@@ -6,6 +6,7 @@ export default {
         $: 'simple-parser',
         allowPositionals: true
     },
+    output: 'text',
     execute: async ctx => {
         const { positionals, values } = ctx.locals;
         const { puterShell } = ctx.externs;

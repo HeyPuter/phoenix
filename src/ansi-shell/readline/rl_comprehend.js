@@ -3,6 +3,8 @@
 
 import { readtoken, TOKENS } from "./readtoken";
 
+// TODO: update to use syntax parser
+
 // REMINDER: input state will be sent to readline first,
 //   then readline will use the input state to determine
 //   what component to ask for tab completion

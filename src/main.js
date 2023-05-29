@@ -1,3 +1,3 @@
-import { main_shell } from './ansi-shell/main_shell';
+import { launchPuterShell } from './puter-shell/main';
 
-window.main_shell = main_shell;
+window.main_shell = launchPuterShell;
