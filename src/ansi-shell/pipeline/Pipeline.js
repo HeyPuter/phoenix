@@ -18,86 +18,7 @@ import { MemReader } from "../ioutil/MemReader";
 import { MemWriter } from "../ioutil/MemWriter";
 import { MultiWriter } from "../ioutil/MultiWriter";
 
-// TODO: move to a utility module
-const splitArray = (items, delimiter) => {
-    const result = [];
-    {
-        let buffer = [];
-        // single pass to split by pipe token
-        for ( let i=0 ; i < items.length ; i++ ) {
-            if ( items[i] === delimiter ) {
-                result.push(buffer);
-                buffer = [];
-                continue;
-            }
-
-            buffer.push(items[i]);
-        }
-
-        if ( buffer.length !== 0 ) {
-            result.push(buffer);
-        }
-    }
-    return result;
-};
-
 export class PreparedCommand {
-    static createFromTokens (ctx, tokens) {
-        const cmd = tokens[0];
-
-        const { commands } = ctx.registries;
-
-        if ( ! commands.hasOwnProperty(cmd) ) {
-            throw new Error('no command: ' + JSON.stringify(cmd));
-        }
-
-        const command = commands[cmd];
-
-        const outputRedirects = [];
-        let   inputRedirect = null;
-        
-        let args = tokens.slice(1);
-        let redirectTokensIndex = tokens.length;
-        for ( let i=0 ; i < args.length ; i++ ) {
-            if ( args[i] !== TOKENS['<'] && args[i] !== TOKENS['>'] ) {
-                continue;
-            }
-            redirectTokensIndex = i;
-            break;
-        }
-
-        for ( let i=0 ; i < args.length ; i++ ) {
-            if ( args[i] !== TOKENS['<'] && args[i] !== TOKENS['>'] ) {
-                continue;
-            }
-
-            if ( i+1 >= args.length ) {
-                throw new Error(`syntax error: expected operand for redirect`);
-            }
-
-            const path = args[i + 1];
-
-            if ( args[i] === TOKENS['<'] ) {
-                if ( this.inputRedirect ) {
-                    // TODO: structured data error objects
-                    throw new Error(`semantic error: only one input redirect is allowed`);
-                }
-                inputRedirect = { path };
-                continue;
-            }
-
-            outputRedirects.push({ path });
-        }
-
-        args = args.slice(0, redirectTokensIndex);
-
-        return new PreparedCommand({
-            command, args,
-            inputRedirect,
-            outputRedirects,
-        });
-    }
-
     static createFromAST (ctx, ast) {
         if ( ast.$ !== 'command' ) {
             throw new Error('expected command node');
@@ -249,17 +170,6 @@ export class PreparedCommand {
 }
 
 export class Pipeline {
-    static createFromTokens (ctx, tokens) {
-        const preparedCommands = [];
-
-        const tokensGroupedByCommand = splitArray(tokens, TOKENS['|']);
-        for ( const cmdTokens of tokensGroupedByCommand ) {
-            const command = PreparedCommand.createFromTokens(ctx, cmdTokens);
-            preparedCommands.push(command);
-        }
-
-        return new Pipeline({ preparedCommands });
-    }
     static createFromAST (ctx, ast) {
         if ( ast.$ !== 'pipeline' ) {
             throw new Error('expected pipeline node');
