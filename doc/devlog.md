@@ -955,3 +955,84 @@ It should be interpreted as follows:
 - the ANSI shell can be used under a web terminal via
   cross-document messaging, or a local terminal via
   the standard I/O mechanism of the host operating system.
+
+## 2023-05-29
+
+### Interfacing with structured data
+
+Right now all the coreutils commands currently implemented output
+byte streams. However, allowing commands to output objects instead
+solves some problems with traditional shells:
+- text processing everywhere
+  - it's needed to get a desired value from structured data
+  - commands are often concerned with the formatting of data
+    rather than the significance of the data
+  - commands like `awk` are archaic and difficult to use,
+    but are often necessary
+- information which a command had to obtain is often lost
+  - a good example of this is how `ls` colourizes different
+    inode types but this information goes away when you pipe
+    it to a command like `tail`
+
+#### printing structured data
+
+Users used to a POSIX system will have some expectations
+about the output of commands. Sometimes the way an item
+is formatted depends on some input arguments, but does not
+change the significance of the item itself.
+
+A good example of this is the `ls` command. It prints the
+names of files. The object equivalent of this would be for
+it to output CloudItem objects. Where it gets tricky is
+`ls` with no arguments will display just the name, while
+`ls -l` will display details about each file such as the
+mode, owner, group, size, and date modified.
+
+##### per-command outputters
+
+If the definition for the `ls` command included an output
+formatter this could work - if ls' standard output is
+attached to the PTT instead of another command it would
+format the output according to the flags.
+
+This still isn't ideal though. If `ls` is piped to `tail`
+this information would be lost. This differs from the
+expected behaviour from posix systems; for example:
+
+```
+ls -l | tail -n 2 > last_two_lines.txt
+```
+
+this command would output all the details about the last
+two files to the text file, rather than just the names.
+
+##### composite output objects with formatter + data
+
+A command outputting objects could also attach a formatter
+to each object. This has the advantage that an object can
+move through a pipeline and then be formatted at the end,
+but it does have a drawback that sometimes the formatter
+will be the same for every object, and sending a copy
+of the formatter with each object would be redundant.
+
+##### using a formatter registry
+
+A transient registry of object formatters, existing for
+the lifespan of the pipeline, could contain each unique
+formatter that any command in the pipeline produced for
+one or more of it's output objects. Each object that it
+outputs now just needs to refer to an existing formatter
+which solves the problem of redundant information passing
+through the pipeline
+
+
+##### keeping it simple
+
+This idea of a transient registry for unique implementations
+of some interface could be useful in a general sense. So, I
+think it makes sense to actually implement formatters using
+the more redundant behaviour first (formatter is coupled with
+each object), and then later create an abstraction for
+obtaining the correct formatter for an object so that this
+optimization can be implemented separately from this specific
+use of the optimization.

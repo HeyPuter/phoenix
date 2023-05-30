@@ -11,6 +11,7 @@ import { HiTIDE } from "hitide";
 import { Context } from "contextlink";
 import { SHELL_VERSIONS } from "../meta/versions";
 import { PuterShellParser } from "../ansi-shell/parsing/PuterShellParser";
+import { BuiltinCommandProvider } from "./providers/BuiltinCommandProvider";
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
@@ -80,15 +81,17 @@ export const launchPuterShell = async () => {
 
     await configured_;
 
+    const commandProvider = new BuiltinCommandProvider();
+
     const ctx = new Context({
         externs: new Context({
             config, readline, puterShell,
             in: ptt.in,
             out: ptt.out,
-            parser: new PuterShellParser()
+            parser: new PuterShellParser(),
+            commandProvider,
         }),
         registries: new Context({
-            commands: command_registry,
             argparsers: argparser_registry,
         }),
         locals: new Context(),

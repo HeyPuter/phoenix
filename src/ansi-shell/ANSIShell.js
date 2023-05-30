@@ -153,7 +153,7 @@ export class ANSIShell extends EventTarget {
         
         let pipeline;
         try {
-            pipeline = Pipeline.createFromAST(this.ctx, ast);
+            pipeline = await Pipeline.createFromAST(this.ctx, ast);
         } catch (e) {
             this.ctx.externs.out.write('error: ' + e.message + '\n');
             return;

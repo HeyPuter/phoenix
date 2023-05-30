@@ -19,7 +19,7 @@ import { MemWriter } from "../ioutil/MemWriter";
 import { MultiWriter } from "../ioutil/MultiWriter";
 
 export class PreparedCommand {
-    static createFromAST (ctx, ast) {
+    static async createFromAST (ctx, ast) {
         if ( ast.$ !== 'command' ) {
             throw new Error('expected command node');
         }
@@ -29,12 +29,13 @@ export class PreparedCommand {
         const cmd = ast.command.text;
 
         const { commands } = ctx.registries;
+        const { commandProvider } = ctx.externs;
 
-        if ( ! commands.hasOwnProperty(cmd) ) {
+        const command = await commandProvider.lookup(cmd)
+
+        if ( command === undefined ) {
             throw new Error('no command: ' + JSON.stringify(cmd));
         }
-
-        const command = commands[cmd];
 
         // TODO: test this
         const inputRedirect = ast.inputRedirects.length > 0 ?
@@ -170,7 +171,7 @@ export class PreparedCommand {
 }
 
 export class Pipeline {
-    static createFromAST (ctx, ast) {
+    static async createFromAST (ctx, ast) {
         if ( ast.$ !== 'pipeline' ) {
             throw new Error('expected pipeline node');
         }
@@ -178,7 +179,7 @@ export class Pipeline {
         const preparedCommands = [];
 
         for ( const cmdNode of ast.components ) {
-            const command = PreparedCommand.createFromAST(ctx, cmdNode);
+            const command = await PreparedCommand.createFromAST(ctx, cmdNode);
             preparedCommands.push(command);
         }
 
