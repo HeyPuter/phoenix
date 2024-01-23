@@ -1,6 +1,7 @@
 // INCONST: called 'path' instead of 'path_' elsewhere
 import path_ from "path-browserify";
 import columnify from "columnify";
+import cli_columns from "cli-columns";
 
 // formatLsTimestamp(): written by AI
 function formatLsTimestamp(unixTimestamp) {
@@ -84,7 +85,31 @@ export default {
             //         return line;
             //     }
             //     : item => item.name
-            //     ;
+            //     
+            const icons = {
+                // d: '📁',
+                // l: '🔗',
+            };
+
+            const colors = {
+                'd-': 'blue',
+                'ds': 'magenta',
+                'l-': 'cyan',
+            };
+
+            const col_to_ansi = {
+                blue: '34',
+                cyan: '36',
+                green: '32',
+                magenta: '35',
+            };
+
+            const col = (type, text) => {
+                if ( ! colors[type] ) return text;
+                return `\x1b[${col_to_ansi[colors[type]]};1m${text}\x1b[0m`;
+            }
+
+
 
             if ( values.long ) {
                 const time_properties = {
@@ -92,29 +117,6 @@ export default {
                     ctime: 'created',
                     atime: 'accessed',
                 };
-
-                const icons = {
-                    // d: '📁',
-                    // l: '🔗',
-                };
-
-                const colors = {
-                    'd-': 'blue',
-                    'ds': 'magenta',
-                    'l-': 'cyan',
-                };
-
-                const col_to_ansi = {
-                    blue: '34',
-                    cyan: '36',
-                    green: '32',
-                    magenta: '35',
-                };
-
-                const col = (type, text) => {
-                    if ( ! colors[type] ) return text;
-                    return `\x1b[${col_to_ansi[colors[type]]};1m${text}\x1b[0m`;
-                }
 
                 const time = values.time || 'mtime';
                 const items = result.map(item => {
@@ -154,8 +156,23 @@ export default {
                 continue;
             }
 
-            for ( const item of result ) {
-                await ctx.externs.out.write(item.name + '\n');
+            console.log('what is', cli_columns);
+
+            const names = result.map(item => {
+                let type = item.is_dir ? 'd-' : item.is_symlink ? 'l-' : '--';
+                if ( item.subdomains && item.subdomains.length ) {
+                    type = type.slice(0, 1) + 's';
+                }
+                return col(type, item.name);
+            });
+            const text = cli_columns(names, {
+                width: ctx.env.COLS,
+            })
+
+            const lines = text.split('\n');
+
+            for ( const line of lines ) {
+                await ctx.externs.out.write(line + '\n');
             }
         }
     }
