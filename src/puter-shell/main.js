@@ -1,3 +1,4 @@
+import builtins from './coreutils/__exports__';
 import { XDocumentPTT } from "../XDocumentPTT";
 import { XDocumentPuterShell } from "./XDocumentPuterShell";
 import ReadlineLib from "../ansi-shell/readline/readline";
@@ -93,6 +94,10 @@ export const launchPuterShell = async () => {
         }),
         registries: new Context({
             argparsers: argparser_registry,
+            // While we use the BuiltinCommandProvider to provide the
+            // functionality of command lookup, we still need a registry
+            // of builtins to support the `help` command.
+            builtins,
         }),
         locals: new Context(),
     });

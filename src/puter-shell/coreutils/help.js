@@ -9,7 +9,7 @@ export default {
         allowPositionals: true
     },
     execute: async ctx => {
-        const { commands } = ctx.registries;
+        const { builtins } = ctx.registries;
 
         const { out } = ctx.externs;
 
@@ -18,7 +18,7 @@ export default {
         };
 
         heading('available commands');
-        for ( const k in commands ) {
+        for ( const k in builtins ) {
             out.write('  - ' + k + '\n');
         }
         out.write('\n');
