@@ -41,15 +41,10 @@ export default {
             const dstName = path_.basename(path);
 
             await puterShell.command(
-                'call-puter-api',
+                'fs:write',
                 {
-                    command: 'write',
-                    params: {
-                        path: dstPath,
-                        name: dstName,
-                        file,
-                        overwrite: false,
-                    }
+                    path: dstPath + '/' + dstName,
+                    file,
                 }
             );
         }

@@ -154,14 +154,15 @@ export class PreparedCommand {
             const { puterShell } = this.ctx.externs;
             const outputRedirect = this.outputRedirects[i];
             const path = resolve(ctx, outputRedirect.path);
+            console.log('it should work?', {
+                path,
+                outputMemWriters,
+            })
             // TODO: error handling here
             await puterShell.command(
-                'call-puter-api', {
-                    command: 'write',
-                    params: {
-                        path: path,
-                        file: outputMemWriters[i].getAsBlob(),
-                    },
+                'fs:write', {
+                    path: path,
+                    data: outputMemWriters[i].getAsBlob(),
                 }
             );
         }
