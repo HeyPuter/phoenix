@@ -55,20 +55,16 @@ export default {
         console.log('dest is dir?', isDir);
 
         let new_name = null;
-        if ( ! isDir ) {
-            new_name = path.basename(dstAbsPath);
-            dstAbsPath = path.dirname(dstAbsPath);
-        }
+        // if ( ! isDir ) {
+        //     new_name = path.basename(dstAbsPath);
+        //     dstAbsPath = path.dirname(dstAbsPath);
+        // }
 
         const result = await puterShell.command(
-            'call-puter-api', {
-                command: 'move',
-                params: {
-                    source_path: srcAbsPath,
-                    ...(new_name ? { new_name } : {}),
-                    dest_path: dstAbsPath,
-                    overwrite: true
-                }
+            'fs:move', {
+                source: srcAbsPath,
+                // ...(new_name ? { new_name } : {}),
+                destination: dstAbsPath,
             }
         );
     }

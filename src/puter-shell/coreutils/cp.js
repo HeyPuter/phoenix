@@ -58,13 +58,10 @@ export default {
         }
 
         const result = await puterShell.command(
-            'call-puter-api', {
-                command: 'copy',
-                params: {
-                    source_path: srcAbsPath,
-                    dest_path: dstAbsPath,
-                    overwrite: true
-                }
+            'fs:copy', {
+                source: srcAbsPath,
+                destination: dstAbsPath,
+                overwrite: true
             }
         );
     }

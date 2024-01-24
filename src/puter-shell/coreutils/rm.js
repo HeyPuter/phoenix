@@ -46,20 +46,19 @@ export default {
         }
 
         if ( ! values.recursive ) {
-            if ( stat.is_dir === 1 ) {
+            if ( stat.is_dir ) {
                 ctx.externs.err.write(
                     `rm: cannot remove '${target}': Is a directory\n`);
                 return;
             }
-
-            if ( stat.is_dir !== 0 ) {
-                ctx.externs.err.write(
-                    `rm: cannot remove '${target}': Invalid status\n`);
-                return;
-            }
         }
 
-        const result = await puterShell.command('delete', { path: target });
+        const result = await puterShell.command(
+            'fs:delete',
+            {
+                path: target
+            }
+        );
 
         if ( result.$ === 'error' ) {
             ctx.externs.err.write('rm: error: ' + result.message + '\n');
