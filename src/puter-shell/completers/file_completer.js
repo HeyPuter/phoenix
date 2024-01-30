@@ -13,6 +13,10 @@ export class FileCompleter {
     async getCompetions (ctx, inputState) {
         const { puterShell } = ctx.externs;
 
+        if ( inputState.input === '' ) {
+            return [];
+        }
+
         let path = resolve(ctx, inputState.input);
         let dir = path_.dirname(path);
         let base = path_.basename(path);
@@ -20,6 +24,10 @@ export class FileCompleter {
         const completions = [];
 
         const result = await puterShell.command('list', { path: dir });
+        if ( result == undefined ) {
+            return [];
+        }
+
         for ( const item of result ) {
             if ( item.name.startsWith(base) ) {
                 completions.push(item.name.slice(base.length));
