@@ -17,6 +17,7 @@ import { Pipe } from "./Pipe";
 import { MemReader } from "../ioutil/MemReader";
 import { MemWriter } from "../ioutil/MemWriter";
 import { MultiWriter } from "../ioutil/MultiWriter";
+import { NullifyWriter } from "../ioutil/NullifyWriter";
 
 export class PreparedCommand {
     static async createFromAST (ctx, ast) {
@@ -100,6 +101,7 @@ export class PreparedCommand {
             for ( let i=0 ; i < this.outputRedirects.length ; i++ ) {
                 outputMemWriters.push(new MemWriter());
             }
+            out = new NullifyWriter({ delegate: out });
             out = new MultiWriter({
                 delegates: [...outputMemWriters, out],
             });
