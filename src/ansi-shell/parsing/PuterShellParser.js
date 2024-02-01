@@ -18,6 +18,7 @@ export class PuterShellParser {
         if ( sp.error ) {
             throw new Error(sp.error);
         }
+        console.log('PARSER RESULT', result);
         return result;
     }
 }

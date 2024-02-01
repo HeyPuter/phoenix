@@ -27,12 +27,15 @@ export class PreparedCommand {
         
         // TODO: check that node for command name is of a
         //       supported type - maybe use adapt pattern
+        console.log('ast?', ast);
         const cmd = ast.command.text;
 
         const { commands } = ctx.registries;
         const { commandProvider } = ctx.externs;
 
-        const command = await commandProvider.lookup(cmd)
+        const command = ast.command.$ === 'command'
+            ? ast.command
+            : await commandProvider.lookup(cmd)
 
         if ( command === undefined ) {
             throw new Error('no command: ' + JSON.stringify(cmd));
@@ -48,7 +51,8 @@ export class PreparedCommand {
 
         return new PreparedCommand({
             command,
-            args: ast.args.map(node => node.text),
+            args: ast.args,
+            // args: ast.args.map(node => node.text),
             inputRedirect,
             outputRedirects,
         });
@@ -66,7 +70,39 @@ export class PreparedCommand {
     }
 
     async execute () {
-        const { command, args } = this;
+        let { command, args } = this;
+
+        // If we have an AST node of type `command` it means we
+        // need to run that command to get the name of the
+        // command to run.
+        if ( command.$ === 'command' ) {
+            const name_subst = await PreparedCommand.createFromAST(this.ctx, command);
+            const memWriter = new MemWriter();
+            const cmdCtx = { externs: { out: memWriter } }
+            const ctx = this.ctx.sub(cmdCtx);
+            name_subst.setContext(ctx);
+            await name_subst.execute();
+            const cmd = memWriter.getAsString().trimEnd();
+            const { commandProvider } = this.ctx.externs;
+            command = await commandProvider.lookup(cmd);
+            if ( command === undefined ) {
+                throw new Error('no command: ' + JSON.stringify(cmd));
+            }
+        }
+
+        args = await Promise.all(args.map(async node => {
+            if ( node.$ === 'command' ) {
+                const name_subst = await PreparedCommand.createFromAST(this.ctx, node);
+                const memWriter = new MemWriter();
+                const cmdCtx = { externs: { out: memWriter } }
+                const ctx = this.ctx.sub(cmdCtx);
+                name_subst.setContext(ctx);
+                await name_subst.execute();
+                return memWriter.getAsString().trimEnd();
+            }
+
+            return node.text;
+        }));
 
         const { argparsers } = this.ctx.registries;
 

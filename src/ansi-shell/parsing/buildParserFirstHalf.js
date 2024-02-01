@@ -26,6 +26,8 @@ export const buildParserFirstHalf = (sp, profile) => {
     });
 
 
+    // TODO: unquoted tokens will actually need to be parsed in
+    // segments to because `$(echo "la")h` works in sh
     const buildStringParserDef = quote => {
         return a => a.sequence(
             a.literal(quote),
@@ -56,6 +58,9 @@ export const buildParserFirstHalf = (sp, profile) => {
                 parserBuilder.def(a => a.literal('|').assign({ $: 'op.pipe' })),
                 parserBuilder.def(a => a.literal('>').assign({ $: 'op.redirect', direction: 'out' })),
                 parserBuilder.def(a => a.literal('<').assign({ $: 'op.redirect', direction: 'in' })),
+                parserBuilder.def(a => a.literal('$((').assign({ $: 'op.arithmetic' })),
+                parserBuilder.def(a => a.literal('$(').assign({ $: 'op.cmd-subst' })),
+                parserBuilder.def(a => a.literal(')').assign({ $: 'op.close' })),
                 parserFactory.create(UnquotedTokenParserImpl),
                 parserBuilder.def(buildStringParserDef('"')),
                 parserBuilder.def(buildStringParserDef(`'`)),

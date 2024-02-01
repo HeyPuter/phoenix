@@ -97,7 +97,7 @@ class ShellConstructsPStratumImpl {
             return { $: 'pipeline', components };
         }
     
-        const command = tokens.shift();
+        // const command = tokens.shift();
         const args = [];
         const outputRedirects = [];
         const inputRedirects = [];
@@ -108,6 +108,8 @@ class ShellConstructsPStratumImpl {
                 direction: null
             },
         };
+        const stack = [];
+        let dest = args;
         let state = states.STATE_NORMAL;
         for ( const token of tokens ) {
             if ( state === states.STATE_REDIRECT ) {
@@ -125,8 +127,26 @@ class ShellConstructsPStratumImpl {
                 state.direction = token.direction;
                 continue;
             }
-            args.push(token);
+            if ( token.$ === 'op.cmd-subst' ) {
+                const new_dest = [];
+                dest = new_dest;
+                stack.push({
+                    $: 'command-substitution',
+                    tokens: new_dest,
+                });
+                continue;
+            }
+            if ( token.$ === 'op.close' ) {
+                const sub = stack.pop();
+                dest = stack.length === 0 ? args : stack[stack.length-1].tokens;
+                const cmd_node = this.consolidateTokens(sub.tokens);
+                dest.push(cmd_node);
+                continue;
+            }
+            dest.push(token);
         }
+
+        const command = args.shift();
 
         return {
             $: 'command',

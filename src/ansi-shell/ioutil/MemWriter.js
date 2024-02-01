@@ -45,4 +45,8 @@ export class MemWriter {
         const uint8array = this.getAsUint8Array();
         return new Blob([uint8array]);
     }
+
+    getAsString () {
+        return new TextDecoder().decode(this.getAsUint8Array());
+    }
 }
