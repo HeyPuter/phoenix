@@ -7,6 +7,9 @@ export class ByteWriter extends ProxyWriter {
         if ( typeof item === 'string' ) {
             item = encoder.encode(item);
         }
+        if ( item instanceof Blob ) {
+            item = new Uint8Array(await item.arrayBuffer());
+        }
         await this.delegate.write(item);
     }
 }

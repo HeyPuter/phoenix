@@ -230,6 +230,7 @@ export class Pipeline {
             commandPromises.push(command.execute());
         }
         await Promise.all(commandPromises);
+        console.log('PIPELINE DONE');
 
         await coupler.isDone;
     }

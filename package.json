@@ -23,6 +23,7 @@
     "columnify": "^1.6.0",
     "contextlink": "file://../dev-contextlink",
     "hitide": "file://../dev-hitide",
+    "json-query": "^2.2.2",
     "path-browserify": "^1.0.1",
     "xterm": "^5.1.0",
     "xterm-addon-fit": "^0.7.0"

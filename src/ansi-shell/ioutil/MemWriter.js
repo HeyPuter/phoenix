@@ -37,6 +37,11 @@ export class MemWriter {
     }
 
     getAsBlob () {
+        // If there is just one item and it's a blob, return it
+        if ( this.items.length === 1 && this.items[0] instanceof Blob ) {
+            return this.items[0];
+        }
+
         const uint8array = this.getAsUint8Array();
         return new Blob([uint8array]);
     }

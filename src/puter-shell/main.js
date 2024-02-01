@@ -82,6 +82,11 @@ export const launchPuterShell = async () => {
 
     await configured_;
 
+    const sdkv2 = globalThis.puter;
+    await sdkv2.setAuthToken(config['puter.auth.token']);
+    const source_without_trailing_slash = config.source.replace(/\/$/, '');
+    await sdkv2.setAPIOrigin(source_without_trailing_slash);
+
     const commandProvider = new BuiltinCommandProvider();
 
     const ctx = new Context({
@@ -91,6 +96,7 @@ export const launchPuterShell = async () => {
             out: ptt.out,
             parser: new PuterShellParser(),
             commandProvider,
+            sdkv2,
         }),
         registries: new Context({
             argparsers: argparser_registry,
