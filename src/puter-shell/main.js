@@ -84,7 +84,9 @@ export const launchPuterShell = async () => {
 
     const sdkv2 = globalThis.puter;
     await sdkv2.setAuthToken(config['puter.auth.token']);
-    const source_without_trailing_slash = config.source.replace(/\/$/, '');
+    const source_without_trailing_slash =
+        (config.source && config.source.replace(/\/$/, ''))
+        || 'https://api.puter.com';
     await sdkv2.setAPIOrigin(source_without_trailing_slash);
 
     const commandProvider = new BuiltinCommandProvider();
