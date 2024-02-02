@@ -29,7 +29,7 @@ class ReducePrimitivesPStratumImpl {
     next (api) {
         const lexer = api.delegate;
 
-        const { value, done } = lexer.next();
+        let { value, done } = lexer.next();
 
         if ( done ) return { value, done };
 

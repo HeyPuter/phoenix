@@ -93,3 +93,15 @@ export class RepeatParserImpl {
         return { $: 'repeat', results };
     }
 }
+
+export class NoneParserImpl {
+    static createFunction ({ parserFactory }) {
+        return () => {
+            const conf = new ParserConfigDSL(parserFactory, this);
+            return conf;
+        };
+    }
+    parse () {
+        return { $: 'none', $discard: true };
+    }
+}

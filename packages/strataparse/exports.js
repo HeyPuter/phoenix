@@ -15,6 +15,7 @@ import {
     SequenceParserImpl,
     ChoiceParserImpl,
     RepeatParserImpl,
+    NoneParserImpl,
 } from './parse_impls/combinators.js';
 
 export {
@@ -41,6 +42,10 @@ export {
     default as FirstRecognizedPStratumImpl,
 } from './strata_impls/FirstRecognizedPStratumImpl.js';
 
+export {
+    default as ContextSwitchingPStratumImpl,
+} from './strata_impls/ContextSwitchingPStratumImpl.js';
+
 export { ParserBuilder } from './dsl/ParserBuilder.js';
 
 export class StrataParseFacade {
@@ -50,6 +55,7 @@ export class StrataParseFacade {
         r.register('choice', ChoiceParserImpl);
         r.register('repeat', RepeatParserImpl);
         r.register('literal', LiteralParserImpl);
+        r.register('none', NoneParserImpl);
 
         return r;
     }
