@@ -62,25 +62,136 @@ class ReducePrimitivesPStratumImpl {
 }
 
 class ShellConstructsPStratumImpl {
+    static states = (() => {
+        const states = [
+            {
+                name: 'pipeline'
+            },
+            {
+                name: 'command'
+            },
+            {
+                name: 'token',
+            },
+        ];
+
+        const states_object = {};
+        for ( const state of states ) {
+            states_object[`STATE_${state.name.toUpperCase()}`] = {
+                ...state,
+                method_next: `next_${state.name}`,
+                method_on_enter: `on_enter_${state.name}`,
+                method_on_exit: `on_exit_${state.name}`,
+                method_on_return_to: `on_return_to_${state.name}`,
+            };
+        }
+    })();
+
+    constructor () {
+        this.states = this.constructor.states;
+        this.buffer = [];
+        this.stack = [];
+
+        this.push(this.states.STATE_PIPELINE);
+    }
+
+    get stack_top () {
+        return this.stack[this.stack.length - 1];
+    }
+
+    push (state, node) {
+        if ( ! node ) node = {};
+        this.stack.push({ state, node });
+        const method = this[state.method_on_enter];
+        if ( method ) {
+            method.call(this, { node });
+        }
+    }
+
+    pop () {
+        const { state, node } = this.stack.pop();
+        const method = this[state.method_on_exit];
+        if ( method ) {
+            method.call(this, { node });
+        }
+    }
+
+    chstate (state) {
+        this.stack_top.state = state;
+    }
+
+    on_enter_pipeline ({ node }) {
+        node.$ = 'pipeline';
+        node.commands = [];
+        this.push(this.states.STATE_COMMAND, {});
+    }
+
+    on_enter_command ({ node }) {
+        node.$ = 'command';
+        node.tokens = [];
+    }
+
+    on_exit_command ({ node }) {
+        this.stack_top.node.commands.push(node);
+    }
+
+    on_enter_string ({ node }) {
+        node.$ = 'string';
+        node.children = [];
+    }
+
     next (api) {
         const lexer = api.delegate;
 
-        const tokens = [];
-        for ( ;; ) {
-            const { value, done } = lexer.next();
-            if ( done ) break;
+        const { done, value } = lexer.look();
+        if ( done ) return { done };
 
-            tokens.push(value);
+        const state = this.stack_top.state;
+
+        const method = this[state.method_next];
+        if ( ! method ) {
+            throw new Error(`no method for state ${state.name}`);
         }
 
-        if ( tokens.length === 0 ) {
-            return { done: true };
-        }
-
-        const result = this.consolidateTokens(tokens);
-        return result ? { done: false, value: result }
-            : { done: true, value: 'unrecognized input' } ;
+        return method.call(this, {
+            lexer,
+            value,
+        });
     }
+
+    next_pipeline ({ lexer, value }) {
+        if ( value.$ === 'op.pipe' ) {
+            lexer.next();
+        }
+
+        this.push(this.states.STATE_COMMAND, {});
+    }
+
+    next_command ({ lexer, value }) {
+        if ( value.$ === 'whitespace') {
+            lexer.next();
+            return;
+        }
+
+        this.push(this.states.STATE_TOKEN, {});
+    }
+
+    next_token ({ lexer, value }) {
+        if ( value.$ === 'symbol' ) {
+            this.buffer.push(value);
+            lexer.next();
+            return;
+        }
+
+        if ( value.$ === 'string.dquote' ) {
+            this.push(this.states.STATE_STRING, { quote: value });
+            return;
+        }
+
+
+
+
+
 
     consolidateTokens (tokens) {
         const types = tokens.map(token => token.$);
