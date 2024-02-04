@@ -22,6 +22,8 @@ export default class ContextSwitchingPStratumImpl {
             context_name: entry,
         }];
         this.valid = true;
+
+        this.lastvalue = null;
     }
     get stack_top () {
         console.log('stack top?', this.stack[this.stack.length - 1])
@@ -38,7 +40,13 @@ export default class ContextSwitchingPStratumImpl {
         console.log('context?', context);
         for ( const spec of context ) {
             {
-                const { done } = lexer.look();
+                const { done, value } = lexer.look();
+                this.anti_cycle_i = value === this.lastvalue ? (this.anti_cycle_i || 0) + 1 : 0;
+                if ( this.anti_cycle_i > 30 ) {
+                    throw new Error('infinite loop');
+                }
+                this.lastvalue = value;
+                console.log('last value?', value, done);
                 if ( done ) return { done };
             }
 
@@ -50,7 +58,7 @@ export default class ContextSwitchingPStratumImpl {
             }
 
             const subLexer = lexer.fork();
-            console.log('spec?', spec);
+            // console.log('spec?', spec);
             const result = parser.parse(subLexer);
             if ( result.status === ParseResult.UNRECOGNIZED ) {
                 continue;
