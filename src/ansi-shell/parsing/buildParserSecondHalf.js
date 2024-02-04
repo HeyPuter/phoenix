@@ -103,10 +103,43 @@ class ShellConstructsPStratumImpl {
                     this.pop();
                     return;
                 }
+                if ( value.$ === 'op.redirect' ) {
+                    this.push('redirect', { direction: value.direction });
+                    lexer.next();
+                    return;
+                }
                 this.push('token');
             },
             exit ({ node }) {
                 this.stack_top.node.commands.push(node);
+            }
+        },
+        {
+            name: 'redirect',
+            enter ({ node }) {
+                node.$ = 'redirect';
+                node.tokens = [];
+            },
+            exit ({ node }) {
+                const { direction } = node;
+                const arry = direction === 'in' ?
+                    this.stack_top.node.inputRedirects :
+                    this.stack_top.node.outputRedirects;
+                arry.push(node.tokens[0]);
+            },
+            next ({ node, value, lexer }) {
+                if ( node.tokens.length === 1 ) {
+                    this.pop();
+                    return;
+                }
+                if ( value.$ === 'whitespace' ) {
+                    lexer.next();
+                    return;
+                }
+                if ( value.$ === 'op.close' ) {
+                    throw new Error('unexpected close');
+                }
+                this.push('token');
             }
         },
         {

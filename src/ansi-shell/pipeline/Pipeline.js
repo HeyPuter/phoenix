@@ -106,11 +106,14 @@ export class PreparedCommand {
 
         // TODO: test this
         console.log('ast?', ast);
-        const inputRedirect = ast.inputRedirects.length > 0 ?
-            { path: ast.inputRedirects[0].path.text } : null;
+        const inputRedirect = ast.inputRedirects.length > 0 ? (() => {
+            const token = Token.createFromAST(ctx, ast.inputRedirects[0]);
+            return token.maybeStaticallyResolve(ctx) ?? token;
+        })() : null;
         // TODO: test this
         const outputRedirects = ast.outputRedirects.map(rdirNode => {
-            return { path: rdirNode.path.text };
+            const token = Token.createFromAST(ctx, rdirNode);
+            return token.maybeStaticallyResolve(ctx) ?? token;
         });
 
         return new PreparedCommand({
@@ -162,11 +165,14 @@ export class PreparedCommand {
         let in_ = this.ctx.externs.in_;
         if ( this.inputRedirect ) {
             const { puterShell } = this.ctx.externs;
+            const dest_path = this.inputRedirect instanceof Token
+                ? await this.inputRedirect.resolve(this.ctx)
+                : this.inputRedirect;
             const response = await puterShell.command(
                 'call-puter-api', {
                     command: 'read',
                     params: {
-                        path: resolve(this.ctx, this.inputRedirect.path),
+                        path: resolve(this.ctx, dest_path),
                     },
                 }
             );
@@ -244,7 +250,10 @@ export class PreparedCommand {
             console.log('output redirect??', this.outputRedirects[i]);
             const { puterShell } = this.ctx.externs;
             const outputRedirect = this.outputRedirects[i];
-            const path = resolve(ctx, outputRedirect.path);
+            const dest_path = outputRedirect instanceof Token
+                ? await outputRedirect.resolve(this.ctx)
+                : outputRedirect;
+            const path = resolve(ctx, dest_path);
             console.log('it should work?', {
                 path,
                 outputMemWriters,

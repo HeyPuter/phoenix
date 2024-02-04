@@ -21,6 +21,7 @@ import module_sample_data from './sample-data.js'
 import module_tail from './tail.js'
 import module_touch from './touch.js'
 import module_txt2img from './txt2img.js'
+import module_usages from './usages.js'
 
 export default {
     "ai": module_ai,
@@ -45,4 +46,5 @@ export default {
     "tail": module_tail,
     "touch": module_touch,
     "txt2img": module_txt2img,
+    "usages": module_usages,
 };

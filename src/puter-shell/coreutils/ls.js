@@ -59,6 +59,9 @@ export default {
             if ( relPath.startsWith('/') ) {
                 return relPath;
             }
+            if ( relPath.startsWith('~') ) {
+                return path_.resolve(ctx.vars.home, relPath.slice(1));
+            }
             return path_.resolve(ctx.vars.pwd, relPath);
         }
 

@@ -44,6 +44,7 @@ export class ANSIShell extends EventTarget {
         const home = '/' + this.config['puter.auth.username'];
         const user = this.config['puter.auth.username'];
         this.variables.pwd = home;
+        this.variables.home = home;
 
         // Computed values
         Object.defineProperty(this.env, 'PWD', {
