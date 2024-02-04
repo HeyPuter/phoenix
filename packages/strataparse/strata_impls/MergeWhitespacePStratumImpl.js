@@ -34,7 +34,8 @@ export class MergeWhitespacePStratumImpl {
                 for ( const c of value.text ) {
                     this.countChar(c);
                 }
-                continue;
+                return { value, done: false };
+                // continue;
             }
 
             value.$cst = {

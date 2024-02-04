@@ -42,9 +42,9 @@ export default class ContextSwitchingPStratumImpl {
                 if ( done ) return { done };
             }
 
-            let parser, transition;
-            if ( spec.hasOwnProperty('transition') ) {
-                ({ parser, transition } = spec);
+            let parser, transition, peek;
+            if ( spec.hasOwnProperty('parser') ) {
+                ({ parser, transition, peek } = spec);
             } else {
                 parser = spec;
             }
@@ -59,7 +59,7 @@ export default class ContextSwitchingPStratumImpl {
                 return { done: true, value: result };
             }
             console.log('RESULT', result, spec)
-            lexer.join(subLexer);
+            if ( ! peek ) lexer.join(subLexer);
 
             if ( transition ) {
                 console.log('GOT A TRANSITION')
@@ -69,8 +69,9 @@ export default class ContextSwitchingPStratumImpl {
                 });
             }
 
-            if ( result.value.$discard ) return this.next(api);
+            if ( result.value.$discard || peek ) return this.next(api);
 
+            console.log('PROVIDING VALUE', result.value);
             return { done: false, value: result.value };
         }
 

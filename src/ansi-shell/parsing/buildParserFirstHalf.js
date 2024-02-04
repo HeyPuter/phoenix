@@ -76,7 +76,7 @@ export const buildParserFirstHalf = (sp, profile) => {
             )
         ).assign({ $: 'string.escape' })),
         {
-            parser: parserBuilder.def(a => a.literal(quote)),
+            parser: parserBuilder.def(a => a.literal(quote).assign({ $: 'string.close' })),
             transition: { pop: true }
         },
         {
@@ -118,7 +118,12 @@ export const buildParserFirstHalf = (sp, profile) => {
                     parserBuilder.def(a => a.literal('|').assign({ $: 'op.pipe' })),
                     parserBuilder.def(a => a.literal('>').assign({ $: 'op.redirect', direction: 'out' })),
                     parserBuilder.def(a => a.literal('<').assign({ $: 'op.redirect', direction: 'in' })),
-                    parserBuilder.def(a => a.literal(')').assign({ $: 'op.close' })),
+                    {
+                        parser: parserBuilder.def(a => a.literal(')').assign({ $: 'op.close' })),
+                        transition: {
+                            pop: true,
+                        }
+                    },
                     {
                         parser: parserBuilder.def(a => a.literal('"').assign({ $: 'string.dquote' })),
                         transition: {
@@ -144,6 +149,19 @@ export const buildParserFirstHalf = (sp, profile) => {
                     parserFactory.create(StrUntilParserImpl, {
                         stopChars: list_stoptoken,
                     }, { assign: { $: 'symbol' } }),
+                    {
+                        parser: parserFactory.create(WhitespaceParserImpl),
+                        transition: { pop: true }
+                    },
+                    {
+                        peek: true,
+                        parser:  parserBuilder.def(a => a.literal(')').assign({ $: 'op.close' })),
+                        transition: { pop: true }
+                    },
+                    {
+                        parser: parserBuilder.def(a => a.none()),
+                        transition: { pop: true }
+                    },
                     {
                         parser: parserBuilder.def(a => a.choice(
                             ...list_stoptoken.map(chr => a.literal(chr))

@@ -31,8 +31,6 @@ class ReducePrimitivesPStratumImpl {
 
         let { value, done } = lexer.next();
 
-        if ( done ) return { value, done };
-
         if ( value.$ === 'string' ) {
             const [lQuote, contents, rQuote] = value.results;
             let text = '';
@@ -62,137 +60,182 @@ class ReducePrimitivesPStratumImpl {
 }
 
 class ShellConstructsPStratumImpl {
-    static states = (() => {
-        const states = [
-            {
-                name: 'pipeline'
+    static states = [
+        {
+            name: 'pipeline',
+            enter ({ node }) {
+                node.$ = 'pipeline';
+                node.commands = [];
             },
-            {
-                name: 'command'
+            exit ({ node }) {
+                console.log('!!!!!',this.stack_top.node)
+                this.stack_top.node.components.push(node);
             },
-            {
-                name: 'token',
+            next ({ value, lexer }) {
+                if ( value.$ === 'op.close' ) {
+                    if ( this.stack.length === 1 ) {
+                        throw new Error('unexpected close');
+                    }
+                    lexer.next();
+                    this.pop();
+                    return;
+                }
+                if ( value.$ === 'op.pipe' ) {
+                    lexer.next();
+                }
+                this.push('command');
+            }
+        },
+        {
+            name: 'command',
+            enter ({ node }) {
+                node.$ = 'command';
+                node.tokens = [];
             },
-        ];
-
-        const states_object = {};
-        for ( const state of states ) {
-            states_object[`STATE_${state.name.toUpperCase()}`] = {
-                ...state,
-                method_next: `next_${state.name}`,
-                method_on_enter: `on_enter_${state.name}`,
-                method_on_exit: `on_exit_${state.name}`,
-                method_on_return_to: `on_return_to_${state.name}`,
-            };
-        }
-    })();
+            next ({ value, lexer }) {
+                if ( value.$ === 'whitespace' ) {
+                    lexer.next();
+                    return;
+                }
+                if ( value.$ === 'op.close' ) {
+                    this.pop();
+                    return;
+                }
+                this.push('token');
+            },
+            exit ({ node }) {
+                this.stack_top.node.commands.push(node);
+            }
+        },
+        {
+            name: 'token',
+            enter ({ node }) {
+                node.$ = 'token';
+                node.components = [];
+            },
+            exit ({ node }) {
+                this.stack_top.node.tokens.push(node);
+            },
+            next ({ value, lexer }) {
+                if ( value.$ === 'string.dquote' ) {
+                    this.push('string', { quote: '"' });
+                    lexer.next();
+                    return;
+                }
+                if ( value.$ === 'string.squote' ) {
+                    this.push('string', { quote: "'" });
+                    lexer.next();
+                    return;
+                }
+                if (
+                    value.$ === 'whitespace' ||
+                    value.$ === 'op.close'
+                ) {
+                    this.pop();
+                    return;
+                }
+                this.push('string', { quote: null });
+            }
+        },
+        {
+            name: 'string',
+            enter ({ node }) {
+                node.$ = 'string';
+                node.components = [];
+            },
+            exit ({ node }) {
+                this.stack_top.node.components.push(node.components);
+            },
+            next ({ node, value, lexer }) {
+                console.log('WHAT THO', node)
+                if ( value.$ === 'string.close' && node.quote !== null ) {
+                    lexer.next();
+                    this.pop();
+                    return;
+                }
+                if (
+                    node.quote === null && (
+                        value.$ === 'whitespace' ||
+                        value.$ === 'op.close'
+                    )
+                ) {
+                        this.pop();
+                        return;
+                }
+                if ( value.$ === 'op.cmd-subst' ) {
+                    this.push('pipeline');
+                    lexer.next();
+                    return;
+                }
+                node.components.push(value);
+                lexer.next();
+            }
+        },
+    ];
 
     constructor () {
         this.states = this.constructor.states;
         this.buffer = [];
         this.stack = [];
+        this.done_ = false;
 
-        this.push(this.states.STATE_PIPELINE);
+        this.push('pipeline');
     }
 
     get stack_top () {
         return this.stack[this.stack.length - 1];
     }
 
-    push (state, node) {
+    push (state_name, node) {
+        const state = this.states.find(s => s.name === state_name);
         if ( ! node ) node = {};
         this.stack.push({ state, node });
-        const method = this[state.method_on_enter];
-        if ( method ) {
-            method.call(this, { node });
-        }
+        state.enter && state.enter.call(this, { node });
     }
 
     pop () {
         const { state, node } = this.stack.pop();
-        const method = this[state.method_on_exit];
-        if ( method ) {
-            method.call(this, { node });
-        }
+        state.exit && state.exit.call(this, { node });
     }
 
     chstate (state) {
         this.stack_top.state = state;
     }
 
-    on_enter_pipeline ({ node }) {
-        node.$ = 'pipeline';
-        node.commands = [];
-        this.push(this.states.STATE_COMMAND, {});
-    }
-
-    on_enter_command ({ node }) {
-        node.$ = 'command';
-        node.tokens = [];
-    }
-
-    on_exit_command ({ node }) {
-        this.stack_top.node.commands.push(node);
-    }
-
-    on_enter_string ({ node }) {
-        node.$ = 'string';
-        node.children = [];
-    }
-
     next (api) {
+        if ( this.done_ ) return { done: true };
+
         const lexer = api.delegate;
 
-        const { done, value } = lexer.look();
-        if ( done ) return { done };
+        console.log('THE NODE', this.stack[0].node);
+        // return { done: true, value: { $: 'test' } };
 
-        const state = this.stack_top.state;
+        for ( let i=0 ; i < 500 ; i++ ) {
+            const { done, value } = lexer.look();
 
-        const method = this[state.method_next];
-        if ( ! method ) {
-            throw new Error(`no method for state ${state.name}`);
+            if ( done ) {
+                while ( this.stack.length > 1 ) {
+                    this.pop();
+                }
+                break;
+            }
+
+            const { state, node } = this.stack_top;
+            console.log('value?', value, done)
+            console.log('state?', state.name);
+
+            state.next.call(this, { lexer, value, node, state });
+
+            // if ( done ) break;
         }
 
-        return method.call(this, {
-            lexer,
-            value,
-        });
+        console.log('THE NODE', this.stack[0]);
+
+        this.done_ = true;
+        return { done: false, value: this.stack[0].node };
     }
 
-    next_pipeline ({ lexer, value }) {
-        if ( value.$ === 'op.pipe' ) {
-            lexer.next();
-        }
-
-        this.push(this.states.STATE_COMMAND, {});
-    }
-
-    next_command ({ lexer, value }) {
-        if ( value.$ === 'whitespace') {
-            lexer.next();
-            return;
-        }
-
-        this.push(this.states.STATE_TOKEN, {});
-    }
-
-    next_token ({ lexer, value }) {
-        if ( value.$ === 'symbol' ) {
-            this.buffer.push(value);
-            lexer.next();
-            return;
-        }
-
-        if ( value.$ === 'string.dquote' ) {
-            this.push(this.states.STATE_STRING, { quote: value });
-            return;
-        }
-
-
-
-
-
-
+    // old method; not used anymore
     consolidateTokens (tokens) {
         const types = tokens.map(token => token.$);
 
@@ -278,6 +321,6 @@ export const buildParserSecondHalf = (sp) => {
         parserRegistry,
     );
 
-    sp.add(new ReducePrimitivesPStratumImpl());
+    // sp.add(new ReducePrimitivesPStratumImpl());
     sp.add(new ShellConstructsPStratumImpl());
 }

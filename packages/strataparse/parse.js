@@ -111,6 +111,7 @@ export class SingleParserFactory {
 
 export class AcceptParserUtil {
     static adapt (parser) {
+        if ( parser === undefined ) return undefined;
         if ( parser instanceof SingleParserFactory ) {
             parser = parser.create();
         }
