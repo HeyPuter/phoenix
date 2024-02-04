@@ -13,6 +13,7 @@ import { Context } from "contextlink";
 import { SHELL_VERSIONS } from "../meta/versions";
 import { PuterShellParser } from "../ansi-shell/parsing/PuterShellParser";
 import { BuiltinCommandProvider } from "./providers/BuiltinCommandProvider";
+import { CreateChatHistoryPlugin } from './plugins/ChatHistoryPlugin';
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
@@ -93,12 +94,14 @@ export const launchPuterShell = async () => {
 
     const ctx = new Context({
         externs: new Context({
-            config, readline, puterShell,
+            config, puterShell,
+            readline: readline.readline.bind(readline),
             in: ptt.in,
             out: ptt.out,
             parser: new PuterShellParser(),
             commandProvider,
             sdkv2,
+            historyManager: readline.history,
         }),
         registries: new Context({
             argparsers: argparser_registry,
@@ -107,8 +110,17 @@ export const launchPuterShell = async () => {
             // of builtins to support the `help` command.
             builtins,
         }),
+        plugins: new Context(),
         locals: new Context(),
     });
+
+    {
+        const name = "chatHistory";
+        const p = CreateChatHistoryPlugin(ctx);
+        ctx.plugins[name] = new Context(p.expose);
+        p.init();
+    }
+
     const ansiShell = new ANSIShell(ctx);
 
     // TODO: move ioctl to PTY

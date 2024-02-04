@@ -281,6 +281,7 @@ class HistoryManager {
     constructor () {
         this.items = [];
         this.index = 0;
+        this.listeners_ = {};
     }
 
     get () {
@@ -289,6 +290,19 @@ class HistoryManager {
 
     save (data) {
         this.items[this.index] = data;
+
+        if ( this.listeners_.hasOwnProperty('add') ) {
+            for ( const listener of this.listeners_.add ) {
+                listener(data);
+            }
+        }
+    }
+
+    on (topic, listener) {
+        if ( ! this.listeners_.hasOwnProperty(topic) ) {
+            this.listeners_[topic] = [];
+        }
+        this.listeners_[topic].push(listener);
     }
 }
 
@@ -325,6 +339,6 @@ class Readline {
 export default class ReadlineLib {
     static create(params) {
         const rl = new Readline(params);
-        return rl.readline.bind(rl);
+        return rl;
     }
 }

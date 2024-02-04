@@ -14,11 +14,13 @@ import module_mkdir from './mkdir.js'
 import module_mv from './mv.js'
 import module_neofetch from './neofetch.js'
 import module_printenv from './printenv.js'
+import module_printhist from './printhist.js'
 import module_putercmd from './putercmd.js'
 import module_pwd from './pwd.js'
 import module_rm from './rm.js'
 import module_sample_data from './sample-data.js'
 import module_tail from './tail.js'
+import module_test from './test.js'
 import module_touch from './touch.js'
 import module_txt2img from './txt2img.js'
 import module_usages from './usages.js'
@@ -39,11 +41,13 @@ export default {
     "mv": module_mv,
     "neofetch": module_neofetch,
     "printenv": module_printenv,
+    "printhist": module_printhist,
     "putercmd": module_putercmd,
     "pwd": module_pwd,
     "rm": module_rm,
     "sample-data": module_sample_data,
     "tail": module_tail,
+    "test": module_test,
     "touch": module_touch,
     "txt2img": module_txt2img,
     "usages": module_usages,
