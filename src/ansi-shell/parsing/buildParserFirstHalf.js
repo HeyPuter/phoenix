@@ -147,7 +147,7 @@ export const buildParserFirstHalf = (sp, profile) => {
                 'string.squote': buildStringContext(`'`),
                 symbol: [
                     parserFactory.create(StrUntilParserImpl, {
-                        stopChars: list_stoptoken,
+                        stopChars: [...list_stoptoken, '$'],
                     }, { assign: { $: 'symbol' } }),
                     {
                         parser: parserFactory.create(WhitespaceParserImpl),
@@ -157,6 +157,14 @@ export const buildParserFirstHalf = (sp, profile) => {
                         peek: true,
                         parser:  parserBuilder.def(a => a.literal(')').assign({ $: 'op.close' })),
                         transition: { pop: true }
+                    },
+                    {
+                        parser: parserBuilder.def(a => {
+                            return a.literal('$(').assign({ $: 'op.cmd-subst' })
+                        }),
+                        transition: {
+                            to: 'command',
+                        }
                     },
                     {
                         parser: parserBuilder.def(a => a.none()),

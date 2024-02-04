@@ -135,14 +135,18 @@ export class ANSIShell extends EventTarget {
 
         let ast = tokens[0];
 
-        // wrap an individual command in a pipeline
-        // TODO: should this be done here, or elsewhere?
-        if ( ast.$ === 'command' ) {
-            ast = {
-                $: 'pipeline',
-                components: [ast]
-            };
-        }
+        // Left the code below here (commented) because I think it's
+        // interesting; the AST now always has a pipeline at the top
+        // level after recent changes to the parser.
+
+        // // wrap an individual command in a pipeline
+        // // TODO: should this be done here, or elsewhere?
+        // if ( ast.$ === 'command' ) {
+        //     ast = {
+        //         $: 'pipeline',
+        //         components: [ast]
+        //     };
+        // }
         
         if ( this.debugFeatures['show-ast'] ) {
             this.ctx.externs.out.write(
@@ -156,6 +160,7 @@ export class ANSIShell extends EventTarget {
             pipeline = await Pipeline.createFromAST(this.ctx, ast);
         } catch (e) {
             this.ctx.externs.out.write('error: ' + e.message + '\n');
+            console.log(e);
             return;
         }
         

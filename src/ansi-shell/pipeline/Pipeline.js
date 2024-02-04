@@ -19,29 +19,93 @@ import { MemWriter } from "../ioutil/MemWriter";
 import { MultiWriter } from "../ioutil/MultiWriter";
 import { NullifyWriter } from "../ioutil/NullifyWriter";
 
+class Token {
+    static createFromAST (ctx, ast) {
+        if ( ast.$ !== 'token' ) {
+            throw new Error('expected token node');
+        }
+
+        return new Token(ast);
+    }
+    constructor (ast) { this.ast = ast; }
+    maybeStaticallyResolve (ctx) {
+        // If the only components are of type 'symbol' and 'string.segment'
+        // then we can statically resolve the value of the token.
+
+        console.log('checking viability of static resolve', this.ast)
+
+        const isStatic = this.ast.components.every(c => {
+            return c.$ === 'symbol' || c.$ === 'string.segment';
+        });
+
+        if ( ! isStatic ) return;
+
+        console.log('doing static thing', this.ast)
+
+        // TODO: Variables can also be statically resolved, I think...
+        let value = '';
+        for ( const component of this.ast.components ) {
+            console.log('component', component);
+            value += component.text;
+        }
+    }
+
+    async resolve (ctx) {
+        let value = '';
+        for ( const component of this.ast.components ) {
+            if ( component.$ === 'string.segment' || component.$ === 'symbol' ) {
+                value += component.text;
+                continue;
+            }
+            if ( component.$ === 'pipeline' ) {
+                const pipeline = await Pipeline.createFromAST(ctx, component);
+                const memWriter = new MemWriter();
+                const cmdCtx = { externs: { out: memWriter } }
+                const subCtx = ctx.sub(cmdCtx);
+                await pipeline.execute(subCtx);
+                value += memWriter.getAsString().trimEnd();
+                continue;
+            }
+        }
+        // const name_subst = await PreparedCommand.createFromAST(this.ctx, command);
+        // const memWriter = new MemWriter();
+        // const cmdCtx = { externs: { out: memWriter } }
+        // const ctx = this.ctx.sub(cmdCtx);
+        // name_subst.setContext(ctx);
+        // await name_subst.execute();
+        // const cmd = memWriter.getAsString().trimEnd();
+        return value;
+    }
+}
+
 export class PreparedCommand {
     static async createFromAST (ctx, ast) {
         if ( ast.$ !== 'command' ) {
             throw new Error('expected command node');
         }
+
+        ast = { ...ast };
+        const command_token = Token.createFromAST(ctx, ast.tokens.shift());
+
         
         // TODO: check that node for command name is of a
         //       supported type - maybe use adapt pattern
         console.log('ast?', ast);
-        const cmd = ast.command.text;
+        const cmd = command_token.maybeStaticallyResolve(ctx);
 
         const { commands } = ctx.registries;
         const { commandProvider } = ctx.externs;
 
-        const command = ast.command.$ === 'command'
-            ? ast.command
-            : await commandProvider.lookup(cmd)
+        const command = cmd
+            ? await commandProvider.lookup(cmd)
+            : command_token;
 
         if ( command === undefined ) {
             throw new Error('no command: ' + JSON.stringify(cmd));
         }
 
         // TODO: test this
+        console.log('ast?', ast);
         const inputRedirect = ast.inputRedirects.length > 0 ?
             { path: ast.inputRedirects[0].path.text } : null;
         // TODO: test this
@@ -51,7 +115,7 @@ export class PreparedCommand {
 
         return new PreparedCommand({
             command,
-            args: ast.args,
+            args: ast.tokens.map(node => Token.createFromAST(ctx, node)),
             // args: ast.args.map(node => node.text),
             inputRedirect,
             outputRedirects,
@@ -75,14 +139,9 @@ export class PreparedCommand {
         // If we have an AST node of type `command` it means we
         // need to run that command to get the name of the
         // command to run.
-        if ( command.$ === 'command' ) {
-            const name_subst = await PreparedCommand.createFromAST(this.ctx, command);
-            const memWriter = new MemWriter();
-            const cmdCtx = { externs: { out: memWriter } }
-            const ctx = this.ctx.sub(cmdCtx);
-            name_subst.setContext(ctx);
-            await name_subst.execute();
-            const cmd = memWriter.getAsString().trimEnd();
+        if ( command instanceof Token ) {
+            const cmd = await command.resolve(this.ctx);
+            console.log('RUNNING CMD?', cmd)
             const { commandProvider } = this.ctx.externs;
             command = await commandProvider.lookup(cmd);
             if ( command === undefined ) {
@@ -91,14 +150,8 @@ export class PreparedCommand {
         }
 
         args = await Promise.all(args.map(async node => {
-            if ( node.$ === 'command' ) {
-                const name_subst = await PreparedCommand.createFromAST(this.ctx, node);
-                const memWriter = new MemWriter();
-                const cmdCtx = { externs: { out: memWriter } }
-                const ctx = this.ctx.sub(cmdCtx);
-                name_subst.setContext(ctx);
-                await name_subst.execute();
-                return memWriter.getAsString().trimEnd();
+            if ( node instanceof Token ) {
+                return await node.resolve(this.ctx);
             }
 
             return node.text;
@@ -217,7 +270,7 @@ export class Pipeline {
 
         const preparedCommands = [];
 
-        for ( const cmdNode of ast.components ) {
+        for ( const cmdNode of ast.commands ) {
             const command = await PreparedCommand.createFromAST(ctx, cmdNode);
             preparedCommands.push(command);
         }

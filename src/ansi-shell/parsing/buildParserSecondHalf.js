@@ -91,6 +91,8 @@ class ShellConstructsPStratumImpl {
             enter ({ node }) {
                 node.$ = 'command';
                 node.tokens = [];
+                node.inputRedirects = [];
+                node.outputRedirects = [];
             },
             next ({ value, lexer }) {
                 if ( value.$ === 'whitespace' ) {
@@ -144,7 +146,7 @@ class ShellConstructsPStratumImpl {
                 node.components = [];
             },
             exit ({ node }) {
-                this.stack_top.node.components.push(node.components);
+                this.stack_top.node.components.push(...node.components);
             },
             next ({ node, value, lexer }) {
                 console.log('WHAT THO', node)
