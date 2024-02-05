@@ -1128,3 +1128,25 @@ solving command substitution by maintaining state via stacks
 in both halves of the parser, and we will absolutely need to
 do static analysis and refactoring to simplify the parser some
 time in the future.
+
+## 2024-02-04
+
+### Platform Support and Deprecation of separate `puter-shell` repo
+
+To prepare for releasing the Puter Shell under an open-source license,
+it makes sense to move everything that's currently in `puter-shell` into
+this repo. The separation of concerns makes sense, but it belongs in
+a place called "platform support" inside this repo rather than in
+another repo (that was an oversight on my part earlier on).
+
+This change can be made incrementally as follows:
+- Expose an object which implements support for the current platform
+  to all the commands in coreutils.
+- Incrementally update commands as follows:
+  - add the necessary function(s) to `puter` platform support
+    - while doing this, use the instance of the Puter SDK owned
+      by `dev-ansi-terminal` instead of delegating to the
+      wrapper in the `puter-shell` repo via `postMessage`
+  - update the command to use the new implementation
+- Once all commands are updated, the XDocumentPuterShell class will
+  be dormant and can safely be removed.

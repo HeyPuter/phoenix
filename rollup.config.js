@@ -5,7 +5,7 @@ import copy from 'rollup-plugin-copy';
 const configFile = process.env.CONFIG_FILE ?? 'config/dev.js';
 
 export default {
-    input: "src/main.js",
+    input: "src/main_puter.js",
     output: {
         file: "dist/bundle.js",
         format: "iife"

@@ -49,6 +49,7 @@ export default {
         // ctx.args to access raw args
         const { positionals, values, pwd } = ctx.locals;
         const { puterShell } = ctx.externs;
+        const { filesystem } = ctx.platform;
 
         const paths = positionals.length < 1
             ? [pwd] : positionals ;
@@ -74,7 +75,7 @@ export default {
             let path = paths[i];
             await showHeadings({ i, path });
             path = resolve(path);
-            const result = await puterShell.command('list', { path });
+            const result = await filesystem.readdir(path);
             console.log('ls items', result);
 
             // const write_item = values.long

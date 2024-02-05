@@ -1,14 +1,10 @@
 import builtins from './coreutils/__exports__.js';
 import { XDocumentPTT } from "../XDocumentPTT.js";
-import { XDocumentPuterShell } from "./XDocumentPuterShell.js";
 import ReadlineLib from "../ansi-shell/readline/readline.js";
-
-import command_registry from './coreutils/__exports__.js';
 
 // TODO: auto-gen argument parser registry from files
 import SimpleArgParser from "../ansi-shell/arg-parsers/simple-parser.js";
 import { ANSIShell } from "../ansi-shell/ANSIShell.js";
-import { HiTIDE } from "hitide";
 import { Context } from "contextlink";
 import { SHELL_VERSIONS } from "../meta/versions.js";
 import { PuterShellParser } from "../ansi-shell/parsing/PuterShellParser.js";
@@ -19,69 +15,16 @@ const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
 };
 
-export const launchPuterShell = async () => {
-    const hitide = new HiTIDE();
-
+export const launchPuterShell = async (ctx) => {
     const ptt = new XDocumentPTT();
-    const config = {};
+    const config = ctx.config;
+    const puterShell = ctx.puterShell;
 
-    const puterShell = new XDocumentPuterShell({
-        source: __CONFIG__['shell.href']
-    });
-
-    let resolveConfigured = null;
-    const configured_ = new Promise(rslv => {
-        resolveConfigured = rslv;
-    });
-    window.addEventListener('message', evt => {
-        if ( evt.source !== window.parent ) return;
-        if ( evt.data instanceof Uint8Array ) {
-            return;
-        }
-        if ( ! evt.data.hasOwnProperty('$') ) {
-            console.error(`unrecognized window message`, evt);
-            return;
-        }
-        if ( evt.data.$ !== 'config' ) return;
-
-        console.log('received configuration at ANSI shell');
-        const configValues = { ...evt.data };
-        delete configValues.$;
-        for ( const k in configValues ) {
-            config[k] = configValues[k];
-        }
-        puterShell.configure(config);
-        resolveConfigured();
-    });
-
-    // let readyQueue = Promise.resolve();
-    let readyQueue = Promise.resolve();
-
-    // === Setup Puter Shell Iframe ===
-    {
-        const iframe = document.createElement('iframe');
-        const xdEl = document.getElementById('cross-document-container');
-
-        readyQueue = readyQueue.then(() => new Promise(rslv => {
-            puterShell.addEventListener('ready', rslv)
-        }));
-
-        xdEl.appendChild(iframe);
-        puterShell.attachToIframe(iframe);
-    }
 
     const readline = ReadlineLib.create({
         in: ptt.in,
         out: ptt.out
     });
-
-    await readyQueue;
-
-    console.log('the adapter is saying ready');
-    window.parent.postMessage({ $: 'ready' }, '*');
-    console.log('the adapter said ready');
-
-    await configured_;
 
     const sdkv2 = globalThis.puter;
     await sdkv2.setAuthToken(config['puter.auth.token']);
@@ -92,7 +35,7 @@ export const launchPuterShell = async () => {
 
     const commandProvider = new BuiltinCommandProvider();
 
-    const ctx = new Context({
+    ctx = ctx.sub({
         externs: new Context({
             config, puterShell,
             readline: readline.readline.bind(readline),
