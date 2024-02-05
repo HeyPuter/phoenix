@@ -48,7 +48,6 @@ export default {
         // ctx.params to access processed args
         // ctx.args to access raw args
         const { positionals, values, pwd } = ctx.locals;
-        const { puterShell } = ctx.externs;
         const { filesystem } = ctx.platform;
 
         const paths = positionals.length < 1
