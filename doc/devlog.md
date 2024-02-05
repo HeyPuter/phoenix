@@ -1036,3 +1036,95 @@ each object), and then later create an abstraction for
 obtaining the correct formatter for an object so that this
 optimization can be implemented separately from this specific
 use of the optimization.
+
+## 2024-02-01
+
+### StrataParse and Tokens with Command Substitution
+
+**note:** this devlog entry was written in pieces as I made
+significant changes to the parser, so information near the
+beginning is less accurate than information towards the end.
+
+In the "first half" portion of the terminal parser, which
+builds a "lexer"* (*not a pure lexer) for parsing, there
+currently exists an implementation of parsing for quoted strings.
+I have in the past implemented a quoted string parser at least
+two different ways - a state machine parser, and with composable
+parsers. The string parser in `buildParserFirstHalf` uses the
+second approach. This is what it looks like represented as a
+lisp-ish pseudo-code:
+
+```javascript
+sequence(
+  literal('"')
+  repeat(
+    choice(
+      characters_until('\\' or '"')
+      sequence(
+        literal('\\')
+        choice(
+          literal('"'),
+          ...escape_substitutions))))
+  literal('"'))
+```
+
+In a BNF grammar, this might be assigned to a symbol name
+like "quoted-string". In `strataparse` this is represented
+by having a layer which recognizes the components of a string
+(like each sequence of characters between escapes, each escape,
+and the closing quotation mark), and then a higher-level layer
+which composes those to create a single node representing
+the string.
+
+I really like this approach because the result is a highly
+configurable parser that will let you control how much
+information is kept as you advance to higher-level layers
+(ex: CST instead of AST for tab-completion checks),
+and only parse to a certain level if desired
+(ex: only "first half" of the parser is used for
+tab-completion checks).
+
+The trouble is the POSIX Shell Command Language allows part of a
+token to be a command substitution, which means a stack needs to
+be maintianed to track nested states. Implementing this in the
+current hand-written parser was very tricky.
+
+Partway through working on this I took a look at existing
+shell syntax parsers for javascript. The results weren't very
+promising. None of the available parsers could produce a CST,
+which is needed for tab completion and will aid in things
+like syntax highlighting in the future.
+
+Between the modules `shell-parse` and `bash-parser`, the first
+was able to parse this syntax while the second threw an error:
+```
+echo $TEST"something to $($(echo echo) do)"with-this another-token
+```
+
+Another issue with existing parsers, which makes me wary of even
+using pegjs (what `shell-parse` uses) directly is that the AST
+they produce requires a lot of branching in the interpreter.
+For example it's not known when parsing a token whether you'll
+get a `literal`, or a `concatenation` with an array of "pieces"
+which might contain literals. This is a perfectly valid
+representation of the syntax considering what I mentioned above
+about command substitution, but if there can be an array of
+pieces I would rather always have an array of pieces. I'm much
+more concerned with the simplicity and performance of the
+interpreter than the amount of memory the AST consumes.
+
+Finally, my "favourite" part: when you run a script in `bash`
+it doesn't parse the entire script and then run it; it either
+parses just one line or, if the line is a compound command
+(a structure like `if; then ...; done`) it parses multiple
+lines until it has parsed a valid compound command. This means
+any parser that can only parse complete inputs with valid syntax
+would need to repeatedly parse (1 line, 2 lines, 3 lines...)
+at each line until one of the parses is successful, if we wish
+to mimic the behaviour of a real POSIX shell.
+
+In conclusion, I'm keeping the hand-written parser and
+solving command substitution by maintaining state via stacks
+in both halves of the parser, and we will absolutely need to
+do static analysis and refactoring to simplify the parser some
+time in the future.
