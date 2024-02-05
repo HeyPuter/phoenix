@@ -57,11 +57,11 @@ window.main_shell = async () => {
     await configured_;
 
     const puterSDK = globalThis.puter;
-    // await puterSDK.setAuthToken(config['puter.auth.token']);
-    // const source_without_trailing_slash =
-    //     (config.source && config.source.replace(/\/$/, ''))
-    //     || 'https://api.puter.com';
-    // await puterSDK.setAPIOrigin(source_without_trailing_slash);
+    await puterSDK.setAuthToken(config['puter.auth.token']);
+    const source_without_trailing_slash =
+        (config.source && config.source.replace(/\/$/, ''))
+        || 'https://api.puter.com';
+    await puterSDK.setAPIOrigin(source_without_trailing_slash);
 
     await launchPuterShell(new Context({
         puterShell, // deprecated
