@@ -1,6 +1,6 @@
 // INCONST: called 'path' instead of 'path_' elsewhere
 import path_ from "path-browserify";
-import { SHELL_VERSIONS } from "../../meta/versions";
+import { SHELL_VERSIONS } from "../../meta/versions.js";
 
 export default {
     name: 'changelog',

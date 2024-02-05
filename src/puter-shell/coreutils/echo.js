@@ -1,4 +1,4 @@
-import { processEscapes } from "./coreutil_lib/echo_escapes";
+import { processEscapes } from "./coreutil_lib/echo_escapes.js";
 
 export default {
     name: 'echo',

@@ -1,7 +1,7 @@
 // This function comprehends the readline input and returns something
 // called a "readline input state" - this includes any information needed
 
-import { readtoken, TOKENS } from "./readtoken";
+import { readtoken, TOKENS } from "./readtoken.js";
 
 // TODO: update to use syntax parser
 

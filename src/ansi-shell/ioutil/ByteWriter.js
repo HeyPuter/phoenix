@@ -1,4 +1,4 @@
-import { ProxyWriter } from "./ProxyWriter";
+import { ProxyWriter } from "./ProxyWriter.js";
 
 const encoder = new TextEncoder();
 

@@ -1,4 +1,4 @@
-import { ProxyWriter } from "./ProxyWriter";
+import { ProxyWriter } from "./ProxyWriter.js";
 
 export class NullifyWriter extends ProxyWriter {
     async write (item) {

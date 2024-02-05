@@ -1,11 +1,11 @@
-import { Context } from "../../context/context";
-import { FileCompleter } from "../../puter-shell/completers/file_completer";
-import { Uint8List } from "../../util/bytes";
-import { Log } from "../../util/log";
-import { StatefulProcessorBuilder } from "../../util/statemachine";
-import { ANSIContext } from "../ANSIContext";
-import { readline_comprehend } from "./rl_comprehend";
-import { CSI_HANDLERS } from "./rl_csi_handlers";
+import { Context } from "../../context/context.js";
+import { FileCompleter } from "../../puter-shell/completers/file_completer.js";
+import { Uint8List } from "../../util/bytes.js";
+import { Log } from "../../util/log.js";
+import { StatefulProcessorBuilder } from "../../util/statemachine.js";
+import { ANSIContext } from "../ANSIContext.js";
+import { readline_comprehend } from "./rl_comprehend.js";
+import { CSI_HANDLERS } from "./rl_csi_handlers.js";
 
 const decoder = new TextDecoder();
 

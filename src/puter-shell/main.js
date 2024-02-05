@@ -1,19 +1,19 @@
-import builtins from './coreutils/__exports__';
-import { XDocumentPTT } from "../XDocumentPTT";
-import { XDocumentPuterShell } from "./XDocumentPuterShell";
-import ReadlineLib from "../ansi-shell/readline/readline";
+import builtins from './coreutils/__exports__.js';
+import { XDocumentPTT } from "../XDocumentPTT.js";
+import { XDocumentPuterShell } from "./XDocumentPuterShell.js";
+import ReadlineLib from "../ansi-shell/readline/readline.js";
 
-import command_registry from './coreutils/__exports__';
+import command_registry from './coreutils/__exports__.js';
 
 // TODO: auto-gen argument parser registry from files
-import SimpleArgParser from "../ansi-shell/arg-parsers/simple-parser";
-import { ANSIShell } from "../ansi-shell/ANSIShell";
+import SimpleArgParser from "../ansi-shell/arg-parsers/simple-parser.js";
+import { ANSIShell } from "../ansi-shell/ANSIShell.js";
 import { HiTIDE } from "hitide";
 import { Context } from "contextlink";
-import { SHELL_VERSIONS } from "../meta/versions";
-import { PuterShellParser } from "../ansi-shell/parsing/PuterShellParser";
-import { BuiltinCommandProvider } from "./providers/BuiltinCommandProvider";
-import { CreateChatHistoryPlugin } from './plugins/ChatHistoryPlugin';
+import { SHELL_VERSIONS } from "../meta/versions.js";
+import { PuterShellParser } from "../ansi-shell/parsing/PuterShellParser.js";
+import { BuiltinCommandProvider } from "./providers/BuiltinCommandProvider.js";
+import { CreateChatHistoryPlugin } from './plugins/ChatHistoryPlugin.js';
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser

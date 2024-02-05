@@ -8,8 +8,8 @@
 - [Wikipedia](https://en.wikipedia.org/wiki/ANSI_escape_code)
 */
 
-import { ANSIContext, getActiveModifiersFromXTerm } from "../ANSIContext";
-import { findNextWord } from "./rl_words";
+import { ANSIContext, getActiveModifiersFromXTerm } from "../ANSIContext.js";
+import { findNextWord } from "./rl_words.js";
 
 // TODO: potentially include metadata in handlers
 

@@ -1,4 +1,4 @@
-import { ProxyReader } from "./ProxyReader";
+import { ProxyReader } from "./ProxyReader.js";
 
 const decoder = new TextDecoder();
 

@@ -8,16 +8,16 @@ const resolve = (ctx, relPath) => {
     return path_.resolve(ctx.vars.pwd, relPath);
 };
 
-import { SyncLinesReader } from "../ioutil/SyncLinesReader";
-import { TOKENS } from "../readline/readtoken";
-import { ByteWriter } from "../ioutil/ByteWriter";
-import { Coupler } from "./Coupler";
-import { CommandStdinDecorator } from "./iowrappers";
-import { Pipe } from "./Pipe";
-import { MemReader } from "../ioutil/MemReader";
-import { MemWriter } from "../ioutil/MemWriter";
-import { MultiWriter } from "../ioutil/MultiWriter";
-import { NullifyWriter } from "../ioutil/NullifyWriter";
+import { SyncLinesReader } from "../ioutil/SyncLinesReader.js";
+import { TOKENS } from "../readline/readtoken.js";
+import { ByteWriter } from "../ioutil/ByteWriter.js";
+import { Coupler } from "./Coupler.js";
+import { CommandStdinDecorator } from "./iowrappers.js";
+import { Pipe } from "./Pipe.js";
+import { MemReader } from "../ioutil/MemReader.js";
+import { MemWriter } from "../ioutil/MemWriter.js";
+import { MultiWriter } from "../ioutil/MultiWriter.js";
+import { NullifyWriter } from "../ioutil/NullifyWriter.js";
 
 class Token {
     static createFromAST (ctx, ast) {

@@ -1,6 +1,6 @@
 import { StrataParser, StringPStratumImpl } from "strataparse";
-import { buildParserFirstHalf } from "./buildParserFirstHalf";
-import { buildParserSecondHalf } from "./buildParserSecondHalf";
+import { buildParserFirstHalf } from "./buildParserFirstHalf.js";
+import { buildParserSecondHalf } from "./buildParserSecondHalf.js";
 
 export class PuterShellParser {
     constructor () {

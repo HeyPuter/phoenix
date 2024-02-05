@@ -1,4 +1,4 @@
-import { Context } from "../context/context";
+import { Context } from "../context/context.js";
 
 const modifiers = ['shift', 'alt', 'ctrl', 'meta'];
 

@@ -1,4 +1,4 @@
-import { Pipeline } from "./pipeline/Pipeline";
+import { Pipeline } from "./pipeline/Pipeline.js";
 
 export class ANSIShell extends EventTarget {
     constructor (ctx) {

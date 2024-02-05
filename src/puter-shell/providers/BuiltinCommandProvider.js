@@ -1,4 +1,4 @@
-import builtins from '../coreutils/__exports__';
+import builtins from '../coreutils/__exports__.js';
 
 export class BuiltinCommandProvider {
     async lookup (id) {

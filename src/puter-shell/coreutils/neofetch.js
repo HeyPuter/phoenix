@@ -1,4 +1,4 @@
-import { SHELL_VERSIONS } from "../../meta/versions";
+import { SHELL_VERSIONS } from "../../meta/versions.js";
 
 const logo = `
              ▄████▄  ▄▄█████▄_
