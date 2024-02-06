@@ -280,15 +280,31 @@ const ReadlineProcessor = ReadlineProcessorBuilder(
 class HistoryManager {
     constructor () {
         this.items = [];
-        this.index = 0;
+        this.index_ = 0;
         this.listeners_ = {};
+    }
+
+    log (...a) {
+        // TODO: proper logging and verbosity config
+        // console.log('[HistoryManager]', ...a);
+    }
+
+    get index () {
+        return this.index_;
+    }
+
+    set index (v) {
+        this.log('setting index', v);
+        this.index_ = v;
     }
 
     get () {
         return this.items[this.index];
     }
 
-    save (data) {
+    save (data, { opt_debug } = {}) {
+        this.log('saving', data, 'at', this.index,
+            ...(opt_debug ? ['from', opt_debug] : []));
         this.items[this.index] = data;
 
         if ( this.listeners_.hasOwnProperty('add') ) {
@@ -332,7 +348,17 @@ class Readline {
         // TODO: this condition, redundant to the one in ANSIShell,
         // is an indication that HistoryManager
         if ( result.trim() !== '' ) {
-            this.history.save(result);
+            // console.log('[HistoryManager] len?', this.history.items.length);
+            if (
+                this.history.items.length !== 0 &&
+                this.history.index !== this.history.items.length
+            ) {
+                // console.log('[HistoryManager] POP');
+                // remove last item
+                this.history.items.pop();
+            }
+            this.history.index = this.history.items.length;
+            this.history.save(result, { opt_debug: 'post-readline' });
             this.history.index++;
         }
 
