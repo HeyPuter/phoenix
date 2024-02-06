@@ -48,6 +48,8 @@ class Token {
             console.log('component', component);
             value += component.text;
         }
+
+        return value;
     }
 
     async resolve (ctx) {

@@ -179,7 +179,12 @@ export class ANSIShell extends EventTarget {
             }
         });
         
-        await pipeline.execute(executionCtx);
+        try {
+            await pipeline.execute(executionCtx);
+        } catch (e) {
+            this.ctx.externs.out.write('error: ' + e.message + '\n');
+            console.log(e);
+        }
     }
 
     expandPromptString (str) {
