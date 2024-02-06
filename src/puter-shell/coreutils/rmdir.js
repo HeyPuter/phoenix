@@ -6,22 +6,14 @@ import path from "path-browserify";
 
 // DRY: very similar to `cd`
 export default {
-    name: 'rm',
+    name: 'rmdir',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
-            dir: {
+            parents: {
                 type: 'boolean',
-                short: 'd'
-            },
-            recursive: {
-                type: 'boolean',
-                short: 'r'
-            },
-            force: {
-                type: 'boolean',
-                short: 'f'
+                short: 'p'
             }
         }
     },
@@ -37,8 +29,6 @@ export default {
             target = path.resolve(ctx.vars.pwd, target);
         }
 
-        await filesystem.rm(target, { recursive: values.recursive })
+        await filesystem.rmdir(target);
     }
 };
-
-

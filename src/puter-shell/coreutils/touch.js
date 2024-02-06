@@ -8,7 +8,7 @@ export default {
     },
     execute: async ctx => {
         const { positionals } = ctx.locals;
-        const { puterShell } = ctx.externs;
+        const { filesystem } = ctx.platform;
 
         if ( positionals.length === 0 ) {
             await ctx.externs.err.write('touch: missing file operand');
@@ -25,28 +25,17 @@ export default {
 
         for ( let i=0 ; i < positionals.length ; i++ ) {
             const path = resolve(positionals[i]);
-            const result = await puterShell.command(
-                'call-puter-api',
-                { command: 'stat', params: { path } }
-            );
-            // await ctx.externs.out.write(
-            //     JSON.stringify(result, undefined, '  ')
-            // );
-            if ( ! result?.$ === 'error' ) continue;
+            
+            let stat = null;
+            try {
+                stat = await filesystem.stat(path);
+            } catch (e) {
+                if ( e.code !== 'subject_does_not_exist' ) throw e;
+            }
 
-            const file = new Blob(['']);
+            if ( stat ) continue;
 
-            // DRY: similar concern in: mv
-            const dstPath = path_.dirname(path);
-            const dstName = path_.basename(path);
-
-            await puterShell.command(
-                'fs:write',
-                {
-                    path: dstPath + '/' + dstName,
-                    file,
-                }
-            );
+            await filesystem.write(path, '');
         }
     }
 }

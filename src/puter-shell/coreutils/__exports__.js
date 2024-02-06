@@ -18,6 +18,7 @@ import module_printhist from './printhist.js'
 import module_putercmd from './putercmd.js'
 import module_pwd from './pwd.js'
 import module_rm from './rm.js'
+import module_rmdir from './rmdir.js'
 import module_sample_data from './sample-data.js'
 import module_tail from './tail.js'
 import module_test from './test.js'
@@ -45,6 +46,7 @@ export default {
     "putercmd": module_putercmd,
     "pwd": module_pwd,
     "rm": module_rm,
+    "rmdir": module_rmdir,
     "sample-data": module_sample_data,
     "tail": module_tail,
     "test": module_test,

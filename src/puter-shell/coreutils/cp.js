@@ -8,7 +8,8 @@ export default {
     },
     execute: async ctx => {
         const { positionals } = ctx.locals;
-        const { out, err, puterShell } = ctx.externs;
+        const { out, err } = ctx.externs;
+        const { filesystem } = ctx.platform;
 
         if ( positionals.length < 1 ) {
             err.write('mv: missing file operand\n');
@@ -36,33 +37,6 @@ export default {
         const srcAbsPath = resolve(srcRelPath);
         let   dstAbsPath = resolve(dstRelPath);
 
-        // TODO: check if destination is a directory
-        const statOfDst = await puterShell.command(
-            'call-puter-api', {
-                command: 'stat',
-                params: { path: dstAbsPath }
-            }
-        );
-
-        let isDir = statOfDst.$ !== 'error' && statOfDst.is_dir;
-
-        if ( statOfDst.$ === 'error' ) {
-            if ( statOfDst.status === 404 ) console.log('YES IS 404');
-        }
-
-        console.log('dest is dir?', isDir);
-
-        if ( isDir ) {
-            const name = path_.basename(srcAbsPath);
-            dstAbsPath = path_.join(dstAbsPath, name);
-        }
-
-        const result = await puterShell.command(
-            'fs:copy', {
-                source: srcAbsPath,
-                destination: dstAbsPath,
-                overwrite: true
-            }
-        );
+        await filesystem.copy(srcAbsPath, dstAbsPath);
     }
 }

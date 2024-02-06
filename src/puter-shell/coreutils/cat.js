@@ -9,26 +9,16 @@ export default {
     output: 'text',
     execute: async ctx => {
         const { positionals, values } = ctx.locals;
-        const { puterShell } = ctx.externs;
+        const { filesystem } = ctx.platform;
 
         for ( const relPath of positionals ) {
             // DRY: also done in mkdir
             const absPath = relPath.startsWith('/') ? relPath :
                 path.resolve(ctx.vars.pwd, relPath);
 
-            const result = await puterShell.command(
-                'call-puter-api', {
-                    command: 'read',
-                    params: { path: absPath }
-                }
-            );
-            
-            if ( result.$ === 'error' ) {
-                ctx.externs.err.write('cat: error: ' + result.message + '\n');
-                return;
-            }
+            const result = await filesystem.read(absPath);
 
-            ctx.externs.out.write(result.message);
+            await ctx.externs.out.write(result);
         }
     }
 }

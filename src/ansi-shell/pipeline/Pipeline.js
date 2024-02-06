@@ -233,12 +233,20 @@ export class PreparedCommand {
         try {
             await command.execute(ctx);
         } catch (e) {
-            await ctx.externs.err.write(
-                '\x1B[31;1m' +
-                command.name + ': ' +
-                e.toString() + '\x1B[0m\n'
-            );
-            ctx.locals.exit = -1;
+            if ( e.code ) {
+                await ctx.externs.err.write(
+                    '\x1B[31;1m' +
+                    command.name + ': ' +
+                    e.message + '\x1B[0m\n'
+                );
+            } else {
+                await ctx.externs.err.write(
+                    '\x1B[31;1m' +
+                    command.name + ': ' +
+                    e.toString() + '\x1B[0m\n'
+                );
+                ctx.locals.exit = -1;
+            }
         }
 
         // ctx.externs.in?.close?.();
