@@ -103,6 +103,10 @@ class ShellConstructsPStratumImpl {
                     this.pop();
                     return;
                 }
+                if ( value.$ === 'op.pipe' ) {
+                    this.pop();
+                    return;
+                }
                 if ( value.$ === 'op.redirect' ) {
                     this.push('redirect', { direction: value.direction });
                     lexer.next();

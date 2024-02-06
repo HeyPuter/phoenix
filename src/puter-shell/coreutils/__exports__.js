@@ -7,6 +7,7 @@ import module_clear from './clear.js'
 import module_cp from './cp.js'
 import module_dcall from './dcall.js'
 import module_echo from './echo.js'
+import module_grep from './grep.js'
 import module_help from './help.js'
 import module_jq from './jq.js'
 import module_ls from './ls.js'
@@ -35,6 +36,7 @@ export default {
     "cp": module_cp,
     "dcall": module_dcall,
     "echo": module_echo,
+    "grep": module_grep,
     "help": module_help,
     "jq": module_jq,
     "ls": module_ls,
