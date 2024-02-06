@@ -89,6 +89,11 @@ export class ANSIShell extends EventTarget {
             executionCtx,
         );
 
+        if ( input.trim() === '' ) {
+            this.ctx.externs.out.write('');
+            return;
+        }
+
         // Specially-processed inputs for debug features
         if ( input.startsWith('%%%') ) {
             this.ctx.externs.out.write('%%%: interpreting as debug instruction\n');

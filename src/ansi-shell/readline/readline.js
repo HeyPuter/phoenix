@@ -329,8 +329,12 @@ class Readline {
             commandCtx,
         });
 
-        this.history.save(result);
-        this.history.index++;
+        // TODO: this condition, redundant to the one in ANSIShell,
+        // is an indication that HistoryManager
+        if ( result.trim() !== '' ) {
+            this.history.save(result);
+            this.history.index++;
+        }
 
         return result;
     }
