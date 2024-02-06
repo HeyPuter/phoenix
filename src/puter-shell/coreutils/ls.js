@@ -23,6 +23,22 @@ function formatLsTimestamp(unixTimestamp) {
     }
 }
 
+const B_to_human_readable = B => {
+    const KiB = B / 1024;
+    const MiB = KiB / 1024;
+    const GiB = MiB / 1024;
+    const TiB = GiB / 1024;
+    if ( TiB > 1 ) {
+        return `${TiB.toFixed(3)} TiB`;
+    } else if ( GiB > 1 ) {
+        return `${GiB.toFixed(3)} GiB`;
+    } else if ( MiB > 1 ) {
+        return `${MiB.toFixed(3)} MiB`;
+    } else {
+        return `${KiB.toFixed(3)} KiB`;
+    }
+}
+
 export default {
     name: 'ls',
     args: {
@@ -37,9 +53,23 @@ export default {
                 type: 'boolean',
                 short: 'l'
             },
+            'human-readable': {
+                type: 'boolean',
+                short: 'h'
+            },
             time: {
                 type: 'string',
-            }
+            },
+            S: {
+                type: 'boolean',
+            },
+            t: {
+                type: 'boolean',
+            },
+            reverse: {
+                type: 'boolean',
+                short: 'r',
+            },
         }
     },
     execute: async ctx => {
@@ -74,8 +104,39 @@ export default {
             let path = paths[i];
             await showHeadings({ i, path });
             path = resolve(path);
-            const result = await filesystem.readdir(path);
+            let result = await filesystem.readdir(path);
             console.log('ls items', result);
+
+            if ( ! values.all ) {
+                result = result.filter(item => !item.name.startsWith('.'));
+            } 
+
+            const reverse_sort = values.reverse;
+            const decsort = (delegate) => {
+                if ( ! reverse_sort ) return delegate;
+                return (a, b) => -delegate(a, b);
+            };
+
+            const time_properties = {
+                mtime: 'modified',
+                ctime: 'created',
+                atime: 'accessed',
+            };
+
+            if ( values.t ) {
+                const timeprop = time_properties[values.time || 'mtime'];
+                result = result.sort(decsort((a, b) => {
+                    return b[timeprop] - a[timeprop];
+                }));
+            }
+
+            if ( values.S ) {
+                result = result.sort(decsort((a, b) => {
+                    if ( a.is_dir && !b.is_dir ) return 1;
+                    if ( !a.is_dir && b.is_dir ) return -1;
+                    return b.size - a.size;
+                }));
+            }
 
             // const write_item = values.long
             //     ? item => {
@@ -115,12 +176,6 @@ export default {
 
 
             if ( values.long ) {
-                const time_properties = {
-                    mtime: 'modified',
-                    ctime: 'created',
-                    atime: 'accessed',
-                };
-
                 const time = values.time || 'mtime';
                 const items = result.map(item => {
                     const ts = item[time_properties[time]];
@@ -136,15 +191,21 @@ export default {
                     if ( item.subdomains && item.subdomains.length ) {
                         type = type.slice(0, 1) + 's';
                     }
+                    let size = item.size;
+                    if ( values['human-readable'] ) {
+                        size = B_to_human_readable(size);
+                    }
+                    if ( item.is_dir ) size = 'N/A';
                     return {
                         type: icons[type] || type,
                         name: col(type, item.name),
                         www: www,
+                        size: size,
                         [time_properties[time]]: formatLsTimestamp(ts),
                     };
                 });
                 const text = columnify(items, {
-                    columns: ['type', 'name', 'www', time_properties[time]],
+                    columns: ['type', 'name', 'www', 'size', time_properties[time]],
                     maxLineWidth: ctx.env.COLS,
                     config: {
                         // json: {
