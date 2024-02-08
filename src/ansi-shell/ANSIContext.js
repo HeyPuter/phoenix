@@ -15,6 +15,8 @@ export const ANSIContext = new Context({
         CHAR_TAB: '\t'.charCodeAt(0),
         CHAR_CSI: '['.charCodeAt(0),
         CHAR_OSC: ']'.charCodeAt(0),
+        CHAR_ETX: 0x03,
+        CHAR_EOT: 0x04,
         CHAR_ESC: 0x1B,
         CHAR_DEL: 0x7F,
         CHAR_BEL: 0x07,

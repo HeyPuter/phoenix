@@ -1,4 +1,5 @@
 import jsonQuery from 'json-query';
+import { signals } from '../../ansi-shell/signals';
 
 export default {
     name: 'jq',
@@ -18,6 +19,10 @@ export default {
     
         // Read one line at a time
         const { in_, out, err } = ctx.externs;
+
+        ctx.externs.sig.on((signal) => {
+            console.log('test', signal);
+        });
 
 
         console.log('input', in_);

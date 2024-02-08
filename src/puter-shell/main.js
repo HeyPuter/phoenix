@@ -4,6 +4,7 @@ import ReadlineLib from "../ansi-shell/readline/readline.js";
 
 // TODO: auto-gen argument parser registry from files
 import SimpleArgParser from "../ansi-shell/arg-parsers/simple-parser.js";
+import ErrorsDecorator from "../ansi-shell/decorators/errors.js";
 import { ANSIShell } from "../ansi-shell/ANSIShell.js";
 import { Context } from "contextlink";
 import { SHELL_VERSIONS } from "../meta/versions.js";
@@ -13,6 +14,10 @@ import { CreateChatHistoryPlugin } from './plugins/ChatHistoryPlugin.js';
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
+};
+
+const decorator_registry = {
+    [ErrorsDecorator.name]: ErrorsDecorator
 };
 
 export const launchPuterShell = async (ctx) => {
@@ -48,6 +53,7 @@ export const launchPuterShell = async (ctx) => {
         }),
         registries: new Context({
             argparsers: argparser_registry,
+            decorators: decorator_registry,
             // While we use the BuiltinCommandProvider to provide the
             // functionality of command lookup, we still need a registry
             // of builtins to support the `help` command.

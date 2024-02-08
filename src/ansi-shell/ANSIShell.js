@@ -1,3 +1,4 @@
+import { ConcreteSyntaxError } from "./ConcreteSyntaxError.js";
 import { Pipeline } from "./pipeline/Pipeline.js";
 
 export class ANSIShell extends EventTarget {
@@ -108,7 +109,17 @@ export class ANSIShell extends EventTarget {
         }
         
         // TODO: catch here, but errors need to be more structured first
-        await this.runPipeline(input);
+        try {
+            await this.runPipeline(input);
+        } catch (e) {
+            if ( e instanceof ConcreteSyntaxError ) {
+                const here = e.print_here(input);
+                this.ctx.externs.out.write(here + '\n');
+            }
+            this.ctx.externs.out.write('error: ' + e.message + '\n');
+            console.log(e);
+            return;
+        }
     }
 
     readtoken (str) {
@@ -161,15 +172,7 @@ export class ANSIShell extends EventTarget {
             return;
         }
         
-        let pipeline;
-        try {
-            pipeline = await Pipeline.createFromAST(this.ctx, ast);
-        } catch (e) {
-            this.ctx.externs.out.write('error: ' + e.message + '\n');
-            console.log(e);
-            return;
-        }
-        
+        const pipeline = await Pipeline.createFromAST(this.ctx, ast);
 
         const executionCtx = this.ctx.sub({
             vars: this.variables,
@@ -179,12 +182,7 @@ export class ANSIShell extends EventTarget {
             }
         });
         
-        try {
-            await pipeline.execute(executionCtx);
-        } catch (e) {
-            this.ctx.externs.out.write('error: ' + e.message + '\n');
-            console.log(e);
-        }
+        await pipeline.execute(executionCtx);
     }
 
     expandPromptString (str) {

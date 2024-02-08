@@ -18,6 +18,8 @@ import { MemReader } from "../ioutil/MemReader.js";
 import { MemWriter } from "../ioutil/MemWriter.js";
 import { MultiWriter } from "../ioutil/MultiWriter.js";
 import { NullifyWriter } from "../ioutil/NullifyWriter.js";
+import { ConcreteSyntaxError } from "../ConcreteSyntaxError.js";
+import { SignalReader } from "../ioutil/SignalReader.js";
 
 class Token {
     static createFromAST (ctx, ast) {
@@ -25,9 +27,17 @@ class Token {
             throw new Error('expected token node');
         }
 
+        console.log('ast has cst?',
+            ast,
+            ast.components?.[0]?.$cst
+        )
+
         return new Token(ast);
     }
-    constructor (ast) { this.ast = ast; }
+    constructor (ast) {
+        this.ast = ast;
+        this.$cst = ast.components?.[0]?.$cst;
+    }
     maybeStaticallyResolve (ctx) {
         // If the only components are of type 'symbol' and 'string.segment'
         // then we can statically resolve the value of the token.
@@ -103,6 +113,11 @@ export class PreparedCommand {
             : command_token;
 
         if ( command === undefined ) {
+            console.log('command token?', command_token);
+            throw new ConcreteSyntaxError(
+                `no command: ${JSON.stringify(cmd)}`,
+                command_token.$cst,
+            );
             throw new Error('no command: ' + JSON.stringify(cmd));
         }
 
@@ -163,6 +178,7 @@ export class PreparedCommand {
         }));
 
         const { argparsers } = this.ctx.registries;
+        const { decorators } = this.ctx.registries;
 
         let in_ = this.ctx.externs.in_;
         if ( this.inputRedirect ) {
@@ -187,6 +203,22 @@ export class PreparedCommand {
             console.log('INPUTT CONTESNTSSS...', response.message);
             in_ = new MemReader(response.message);
         }
+
+        // simple naive implementation for now
+        const sig = {
+            listeners_: [],
+            emit (signal) {
+                for ( const listener of this.listeners_ ) {
+                    listener(signal);
+                }
+            },
+            on (listener) {
+                this.listeners_.push(listener);
+            }
+        };
+
+        in_ = new SignalReader({ delegate: in_, sig });
+
         if ( command.input?.syncLines ) {
             in_ = new SyncLinesReader({ delegate: in_ });
         }
@@ -208,6 +240,7 @@ export class PreparedCommand {
             externs: {
                 in_,
                 out,
+                sig,
             },
             cmdExecState: {
                 valid: true
@@ -231,9 +264,20 @@ export class PreparedCommand {
             ctx.externs.out.close();
             return;
         }
+
+        let execute = command.execute.bind(command);
+        if ( command.decorators ) {
+            for ( const decoratorId in command.decorators ) {
+                const params = command.decorators[decoratorId];
+                const decorator = decorators[decoratorId];
+                execute = decorator.decorate(execute, {
+                    command, params, ctx
+                });
+            }
+        }
         
         try {
-            await command.execute(ctx);
+            await execute(ctx);
         } catch (e) {
             if ( e.code ) {
                 await ctx.externs.err.write(

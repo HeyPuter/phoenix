@@ -1,4 +1,6 @@
 import path from "path-browserify";
+import { validate_string } from "./coreutil_lib/validate";
+import { EMPTY } from "../../util/singleton";
 
 // DRY: very similar to `cd`
 export default {
@@ -13,6 +15,7 @@ export default {
             }
         }
     },
+    decorators: { errors: EMPTY },
     execute: async ctx => {
         // ctx.params to access processed args
         // ctx.args to access raw args
@@ -21,6 +24,8 @@ export default {
 
         let [ target ] = positionals;
 
+        validate_string(target, { name: 'path' });
+
         if ( ! target.startsWith('/') ) {
             target = path.resolve(ctx.vars.pwd, target);
         }
@@ -28,9 +33,7 @@ export default {
         const result = await filesystem.mkdir(target);
 
         if ( result.$ === 'error' ) {
-            ctx.externs.err.write('mkdir: error: ' + result.message + '\n');
-            return;
+            throw new Error(result.message);
         }
     }
 };
-

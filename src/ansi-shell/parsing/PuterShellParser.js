@@ -12,7 +12,8 @@ export class PuterShellParser {
         const sp = new StrataParser();
         sp.add(new StringPStratumImpl(input));
         // TODO: optimize by re-using this parser
-        buildParserFirstHalf(sp, "interpreting");
+        // buildParserFirstHalf(sp, "interpreting");
+        buildParserFirstHalf(sp, "syntaxHighlighting");
         buildParserSecondHalf(sp);
         const result = sp.parse();
         if ( sp.error ) {
