@@ -22,8 +22,10 @@ export class SignalReader extends ProxyReader {
             return { value, done };
         }
 
-        if ( ! value instanceof Uint8Array ) {
-            value = encoder.encode(value);
+        const tmp_value = value;
+
+        if ( ! tmp_value instanceof Uint8Array ) {
+            tmp_value = encoder.encode(value);
         }
 
         // show hex for debugging
@@ -31,7 +33,7 @@ export class SignalReader extends ProxyReader {
         console.log('value??', value)
 
         for ( const [key, signal] of mapping ) {
-            if ( value.includes(key) ) {
+            if ( tmp_value.includes(key) ) {
                 console.log('GOPT IT!', key)
                 this.sig.emit(signal);
                 // if ( signal === signals.SIGQUIT ) {
