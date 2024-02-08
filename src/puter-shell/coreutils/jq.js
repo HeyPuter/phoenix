@@ -1,5 +1,6 @@
 import jsonQuery from 'json-query';
 import { signals } from '../../ansi-shell/signals';
+import { Exit } from './coreutil_lib/exit';
 
 export default {
     name: 'jq',
@@ -20,16 +21,25 @@ export default {
         // Read one line at a time
         const { in_, out, err } = ctx.externs;
 
+        let rslv_sigint;
+        const p_int = new Promise(rslv => rslv_sigint = rslv);
         ctx.externs.sig.on((signal) => {
-            console.log('test', signal);
+            if ( signal === signals.SIGINT ) {
+                rslv_sigint({ is_sigint: true });
+            }
         });
 
 
-        console.log('input', in_);
-
         let line, done;
         const next_line = async () => {
-            ({ value: line, done } = await in_.read());
+            let is_sigint = false;
+            ({ value: line, done, is_sigint } = await Promise.race([
+                p_int, in_.read(),
+            ]));
+            if ( is_sigint ) {
+                throw new Exit(130);
+            }
+            // ({ value: line, done } = await in_.read());
         }
         for ( await next_line() ; ! done ; await next_line() ) {
             let data; try {

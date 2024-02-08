@@ -20,6 +20,7 @@ import { MultiWriter } from "../ioutil/MultiWriter.js";
 import { NullifyWriter } from "../ioutil/NullifyWriter.js";
 import { ConcreteSyntaxError } from "../ConcreteSyntaxError.js";
 import { SignalReader } from "../ioutil/SignalReader.js";
+import { Exit } from "../../puter-shell/coreutils/coreutil_lib/exit.js";
 
 class Token {
     static createFromAST (ctx, ast) {
@@ -276,10 +277,13 @@ export class PreparedCommand {
             }
         }
         
+        let exit_code = 0;
         try {
             await execute(ctx);
         } catch (e) {
-            if ( e.code ) {
+            if ( e instanceof Exit ) {
+                exit_code = e.code;
+            } else if ( e.code ) {
                 await ctx.externs.err.write(
                     '\x1B[31;1m' +
                     command.name + ': ' +

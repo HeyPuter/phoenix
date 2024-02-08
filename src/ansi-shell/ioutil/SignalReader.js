@@ -36,9 +36,9 @@ export class SignalReader extends ProxyReader {
             if ( tmp_value.includes(key) ) {
                 console.log('GOPT IT!', key)
                 this.sig.emit(signal);
-                // if ( signal === signals.SIGQUIT ) {
-                //     return { done: true };
-                // }
+                if ( signal === signals.SIGQUIT ) {
+                    return { done: true };
+                }
             }
         }
 
