@@ -4,7 +4,7 @@ export default class WhitespaceParserImpl {
         outputs: 'node'
     }
     static data = {
-        whitespaceCharCodes: ' \r\n\t'.split('')
+        whitespaceCharCodes: ' \r\t'.split('')
             .map(chr => chr.charCodeAt(0))
     }
     parse (lexer) {

@@ -114,6 +114,7 @@ export const buildParserFirstHalf = (sp, profile) => {
             entry: 'command',
             contexts: {
                 command: [
+                    parserBuilder.def(a => a.literal('\n').assign({ $: 'op.line-terminator' })),
                     parserFactory.create(WhitespaceParserImpl),
                     parserBuilder.def(a => a.literal('|').assign({ $: 'op.pipe' })),
                     parserBuilder.def(a => a.literal('>').assign({ $: 'op.redirect', direction: 'out' })),
@@ -149,6 +150,12 @@ export const buildParserFirstHalf = (sp, profile) => {
                     parserFactory.create(StrUntilParserImpl, {
                         stopChars: [...list_stoptoken, '$'],
                     }, { assign: { $: 'symbol' } }),
+                    {
+                        // TODO: redundant definition to the one in 'command'
+                        parser: 
+                            parserBuilder.def(a => a.literal('\n').assign({ $: 'op.line-terminator' })),
+                        transition: { pop: true }
+                    },
                     {
                         parser: parserFactory.create(WhitespaceParserImpl),
                         transition: { pop: true }

@@ -69,9 +69,14 @@ class ShellConstructsPStratumImpl {
             },
             exit ({ node }) {
                 console.log('!!!!!',this.stack_top.node)
-                this.stack_top.node.components.push(node);
+                this.stack_top.node.statements.push(node);
             },
             next ({ value, lexer }) {
+                if ( value.$ === 'op.line-terminator' ) {
+                    console.log('the stack??', this.stack)
+                    this.pop();
+                    return;
+                }
                 if ( value.$ === 'op.close' ) {
                     if ( this.stack.length === 1 ) {
                         throw new Error('unexpected close');
@@ -95,6 +100,10 @@ class ShellConstructsPStratumImpl {
                 node.outputRedirects = [];
             },
             next ({ value, lexer }) {
+                if ( value.$ === 'op.line-terminator' ) {
+                    this.pop();
+                    return;
+                }
                 if ( value.$ === 'whitespace' ) {
                     lexer.next();
                     return;
@@ -156,6 +165,11 @@ class ShellConstructsPStratumImpl {
                 this.stack_top.node.tokens.push(node);
             },
             next ({ value, lexer }) {
+                if ( value.$ === 'op.line-terminator' ) {
+                    console.log('well, got here')
+                    this.pop();
+                    return;
+                }
                 if ( value.$ === 'string.dquote' ) {
                     this.push('string', { quote: '"' });
                     lexer.next();
@@ -187,6 +201,11 @@ class ShellConstructsPStratumImpl {
             },
             next ({ node, value, lexer }) {
                 console.log('WHAT THO', node)
+                if ( value.$ === 'op.line-terminator' && node.quote === null ) {
+                    console.log('well, got here')
+                    this.pop();
+                    return;
+                }
                 if ( value.$ === 'string.close' && node.quote !== null ) {
                     lexer.next();
                     this.pop();
@@ -218,6 +237,10 @@ class ShellConstructsPStratumImpl {
         this.stack = [];
         this.done_ = false;
 
+        this._init();
+    }
+
+    _init () {
         this.push('pipeline');
     }
 
@@ -351,7 +374,32 @@ class ShellConstructsPStratumImpl {
     }
 }
 
-export const buildParserSecondHalf = (sp) => {
+class MultilinePStratumImpl extends ShellConstructsPStratumImpl {
+    static states = [
+        {
+            name: 'script',
+            enter ({ node }) {
+                node.$ = 'script';
+                node.statements = [];
+            },
+            next ({ value, lexer }) {
+                if ( value.$ === 'op.line-terminator' ) {
+                    lexer.next();
+                    return;
+                }
+
+                this.push('pipeline');
+            }
+        },
+        ...ShellConstructsPStratumImpl.states,
+    ];
+
+    _init () {
+        this.push('script');
+    }
+}
+
+export const buildParserSecondHalf = (sp, { multiline } = {}) => {
     const parserFactory = new ParserFactory();
     const parserRegistry = StrataParseFacade.getDefaultParserRegistry();
 
@@ -361,5 +409,10 @@ export const buildParserSecondHalf = (sp) => {
     );
 
     // sp.add(new ReducePrimitivesPStratumImpl());
-    sp.add(new ShellConstructsPStratumImpl());
+    if ( multiline ) {
+        console.log('USING MULTILINE');
+        sp.add(new MultilinePStratumImpl());
+    } else {
+        sp.add(new ShellConstructsPStratumImpl());
+    }
 }

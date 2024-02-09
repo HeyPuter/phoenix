@@ -176,8 +176,6 @@ export class ANSIShell extends EventTarget {
             );
             return;
         }
-        
-        const pipeline = await Pipeline.createFromAST(this.ctx, ast);
 
         const executionCtx = this.ctx.sub({
             vars: this.variables,
@@ -186,6 +184,8 @@ export class ANSIShell extends EventTarget {
                 pwd: this.variables.pwd,
             }
         });
+        
+        const pipeline = await Pipeline.createFromAST(executionCtx, ast);
         
         await pipeline.execute(executionCtx);
     }

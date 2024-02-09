@@ -110,7 +110,7 @@ export class PreparedCommand {
         const { commandProvider } = ctx.externs;
 
         const command = cmd
-            ? await commandProvider.lookup(cmd)
+            ? await commandProvider.lookup(cmd, { ctx })
             : command_token;
 
         if ( command === undefined ) {
@@ -164,7 +164,7 @@ export class PreparedCommand {
             const cmd = await command.resolve(this.ctx);
             console.log('RUNNING CMD?', cmd)
             const { commandProvider } = this.ctx.externs;
-            command = await commandProvider.lookup(cmd);
+            command = await commandProvider.lookup(cmd, { ctx: this.ctx });
             if ( command === undefined ) {
                 throw new Error('no command: ' + JSON.stringify(cmd));
             }

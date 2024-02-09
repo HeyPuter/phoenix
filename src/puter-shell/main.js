@@ -15,6 +15,8 @@ import { Pipe } from '../ansi-shell/pipeline/Pipe.js';
 import { Coupler } from '../ansi-shell/pipeline/Coupler.js';
 import { BetterReader } from 'dev-pty';
 import { MultiWriter } from '../ansi-shell/ioutil/MultiWriter.js';
+import { CompositeCommandProvider } from './providers/CompositeCommandProvider.js';
+import { ScriptCommandProvider } from './providers/ScriptCommandProvider.js';
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
@@ -55,7 +57,11 @@ export const launchPuterShell = async (ctx) => {
         || 'https://api.puter.com';
     await sdkv2.setAPIOrigin(source_without_trailing_slash);
 
-    const commandProvider = new BuiltinCommandProvider();
+    // const commandProvider = new BuiltinCommandProvider();
+    const commandProvider = new CompositeCommandProvider([
+        new BuiltinCommandProvider(),
+        new ScriptCommandProvider(),
+    ]);
 
     ctx = ctx.sub({
         externs: new Context({
