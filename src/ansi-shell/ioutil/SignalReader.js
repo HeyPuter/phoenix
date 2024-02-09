@@ -34,11 +34,10 @@ export class SignalReader extends ProxyReader {
 
         for ( const [key, signal] of mapping ) {
             if ( tmp_value.includes(key) ) {
-                console.log('GOPT IT!', key)
-                this.sig.emit(signal);
-                if ( signal === signals.SIGQUIT ) {
-                    return { done: true };
-                }
+                // this.sig.emit(signal);
+                // if ( signal === signals.SIGQUIT ) {
+                return { done: true };
+                // }
             }
         }
 

@@ -11,6 +11,10 @@ import { SHELL_VERSIONS } from "../meta/versions.js";
 import { PuterShellParser } from "../ansi-shell/parsing/PuterShellParser.js";
 import { BuiltinCommandProvider } from "./providers/BuiltinCommandProvider.js";
 import { CreateChatHistoryPlugin } from './plugins/ChatHistoryPlugin.js';
+import { Pipe } from '../ansi-shell/pipeline/Pipe.js';
+import { Coupler } from '../ansi-shell/pipeline/Coupler.js';
+import { BetterReader } from 'dev-pty';
+import { MultiWriter } from '../ansi-shell/ioutil/MultiWriter.js';
 
 const argparser_registry = {
     [SimpleArgParser.name]: SimpleArgParser
@@ -25,9 +29,22 @@ export const launchPuterShell = async (ctx) => {
     const config = ctx.config;
     const puterShell = ctx.puterShell;
 
+    // Need to replace `in` with something we can write to
+    const real_pipe = new Pipe();
+    const echo_pipe = new Pipe();
+    const out_writer = new MultiWriter({
+        delegates: [
+            echo_pipe.in,
+            real_pipe.in,
+        ]
+    })
+    new Coupler(ptt.in, out_writer);
+    const echo = new Coupler(echo_pipe.out, ptt.out);
+    const stdin = new BetterReader({ delegate: real_pipe.out });
+    echo.off();
 
     const readline = ReadlineLib.create({
-        in: ptt.in,
+        in: stdin,
         out: ptt.out
     });
 
@@ -44,8 +61,9 @@ export const launchPuterShell = async (ctx) => {
         externs: new Context({
             config, puterShell,
             readline: readline.readline.bind(readline),
-            in: ptt.in,
+            in: stdin,
             out: ptt.out,
+            echo,
             parser: new PuterShellParser(),
             commandProvider,
             sdkv2,

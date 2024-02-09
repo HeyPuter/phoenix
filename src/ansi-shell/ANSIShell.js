@@ -1,4 +1,7 @@
 import { ConcreteSyntaxError } from "./ConcreteSyntaxError.js";
+import { MultiWriter } from "./ioutil/MultiWriter.js";
+import { Coupler } from "./pipeline/Coupler.js";
+import { Pipe } from "./pipeline/Pipe.js";
 import { Pipeline } from "./pipeline/Pipeline.js";
 
 export class ANSIShell extends EventTarget {
@@ -85,10 +88,12 @@ export class ANSIShell extends EventTarget {
                 pwd: this.variables.pwd,
             }
         });
+        this.ctx.externs.echo.off();
         const input = await readline(
             this.expandPromptString(this.env.PS1),
             executionCtx,
         );
+        this.ctx.externs.echo.on();
 
         if ( input.trim() === '' ) {
             this.ctx.externs.out.write('');
@@ -107,7 +112,7 @@ export class ANSIShell extends EventTarget {
             this.debugFeatures[flag] = isOn;
             return; // don't run as a pipeline
         }
-        
+
         // TODO: catch here, but errors need to be more structured first
         try {
             await this.runPipeline(input);

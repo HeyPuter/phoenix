@@ -7,11 +7,15 @@ export class Coupler {
     constructor (source, target) {
         this.source = source;
         this.target = target;
+        this.on_ = true;
         this.isDone = new Promise(rslv => {
             this.resolveIsDone = rslv;
         })
         this.listenLoop_();
     }
+
+    off () { this.on_ = false; }
+    on () { this.on_ = true; }
 
     async listenLoop_ () {
         this.active = true;
@@ -24,7 +28,9 @@ export class Coupler {
                 this.resolveIsDone();
                 break;
             }
-            await this.target.write(value);
+            if ( this.on_ ) {
+                await this.target.write(value);
+            }
         }
     }
 }
