@@ -69,7 +69,12 @@ class ShellConstructsPStratumImpl {
             },
             exit ({ node }) {
                 console.log('!!!!!',this.stack_top.node)
-                this.stack_top.node.statements.push(node);
+                if ( this.stack_top?.node?.$ === 'script' ) {
+                    this.stack_top.node.statements.push(node);
+                }
+                if ( this.stack_top?.node?.$ === 'string' ) {
+                    this.stack_top.node.components.push(node);
+                }
             },
             next ({ value, lexer }) {
                 if ( value.$ === 'op.line-terminator' ) {
