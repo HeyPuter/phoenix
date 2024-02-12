@@ -29,6 +29,6 @@
   "workspaces": [
     "packages/pty",
     "packages/strataparse",
-    "packages/contextlink",
+    "packages/contextlink"
   ]
 }
