@@ -55,7 +55,7 @@ export default {
         lines[2] += COL + 'OS' + END + ': Puter'
         lines[3] += COL + 'Shell' + END + ': Puter Shell v' + SHELL_VERSIONS[0].v
         lines[4] += COL + 'Window' + END + `: ${ctx.env.COLS}x${ctx.env.ROWS}`
-        lines[5] += COL + 'Commands' + END + `: ${Object.keys(ctx.registries.commands).length}`
+        lines[5] += COL + 'Commands' + END + `: ${Object.keys(ctx.registries.builtins).length}`
 
         const colors = [[],[]];
         for ( let i=0 ; i < 16 ; i++ ) {
