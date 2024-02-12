@@ -1,5 +1,5 @@
 {
-    "ignore": ["**/!(*.js|*.css)", "config/*"],
+    "ignore": ["**/!(*.js|*.css)"],
     "license": "doc/license_header.txt",
     "licenseFormats": {
         "js": {
