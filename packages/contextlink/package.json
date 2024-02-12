@@ -7,7 +7,7 @@
     "test": "npx mocha"
   },
   "author": "Puter Technologies Inc.",
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-only",
   "devDependencies": {
     "mocha": "^10.2.0"
   },
