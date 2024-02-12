@@ -10,7 +10,7 @@ export default {
         // ctx.params to access processed args
         // ctx.args to access raw args
         const { positionals, values } = ctx.locals;
-        const { puterShell } = ctx.externs;
+        const { filesystem } = ctx.platform;
 
         let [ target ] = positionals;
 
@@ -18,12 +18,15 @@ export default {
             target = path.resolve(ctx.vars.pwd, target);
         }
 
-        const result = await puterShell.command('list', { path: target });
+        const result = await filesystem.readdir(target);
 
         if ( result.$ === 'error' ) {
             ctx.externs.err.write('cd: error: ' + result.message + '\n');
             return;
         }
+
+        ctx.externs.out.write(result.path + '\n');
+        ctx.externs.out.write('TEST\n');
 
         ctx.vars.pwd = target;
     }

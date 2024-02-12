@@ -183,26 +183,13 @@ export class PreparedCommand {
 
         let in_ = this.ctx.externs.in_;
         if ( this.inputRedirect ) {
-            const { puterShell } = this.ctx.externs;
+            const { filesystem } = this.ctx.platform;
             const dest_path = this.inputRedirect instanceof Token
                 ? await this.inputRedirect.resolve(this.ctx)
                 : this.inputRedirect;
-            const response = await puterShell.command(
-                'call-puter-api', {
-                    command: 'read',
-                    params: {
-                        path: resolve(this.ctx, dest_path),
-                    },
-                }
-            );
-            if ( response.$ !== 'message' ) {
-                throw new Error(
-                    // TODO: elaborate
-                    `error: could not get input file`
-                );
-            }
-            console.log('INPUTT CONTESNTSSS...', response.message);
-            in_ = new MemReader(response.message);
+            const response = await filesystem.read(
+                resolve(this.ctx, dest_path));
+            in_ = new MemReader(response);
         }
 
         // simple naive implementation for now
@@ -306,7 +293,7 @@ export class PreparedCommand {
         // TODO: need write command from puter-shell before this can be done
         for ( let i=0 ; i < this.outputRedirects.length ; i++ ) {
             console.log('output redirect??', this.outputRedirects[i]);
-            const { puterShell } = this.ctx.externs;
+            const { filesystem } = this.ctx.platform;
             const outputRedirect = this.outputRedirects[i];
             const dest_path = outputRedirect instanceof Token
                 ? await outputRedirect.resolve(this.ctx)
@@ -317,12 +304,8 @@ export class PreparedCommand {
                 outputMemWriters,
             })
             // TODO: error handling here
-            await puterShell.command(
-                'fs:write', {
-                    path: path,
-                    data: outputMemWriters[i].getAsBlob(),
-                }
-            );
+
+            await filesystem.write(path, outputMemWriters[i].getAsBlob());
         }
 
         console.log('OUTPUT WRITERS', outputMemWriters);

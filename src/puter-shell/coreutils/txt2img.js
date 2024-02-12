@@ -13,7 +13,7 @@ export default {
             return;
         }
 
-        const { puterShell } = ctx.externs;
+        const { drivers } = ctx.platform;
 
         let a_interface, a_method, a_args;
 
@@ -21,7 +21,7 @@ export default {
         a_method = 'generate';
         a_args = { prompt };
 
-        const result = await puterShell.command('driver-call', {
+        const result = await drivers.call({
             interface: a_interface,
             method: a_method,
             args: a_args,

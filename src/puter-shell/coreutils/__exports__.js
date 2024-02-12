@@ -16,7 +16,6 @@ import module_mv from './mv.js'
 import module_neofetch from './neofetch.js'
 import module_printenv from './printenv.js'
 import module_printhist from './printhist.js'
-import module_putercmd from './putercmd.js'
 import module_pwd from './pwd.js'
 import module_rm from './rm.js'
 import module_rmdir from './rmdir.js'
@@ -45,7 +44,6 @@ export default {
     "neofetch": module_neofetch,
     "printenv": module_printenv,
     "printhist": module_printhist,
-    "putercmd": module_putercmd,
     "pwd": module_pwd,
     "rm": module_rm,
     "rmdir": module_rmdir,

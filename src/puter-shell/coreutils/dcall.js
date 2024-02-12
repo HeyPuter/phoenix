@@ -8,7 +8,7 @@ export default {
         const { positionals } = ctx.locals;
         const [ method, json ] = positionals;
 
-        const { puterShell } = ctx.externs;
+        const { drivers } = ctx.platform;
 
         let a_interface, a_method, a_args;
         if ( method === 'test' ) {
@@ -29,7 +29,7 @@ export default {
             }
         }
 
-        const result = await puterShell.command('driver-call', {
+        const result = await drivers.call({
             interface: a_interface,
             method: a_method,
             args: a_args,

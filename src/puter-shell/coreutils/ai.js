@@ -13,7 +13,7 @@ export default {
             return;
         }
 
-        const { puterShell } = ctx.externs;
+        const { drivers } = ctx.platform;
         const { chatHistory } = ctx.plugins;
 
         let a_interface, a_method, a_args;
@@ -32,7 +32,7 @@ export default {
 
         console.log('THESE ARE THE MESSAGES', a_args.messages);
 
-        const result = await puterShell.command('driver-call', {
+        const result = await drivers.call({
             interface: a_interface,
             method: a_method,
             args: a_args,

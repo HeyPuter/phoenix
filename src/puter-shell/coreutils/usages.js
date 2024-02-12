@@ -7,9 +7,9 @@ export default {
     execute: async ctx => {
         const { positionals } = ctx.locals;
 
-        const { puterShell } = ctx.externs;
+        const { drivers } = ctx.platform;
 
-        const result = await puterShell.command('driver-usage');
+        const result = await drivers.usage();
 
         await ctx.externs.out.write(JSON.stringify(result, undefined, 2));
     }

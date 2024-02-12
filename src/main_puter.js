@@ -2,13 +2,10 @@ import { Context } from 'contextlink';
 import { launchPuterShell } from './puter-shell/main.js';
 import { CreateFilesystemProvider } from './platform/puter/filesystem.js';
 import { XDocumentPuterShell } from './puter-shell/XDocumentPuterShell.js';
+import { CreateDriversProvider } from './platform/puter/drivers.js';
 
 window.main_shell = async () => {
     const config = {};
-
-    const puterShell = new XDocumentPuterShell({
-        source: __CONFIG__['shell.href']
-    });
 
     let resolveConfigured = null;
     const configured_ = new Promise(rslv => {
@@ -31,26 +28,8 @@ window.main_shell = async () => {
         for ( const k in configValues ) {
             config[k] = configValues[k];
         }
-        puterShell.configure(config);
         resolveConfigured();
     });
-
-    // === Setup Puter Shell Iframe ===
-    let readyQueue = Promise.resolve();
-
-    {
-        const iframe = document.createElement('iframe');
-        const xdEl = document.getElementById('cross-document-container');
-
-        readyQueue = readyQueue.then(() => new Promise(rslv => {
-            puterShell.addEventListener('ready', rslv)
-        }));
-
-        xdEl.appendChild(iframe);
-        puterShell.attachToIframe(iframe);
-    }
-
-    await readyQueue;
 
     window.parent.postMessage({ $: 'ready' }, '*');
 
@@ -64,10 +43,10 @@ window.main_shell = async () => {
     await puterSDK.setAPIOrigin(source_without_trailing_slash);
 
     await launchPuterShell(new Context({
-        puterShell, // deprecated
         config, puterSDK,
         platform: new Context({
             filesystem: CreateFilesystemProvider({ puterSDK }),
+            drivers: CreateDriversProvider({ puterSDK }),
         }),
     }));
 };

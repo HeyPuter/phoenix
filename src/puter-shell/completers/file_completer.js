@@ -11,7 +11,7 @@ const resolve = (ctx, relPath) => {
 
 export class FileCompleter {
     async getCompetions (ctx, inputState) {
-        const { puterShell } = ctx.externs;
+        const { filesystem } = ctx.platform;
 
         if ( inputState.input === '' ) {
             return [];
@@ -23,7 +23,7 @@ export class FileCompleter {
 
         const completions = [];
 
-        const result = await puterShell.command('list', { path: dir });
+        const result = await filesystem.readdir(dir);
         if ( result == undefined ) {
             return [];
         }
