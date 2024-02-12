@@ -26,6 +26,11 @@ const decorator_registry = {
     [ErrorsDecorator.name]: ErrorsDecorator
 };
 
+const GH_LINK = {
+    'terminal': 'https://github.com/HeyPuter/terminal',
+    'phoenix': 'https://github.com/HeyPuter/phoenix',
+};
+
 export const launchPuterShell = async (ctx) => {
     const ptt = new XDocumentPTT();
     const config = ctx.config;
@@ -116,10 +121,41 @@ export const launchPuterShell = async (ctx) => {
         }))
     });
 
+    const fire = (text) => {
+        // Define fire-like colors (ANSI 256-color codes)
+        const fireColors = [202, 203, 124, 209];
+        
+        // Split the text into an array of characters
+        const chars = text.split('');
+
+        // Apply a fire-like color to each character
+        const fireText = chars.map(char => {
+            // Select a random fire color for each character
+            const colorCode = fireColors[Math.floor(Math.random() * fireColors.length)];
+            // Return the character wrapped in the ANSI escape code for the selected color
+            return `\x1b[38;5;${colorCode}m${char}\x1b[0m`;
+        }).join('');
+
+        return fireText;
+    }
+
+    const mklink = (url, text) => {
+        return `\x1b]8;;${url}\x07${text || url}\x1b]8;;\x07`
+    };
+
     ctx.externs.out.write(
-        `\x1B[35;1mPuter Shell\x1B[0m [v${SHELL_VERSIONS[0].v}]\n` +
+        `${fire('Phoenix Shell')} [v${SHELL_VERSIONS[0].v}]\n` +
         `⛷  try typing \x1B[34;1mhelp\x1B[0m or ` +
-        `\x1B[34;1mchangelog\x1B[0m to get started.\n`
+        `\x1B[34;1mchangelog\x1B[0m to get started.\n` +
+        '\n' +
+        `You're using ${
+            mklink(GH_LINK['phoenix'], fire('Phoenix Shell'))
+        } in ${
+            mklink(GH_LINK['terminal'], '\x1B[38:5:20mPuter\'s Terminal Emulator\x1B[0m')
+        }.\n` +
+        // `🔗  ${mklink('https://puter.com', 'puter.com')} ` +
+        ''
+        // `🔗  ${mklink('https://puter.com', 'puter.com')} ` +
     );
 
     if ( ! config.hasOwnProperty('puter.auth.token') ) {
@@ -129,8 +165,8 @@ export const launchPuterShell = async (ctx) => {
             `\x1B[31;1m` +
             ' You are not running this terminal or shell within puter.com\n' +
             `\x1B[0m` +
-            'Use of the shell outside of puter.com is still experimental. You \n' +
-            'will experience incomplete features and bugs.\n' +
+            'Use of the shell outside of puter.com is still experimental.\n' +
+            'You must enter the command \x1B[34;1m`login`\x1B[0m to access most functionality.\n' +
             ''
         );
     }

@@ -1,4 +1,4 @@
-if [ $(basename "$(pwd)") != "dev-ansi-terminal" ]; then
+if [ $(basename "$(pwd)") != "phoenix" ]; then
     echo "This should be run in the dev-ansi-termial repo"
     exit 1
 fi
@@ -17,5 +17,5 @@ cp -r ./dist/* ./release
 
 cd ../dev-puter-shell
 npx rollup -c rollup.config.js
-cp -r ./dist/* ../dev-ansi-terminal/release/puter-shell
+cp -r ./dist/* ../phoenix/release/puter-shell
 cd -
