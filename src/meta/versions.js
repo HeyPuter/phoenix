@@ -18,6 +18,18 @@
  */
 export const SHELL_VERSIONS = [
     {
+        v: '0.2.0',
+        changes: [
+            'brand change: Phoenix Shell',
+            'open-sourced under AGPL-3.0',
+            'new commands: ai, txt2img, jq, and more',
+            'added login command',
+            'coreutils updates',
+            'added command substitution',
+            'parser improvements',
+        ]
+    },
+    {
         v: '0.1.10',
         changes: [
             'new input parser',
