@@ -41,6 +41,13 @@ export class ANSIShell extends EventTarget {
     }
 
     export_ (k, v) {
+        if ( typeof v === 'function' ) {
+            Object.defineProperty(this.env, k, {
+                enumerable: true,
+                get: v
+            })
+            return;
+        }
         this.env[k] = v;
     }
 
@@ -49,6 +56,7 @@ export class ANSIShell extends EventTarget {
         const user = this.config['puter.auth.username'];
         this.variables.pwd = home;
         this.variables.home = home;
+        this.variables.user = user;
 
         // Computed values
         Object.defineProperty(this.env, 'PWD', {
@@ -66,8 +74,8 @@ export class ANSIShell extends EventTarget {
         })
 
         // Default values
-        this.export_('HOME', home);
-        this.export_('USER', user);
+        this.export_('HOME', () => this.variables.home);
+        this.export_('USER', () => this.variables.user);
         this.export_('TERM', 'xterm-256color');
         this.export_('TERM_PROGRAM', 'puter-ansi');
         this.export_('PS1', '[\\u@puter.com \\w]\\$ ');
@@ -191,7 +199,7 @@ export class ANSIShell extends EventTarget {
     }
 
     expandPromptString (str) {
-        str = str.replace('\\u', this.config['puter.auth.username']);
+        str = str.replace('\\u', this.variables.user);
         str = str.replace('\\w', this.variables.pwd);
         str = str.replace('\\$', '$');
         return str;

@@ -10,6 +10,7 @@ import module_echo from './echo.js'
 import module_grep from './grep.js'
 import module_help from './help.js'
 import module_jq from './jq.js'
+import module_login from './login.js'
 import module_ls from './ls.js'
 import module_mkdir from './mkdir.js'
 import module_mv from './mv.js'
@@ -38,6 +39,7 @@ export default {
     "grep": module_grep,
     "help": module_help,
     "jq": module_jq,
+    "login": module_login,
     "ls": module_ls,
     "mkdir": module_mkdir,
     "mv": module_mv,

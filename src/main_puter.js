@@ -36,7 +36,9 @@ window.main_shell = async () => {
     await configured_;
 
     const puterSDK = globalThis.puter;
-    await puterSDK.setAuthToken(config['puter.auth.token']);
+    if ( config['puter.auth.token'] ) {
+        await puterSDK.setAuthToken(config['puter.auth.token']);
+    }
     const source_without_trailing_slash =
         (config.source && config.source.replace(/\/$/, ''))
         || 'https://api.puter.com';
@@ -44,6 +46,7 @@ window.main_shell = async () => {
 
     await launchPuterShell(new Context({
         config, puterSDK,
+        externs: new Context({ puterSDK }),
         platform: new Context({
             filesystem: CreateFilesystemProvider({ puterSDK }),
             drivers: CreateDriversProvider({ puterSDK }),
