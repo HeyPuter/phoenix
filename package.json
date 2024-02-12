@@ -21,8 +21,6 @@
     "@pkgjs/parseargs": "^0.11.0",
     "cli-columns": "^4.0.0",
     "columnify": "^1.6.0",
-    "contextlink": "file://../dev-contextlink",
-    "hitide": "file://../dev-hitide",
     "json-query": "^2.2.2",
     "path-browserify": "^1.0.1",
     "xterm": "^5.1.0",
@@ -30,6 +28,7 @@
   },
   "workspaces": [
     "packages/pty",
-    "packages/strataparse"
+    "packages/strataparse",
+    "packages/contextlink",
   ]
 }
