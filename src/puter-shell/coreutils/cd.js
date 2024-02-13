@@ -43,9 +43,6 @@ export default {
             return;
         }
 
-        ctx.externs.out.write(result.path + '\n');
-        ctx.externs.out.write('TEST\n');
-
         ctx.vars.pwd = target;
     }
 };
