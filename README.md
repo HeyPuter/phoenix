@@ -1,5 +1,7 @@
 # Phoenix
 
+![animated demo](./doc/readme-gif.gif)
+
 `phoenix` is a pure-javascript shell built for [puter.com](https://puter.com).
 Following the spirit of open-source initiatives we've seen like
 [SerenityOS](https://serenityos.org/),
