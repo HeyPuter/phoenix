@@ -15,10 +15,21 @@ The shell is a work in progress. The following improvements are considered in-sc
   > examples include: readline syntax highlighting, hex view for binary streams
 - Platform support, so `phoenix` can run in more environments
 
-## Quickstart
+## Running Phoenix
 
-To run the shell, follow the instructions provided for
+### In a Browser
+
+You can use the [terminal on Puter](https://puter.com/app/terminal),
+or run from source by following the instructions provided for
 [Puter's terminal emulator](https://github.com/HeyPuter/terminal).
+
+### Running in Node
+
+Under node.js Phoenix acts as a shell for your operating system.
+This is a work-in-progress and lots of things are not working
+yet. If you'd like to try it out you can run `src/main_cli.js`.
+Check [this issue](https://github.com/HeyPuter/phoenix/issues/14)
+for updated information on our progress.
 
 ## What's on the Roadmap?
 
@@ -26,9 +37,7 @@ We're looking to continue improving the shell and broaden its usefulness.
 Here are a few ideas we have for the future:
 
 - local machine platform support
-  > Some effort has already been made to de-couple Puter platform support
-  > from the shell, so we only need to implement a `node` platform in
-  > [the src/platform directory](./src/platform).
+  > See [this issue](https://github.com/HeyPuter/phoenix/issues/14)
 - further support for the POSIX Command Language
   > Check our list of [missing features](doc/missing-posix.md)
 
