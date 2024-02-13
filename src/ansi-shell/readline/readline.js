@@ -78,6 +78,13 @@ const ReadlineProcessorBuilder = builder => builder
             return;
         }
 
+        if ( locals.byte === consts.CHAR_EOT ) {
+            externs.out.write('^D\n');
+            ctx.vars.result = '';
+            ctx.setState('end');
+            return;
+        }
+
         if ( locals.byte === consts.CHAR_FF ) {
             externs.out.write('\x1B[H\x1B[2J');
             externs.out.write(externs.prompt);

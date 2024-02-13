@@ -15,7 +15,19 @@ export class NodeStdioPTT {
         // this.out = process.stdout;
         // this.err = process.stderr;
 
-        this.in = ReadableStream.from(process.stdin).getReader();
+        // this.in = ReadableStream.from(process.stdin).getReader();
+
+        let readController;
+        const readableStream = new ReadableStream({
+            start: controller => {
+                readController = controller;
+            }
+        });
+        this.in = readableStream.getReader();
+        process.stdin.on('data', chunk => {
+            readController.enqueue(chunk);
+        });
+
         this.out = writestream_node_to_web(process.stdout);
         this.err = writestream_node_to_web(process.stderr);
 
@@ -30,6 +42,16 @@ export class NodeStdioPTT {
                     }
                 }
             });
+        });
+
+        // Trap SIGINT and SIGQUIT
+        process.on('SIGINT', () => {
+            readController.enqueue(new Uint8Array([3]));
+            process.exit(1);
+        });
+        process.stdin.on('end', () => {
+            globalThis.force_eot = true;
+            readController.enqueue(new Uint8Array([4]));
         });
     }
 

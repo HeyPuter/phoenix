@@ -113,7 +113,9 @@ export class ANSIShell extends EventTarget {
     }
 
     async doPromptIteration() {
-        console.log('prompt iteration');
+        if ( globalThis.force_eot ) {
+            process.exit(0);
+        }
         const { readline } = this.ctx.externs;
         // DRY: created the same way in runPipeline
         const executionCtx = this.ctx.sub({
