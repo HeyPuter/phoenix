@@ -141,7 +141,7 @@ export const launchPuterShell = async (ctx) => {
 
     const fire = (text) => {
         // Define fire-like colors (ANSI 256-color codes)
-        const fireColors = [202, 203, 124, 209];
+        const fireColors = [202, 208, 166];
         
         // Split the text into an array of characters
         const chars = text.split('');
