@@ -169,7 +169,7 @@ export const launchPuterShell = async (ctx) => {
         `You're using ${
             mklink(GH_LINK['phoenix'], fire('Phoenix Shell'))
         } in ${
-            mklink(GH_LINK['terminal'], '\x1B[38:5:20mPuter\'s Terminal Emulator\x1B[0m')
+            mklink(GH_LINK['terminal'], '\x1B[38:5:21mPuter\'s Terminal Emulator\x1B[0m')
         }.\n` +
         // `🔗  ${mklink('https://puter.com', 'puter.com')} ` +
         ''
