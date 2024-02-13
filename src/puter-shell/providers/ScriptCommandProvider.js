@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import path_ from "path-browserify";
-import { Pipeline } from "../../ansi-shell/pipeline/Pipeline";
+import { Pipeline } from "../../ansi-shell/pipeline/Pipeline.js";
 
 export class ScriptCommandProvider {
     async lookup (id, { ctx }) {

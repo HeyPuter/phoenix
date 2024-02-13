@@ -17,9 +17,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { Context } from 'contextlink';
-import { ANSIShell } from './ansi-shell/ANSIShell.js';
 import { launchPuterShell } from './puter-shell/main.js';
+import { NodeStdioPTT } from './pty/NodeStdioPTT.js';
+import { CreateFilesystemProvider } from './platform/node/filesystem.js';
+import { CreateEnvProvider } from './platform/node/env.js';
 
-const ctx = new Context();
+const ctx = new Context({
+    ptt: new NodeStdioPTT(),
+    config: {},
+    platform: new Context({
+        name: 'node',
+        filesystem: CreateFilesystemProvider(),
+        env: CreateEnvProvider(),
+    }),
+});
 
-const ansiShell = new ANSIShell(ctx);
+await launchPuterShell(ctx);

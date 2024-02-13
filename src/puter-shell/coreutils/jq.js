@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import jsonQuery from 'json-query';
-import { signals } from '../../ansi-shell/signals';
-import { Exit } from './coreutil_lib/exit';
+import { signals } from '../../ansi-shell/signals.js';
+import { Exit } from './coreutil_lib/exit.js';
 
 export default {
     name: 'jq',

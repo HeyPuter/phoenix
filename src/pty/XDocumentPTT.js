@@ -22,6 +22,8 @@ const encoder = new TextEncoder();
 
 export class XDocumentPTT {
     constructor() {
+        this.ioctl_listeners = {};
+
         this.readableStream = new ReadableStream({
             start: controller => {
                 this.readController = controller;
@@ -44,8 +46,29 @@ export class XDocumentPTT {
 
         window.addEventListener('message', evt => {
             if ( ! evt.source === window.parent ) return;
+
+            if ( evt.data.hasOwnProperty('$') ) {
+                if ( evt.data.$ === 'ioctl.set' ) {
+                    this.emit('ioctl.set', evt);
+                }
+            }
+
             if ( ! (evt?.data instanceof Uint8Array) ) return;
             this.readController.enqueue(evt.data);
         });
+    }
+
+    on (name, listener) {
+        if ( ! this.ioctl_listeners.hasOwnProperty(name) ) {
+            this.ioctl_listeners[name] = [];
+        }
+        this.ioctl_listeners[name].push(listener);
+    }
+
+    emit (name, evt) {
+        if ( ! this.ioctl_listeners.hasOwnProperty(name) ) return;
+        for ( const listener of this.ioctl_listeners[name] ) {
+            listener(evt);
+        }
     }
 }

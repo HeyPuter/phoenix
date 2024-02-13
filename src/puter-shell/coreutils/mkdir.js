@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import path from "path-browserify";
-import { validate_string } from "./coreutil_lib/validate";
-import { EMPTY } from "../../util/singleton";
+import { validate_string } from "./coreutil_lib/validate.js";
+import { EMPTY } from "../../util/singleton.js";
 
 // DRY: very similar to `cd`
 export default {

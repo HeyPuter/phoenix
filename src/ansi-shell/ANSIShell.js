@@ -70,11 +70,14 @@ export class ANSIShell extends EventTarget {
     }
 
     initializeReasonableDefaults() {
-        const home = '/' + this.config['puter.auth.username'];
-        const user = this.config['puter.auth.username'];
+        const { env } = this.ctx.platform;
+        const home = env.get('HOME');
+        const user = env.get('USER');
         this.variables.pwd = home;
         this.variables.home = home;
         this.variables.user = user;
+
+        this.variables.host = env.get('HOSTNAME');
 
         // Computed values
         Object.defineProperty(this.env, 'PWD', {
@@ -91,14 +94,20 @@ export class ANSIShell extends EventTarget {
             get: () => this.variables.size?.cols ?? 0
         })
 
+        this.export_('LANG', 'en_US.UTF-8');
+        this.export_('PS1', '[\\u@puter.com \\w]\\$ ');
+
+        for ( const k in env.getEnv() ) {
+            console.log('setting', k, env.get(k));
+            this.export_(k, env.get(k));
+        }
+
         // Default values
         this.export_('HOME', () => this.variables.home);
         this.export_('USER', () => this.variables.user);
         this.export_('TERM', 'xterm-256color');
         this.export_('TERM_PROGRAM', 'puter-ansi');
-        this.export_('PS1', '[\\u@puter.com \\w]\\$ ');
         // TODO: determine how localization will affect this
-        this.export_('LANG', 'en_US.UTF-8');
         // TODO: add TERM_PROGRAM_VERSION
         // TODO: add OLDPWD
     }
@@ -219,6 +228,7 @@ export class ANSIShell extends EventTarget {
     expandPromptString (str) {
         str = str.replace('\\u', this.variables.user);
         str = str.replace('\\w', this.variables.pwd);
+        str = str.replace('\\h', this.variables.host);
         str = str.replace('\\$', '$');
         return str;
     }

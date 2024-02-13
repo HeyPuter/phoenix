@@ -192,6 +192,8 @@ export default {
             }
 
 
+            const POSIX = filesystem.capabilities['readdir.posix-mode'];
+
 
             if ( values.long ) {
                 const time = values.time || 'mtime';
@@ -205,7 +207,13 @@ export default {
                                 ? ` +${item.subdomains.length - 1}`
                                 : ''
                         )
-                    let type = item.is_dir ? 'd-' : item.is_symlink ? 'l-' : '--';
+                    let type, mode;
+                    if ( POSIX ) {
+                        mode = item.mode_human_readable;
+                        type = mode.slice(0, 1) + '-';
+                    } else {
+                        type = item.is_dir ? 'd-' : item.is_symlink ? 'l-' : '--';
+                    }
                     if ( item.subdomains && item.subdomains.length ) {
                         type = type.slice(0, 1) + 's';
                     }
@@ -213,8 +221,12 @@ export default {
                     if ( values['human-readable'] ) {
                         size = B_to_human_readable(size);
                     }
-                    if ( item.is_dir ) size = 'N/A';
+                    if ( item.is_dir && ! POSIX ) size = 'N/A';
                     return {
+                        ...item,
+                        user: item.uid,
+                        group: item.gid,
+                        mode,
                         type: icons[type] || type,
                         name: col(type, item.name),
                         www: www,
@@ -223,7 +235,13 @@ export default {
                     };
                 });
                 const text = columnify(items, {
-                    columns: ['type', 'name', 'www', 'size', time_properties[time]],
+                    columns: [
+                        POSIX ? 'mode' : 'type',
+                        'name',
+                        ...(POSIX ? ['user', 'group'] : []),
+                        ...(filesystem.capabilities['readdir.www'] ? ['www'] : []),
+                        'size', time_properties[time],
+                    ],
                     maxLineWidth: ctx.env.COLS,
                     config: {
                         // json: {

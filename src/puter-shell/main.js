@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import builtins from './coreutils/__exports__.js';
-import { XDocumentPTT } from "../XDocumentPTT.js";
+import { XDocumentPTT } from "../pty/XDocumentPTT.js";
 import ReadlineLib from "../ansi-shell/readline/readline.js";
 
 // TODO: auto-gen argument parser registry from files
@@ -50,8 +50,8 @@ const GH_LINK = {
 };
 
 export const launchPuterShell = async (ctx) => {
-    const ptt = new XDocumentPTT();
     const config = ctx.config;
+    const ptt = ctx.ptt;
     const puterShell = ctx.puterShell;
 
     // Need to replace `in` with something we can write to
@@ -74,11 +74,13 @@ export const launchPuterShell = async (ctx) => {
     });
 
     const sdkv2 = globalThis.puter;
-    await sdkv2.setAuthToken(config['puter.auth.token']);
-    const source_without_trailing_slash =
-        (config.source && config.source.replace(/\/$/, ''))
-        || 'https://api.puter.com';
-    await sdkv2.setAPIOrigin(source_without_trailing_slash);
+    if ( ctx.platform.name !== 'node' ) {
+        await sdkv2.setAuthToken(config['puter.auth.token']);
+        const source_without_trailing_slash =
+            (config.source && config.source.replace(/\/$/, ''))
+            || 'https://api.puter.com';
+        await sdkv2.setAPIOrigin(source_without_trailing_slash);
+    }
 
     // const commandProvider = new BuiltinCommandProvider();
     const commandProvider = new CompositeCommandProvider([
@@ -120,23 +122,12 @@ export const launchPuterShell = async (ctx) => {
     const ansiShell = new ANSIShell(ctx);
 
     // TODO: move ioctl to PTY
-    window.addEventListener('message', evt => {
-        if ( evt.source !== window.parent ) return;
-        if ( evt.data instanceof Uint8Array ) {
-            return;
-        }
-        if ( ! evt.data.hasOwnProperty('$') ) {
-            console.error(`unrecognized window message`, evt);
-            return;
-        }
-        if ( evt.data.$ !== 'ioctl.set' ) return;
-        
-        
+    ptt.on('ioctl.set', evt => {
         ansiShell.dispatchEvent(new CustomEvent('signal.window-resize', {
             detail: {
                 ...evt.data.windowSize
             }
-        }))
+        }));
     });
 
     const fire = (text) => {

@@ -19,8 +19,9 @@
 import { Context } from 'contextlink';
 import { launchPuterShell } from './puter-shell/main.js';
 import { CreateFilesystemProvider } from './platform/puter/filesystem.js';
-import { XDocumentPuterShell } from './puter-shell/XDocumentPuterShell.js';
 import { CreateDriversProvider } from './platform/puter/drivers.js';
+import { XDocumentPTT } from './pty/XDocumentPTT.js';
+import { CreateEnvProvider } from './platform/puter/env.js';
 
 window.main_shell = async () => {
     const config = {};
@@ -62,12 +63,15 @@ window.main_shell = async () => {
         || 'https://api.puter.com';
     await puterSDK.setAPIOrigin(source_without_trailing_slash);
 
+    const ptt = new XDocumentPTT();
     await launchPuterShell(new Context({
+        ptt,
         config, puterSDK,
         externs: new Context({ puterSDK }),
         platform: new Context({
             filesystem: CreateFilesystemProvider({ puterSDK }),
             drivers: CreateDriversProvider({ puterSDK }),
+            env: CreateEnvProvider({ config }),
         }),
     }));
 };
