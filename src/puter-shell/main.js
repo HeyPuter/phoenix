@@ -157,6 +157,10 @@ export const launchPuterShell = async (ctx) => {
         return fireText;
     }
 
+    const blue = (text) => {
+        return `\x1b[38:5:27;1m${text}\x1b[0m`;
+    }
+
     const mklink = (url, text) => {
         return `\x1b]8;;${url}\x07${text || url}\x1b]8;;\x07`
     };
@@ -166,11 +170,15 @@ export const launchPuterShell = async (ctx) => {
         `⛷  try typing \x1B[34;1mhelp\x1B[0m or ` +
         `\x1B[34;1mchangelog\x1B[0m to get started.\n` +
         '\n' +
-        `You're using ${
-            mklink(GH_LINK['phoenix'], fire('Phoenix Shell'))
-        } in ${
-            mklink(GH_LINK['terminal'], '\x1B[38:5:21mPuter\'s Terminal Emulator\x1B[0m')
-        }.\n` +
+        `${
+            mklink(GH_LINK['phoenix'], fire('This shell'))
+        } and ${
+            mklink(GH_LINK['terminal'], blue('Puter\'s Terminal Emulator'))
+        } are free software:\n` +
+        // `- ${fire('phoenix')}: ` + mklink(GH_LINK['phoenix'], fire(GH_LINK['phoenix'])) + '\n' +
+        // `- ${blue('terminal')}: ` + mklink(GH_LINK['terminal'], blue(GH_LINK['terminal'])) + '\n' +
+        `- ${'phoenix'}: ` + mklink(GH_LINK['phoenix']) + '\n' +
+        `- ${'terminal'}: ` + mklink(GH_LINK['terminal']) + '\n' +
         // `🔗  ${mklink('https://puter.com', 'puter.com')} ` +
         ''
         // `🔗  ${mklink('https://puter.com', 'puter.com')} ` +
