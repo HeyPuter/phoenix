@@ -27,7 +27,7 @@ export default {
         allowPositionals: false
     },
     execute: async ctx => {
-        for ( const version of SHELL_VERSIONS ) {
+        for ( const version of SHELL_VERSIONS.toReversed() ) {
             ctx.externs.out.write(`\x1B[35;1m[v${version.v}]\x1B[0m\n`);
             for ( const change of version.changes ) {
                 ctx.externs.out.write(`\x1B[32;1m+\x1B[0m ${change}\n`);
