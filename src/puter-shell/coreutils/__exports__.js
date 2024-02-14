@@ -42,6 +42,7 @@ import module_sample_data from './sample-data.js'
 import module_tail from './tail.js'
 import module_test from './test.js'
 import module_touch from './touch.js'
+import module_true from './true.js'
 import module_txt2img from './txt2img.js'
 import module_usages from './usages.js'
 
@@ -71,6 +72,7 @@ export default {
     "tail": module_tail,
     "test": module_test,
     "touch": module_touch,
+    "true": module_true,
     "txt2img": module_txt2img,
     "usages": module_usages,
 };
