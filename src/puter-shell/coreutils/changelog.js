@@ -20,18 +20,32 @@
 import path_ from "path-browserify";
 import { SHELL_VERSIONS } from "../../meta/versions.js";
 
+function printVersion(ctx, version) {
+    ctx.externs.out.write(`\x1B[35;1m[v${version.v}]\x1B[0m\n`);
+    for ( const change of version.changes ) {
+        ctx.externs.out.write(`\x1B[32;1m+\x1B[0m ${change}\n`);
+    }
+}
+
 export default {
     name: 'changelog',
     args: {
         $: 'simple-parser',
-        allowPositionals: false
+        allowPositionals: false,
+        options: {
+            latest: {
+                type: 'boolean'
+            }
+        }
     },
     execute: async ctx => {
-        for ( const version of SHELL_VERSIONS ) {
-            ctx.externs.out.write(`\x1B[35;1m[v${version.v}]\x1B[0m\n`);
-            for ( const change of version.changes ) {
-                ctx.externs.out.write(`\x1B[32;1m+\x1B[0m ${change}\n`);
-            }
+        if (ctx.locals.values.latest) {
+            printVersion(ctx, SHELL_VERSIONS[0]);
+            return;
+        }
+
+        for ( const version of SHELL_VERSIONS.toReversed() ) {
+            printVersion(ctx, version);
         }
     }
 };
