@@ -48,9 +48,9 @@ export default {
             target = path.resolve(ctx.vars.pwd, target);
         }
 
-        const result = await filesystem.mkdir(target);
+        const result = await filesystem.mkdir(target, { createMissingParents: values.parents });
 
-        if ( result.$ === 'error' ) {
+        if ( result && result.$ === 'error' ) {
             throw new Error(result.message);
         }
     }

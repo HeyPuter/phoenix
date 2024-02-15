@@ -30,7 +30,7 @@ export default {
         const { filesystem } = ctx.platform;
 
         if ( positionals.length < 1 ) {
-            err.write('mv: missing file operand\n');
+            err.write('cp: missing file operand\n');
             return;
         }
 
@@ -38,7 +38,7 @@ export default {
 
         if ( positionals.length < 1 ) {
             const aft = positionals[0];
-            err.write(`mv: missing destination file operand after '${aft}'\n`);
+            err.write(`cp: missing destination file operand after '${aft}'\n`);
             return;
         }
 
