@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 export default {
-    name: 'true',
+    name: 'basename',
     args: {
         $: 'simple-parser',
         allowPositionals: true

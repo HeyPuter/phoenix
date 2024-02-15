@@ -19,7 +19,7 @@
 import { Exit } from './coreutil_lib/exit.js';
 
 export default {
-    name: 'true',
+    name: 'false',
     args: {
         $: 'simple-parser',
         allowPositionals: true
