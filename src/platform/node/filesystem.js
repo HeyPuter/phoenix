@@ -37,5 +37,46 @@ export const CreateFilesystemProvider = () => {
 
             return items;
         },
+        stat: async (path) => {
+            const stat = await fs.promises.stat(path);
+            const fullPath = await fs.promises.realpath(path);
+            const parsedPath = path_.parse(fullPath);
+            // TODO: Fill in more of these?
+            return {
+                id: stat.ino,
+                associated_app_id: null,
+                public_token: null,
+                file_request_token: null,
+                uid: stat.uid,
+                parent_id: null,
+                parent_uid: null,
+                is_dir: stat.isDirectory(),
+                is_public: null,
+                is_shortcut: null,
+                is_symlink: stat.isSymbolicLink(),
+                symlink_path: null,
+                sort_by: null,
+                sort_order: null,
+                immutable: null,
+                name: parsedPath.base,
+                path: fullPath,
+                dirname: parsedPath.dir,
+                dirpath: parsedPath.dir,
+                metadata: null,
+                modified: stat.mtime,
+                created: stat.birthtime,
+                accessed: stat.atime,
+                size: stat.size,
+                layout: null,
+                owner: null,
+                type: null,
+                is_empty: await (async (stat) => {
+                    if (!stat.isDirectory())
+                        return null;
+                    const children = await fs.promises.readdir(path);
+                    return children.length === 0;
+                })(stat),
+            };
+        }
     };
 };
