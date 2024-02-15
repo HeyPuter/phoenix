@@ -77,6 +77,10 @@ export const CreateFilesystemProvider = () => {
                     return children.length === 0;
                 })(stat),
             };
+        },
+        mkdir: async (path, options = { createMissingParents: false }) => {
+            const createMissingParents = options['createMissingParents'] || false;
+            return await fs.promises.mkdir(path, { recursive: createMissingParents });
         }
     };
 };
