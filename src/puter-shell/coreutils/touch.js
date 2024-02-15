@@ -27,6 +27,7 @@ export default {
     execute: async ctx => {
         const { positionals } = ctx.locals;
         const { filesystem } = ctx.platform;
+        const POSIX = filesystem.capabilities['readdir.posix-mode'];
 
         if ( positionals.length === 0 ) {
             await ctx.externs.err.write('touch: missing file operand');
@@ -48,7 +49,11 @@ export default {
             try {
                 stat = await filesystem.stat(path);
             } catch (e) {
-                if ( e.code !== 'subject_does_not_exist' ) throw e;
+                if ( POSIX ) {
+                    if ( e.code !== 'ENOENT' ) throw e;
+                } else {
+                    if ( e.code !== 'subject_does_not_exist' ) throw e;
+                }
             }
 
             if ( stat ) continue;
