@@ -1,8 +1,26 @@
+/*
+ * Copyright (C) 2024  Puter Technologies Inc.
+ *
+ * This file is part of Phoenix Shell.
+ *
+ * Phoenix Shell is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 import fs from 'fs';
 import path_ from 'path';
 
 import modeString from 'fs-mode-to-string';
-
+import { DestinationIsDirectoryError, DestinationIsNotDirectoryError } from "../definitions.js";
 
 export const CreateFilesystemProvider = () => {
     return {
@@ -90,6 +108,25 @@ export const CreateFilesystemProvider = () => {
                 return await fs.promises.writeFile(path, data.stream());
             }
             return await fs.promises.writeFile(path, data);
+        },
+        rm: async (path, options = { recursive: false }) => {
+            const recursive = options['recursive'] || false;
+            const stat = await fs.promises.stat(path);
+
+            if ( stat.isDirectory() && ! recursive ) {
+                throw new DestinationIsDirectoryError(path);
+            }
+
+            return await fs.promises.rm(path, { recursive });
+        },
+        rmdir: async (path) => {
+            const stat = await fs.promises.stat(path);
+
+            if ( !stat.isDirectory() ) {
+                throw new DestinationIsNotDirectoryError(path);
+            }
+
+            return await fs.promises.rmdir(path);
         }
     };
 };
