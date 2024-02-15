@@ -81,6 +81,15 @@ export const CreateFilesystemProvider = () => {
         mkdir: async (path, options = { createMissingParents: false }) => {
             const createMissingParents = options['createMissingParents'] || false;
             return await fs.promises.mkdir(path, { recursive: createMissingParents });
+        },
+        read: async (path) => {
+            return await fs.promises.readFile(path);
+        },
+        write: async (path, data) => {
+            if (data instanceof Blob) {
+                return await fs.promises.writeFile(path, data.stream());
+            }
+            return await fs.promises.writeFile(path, data);
         }
     };
 };
