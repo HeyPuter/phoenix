@@ -127,6 +127,50 @@ export const CreateFilesystemProvider = () => {
             }
 
             return await fs.promises.rmdir(path);
+        },
+        move: async (oldPath, newPath) => {
+            let destStat = null;
+            try {
+                destStat = await fs.promises.stat(newPath);
+            } catch (e) {
+                if ( e.code !== 'ENOENT' ) throw e;
+            }
+
+            // fs.promises.rename() expects the new path to include the filename.
+            // So, if newPath is a directory, append the old filename to it to produce the target path and name.
+            if ( destStat && destStat.isDirectory() ) {
+                if ( ! newPath.endsWith('/') ) newPath += '/';
+                newPath += path_.basename(oldPath);
+            }
+
+            return await fs.promises.rename(oldPath, newPath);
+        },
+        copy: async (oldPath, newPath) => {
+            const srcStat = await fs.promises.stat(oldPath);
+            const srcIsDir = srcStat.isDirectory();
+
+            let destStat = null;
+            try {
+                destStat = await fs.promises.stat(newPath);
+            } catch (e) {
+                if ( e.code !== 'ENOENT' ) throw e;
+            }
+            const destIsDir = destStat && destStat.isDirectory();
+
+            // fs.promises.cp() is experimental, but does everything we want. Maybe implement this manually if needed.
+
+            // `dir -> file`: invalid
+            if ( srcIsDir && ! destIsDir ) {
+                throw Error('Cannot copy a directory into a file');
+            }
+
+            // `file -> dir`: fs.promises.cp() expects the new path to include the filename.
+            if ( ! srcIsDir && destIsDir ) {
+                if ( ! newPath.endsWith('/') ) newPath += '/';
+                newPath += path_.basename(oldPath);
+            }
+
+            return await fs.promises.cp(oldPath, newPath, { recursive: srcIsDir });
         }
     };
 };
