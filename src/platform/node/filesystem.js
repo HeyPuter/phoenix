@@ -160,7 +160,7 @@ export const CreateFilesystemProvider = () => {
             // fs.promises.cp() is experimental, but does everything we want. Maybe implement this manually if needed.
 
             // `dir -> file`: invalid
-            if ( srcIsDir && ! destIsDir ) {
+            if ( srcIsDir && destStat && ! destStat.isDirectory() ) {
                 throw Error('Cannot copy a directory into a file');
             }
 
