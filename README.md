@@ -33,6 +33,16 @@ yet. If you'd like to try it out you can run `src/main_cli.js`.
 Check [this issue](https://github.com/HeyPuter/phoenix/issues/14)
 for updated information on our progress.
 
+## Testing
+
+You can find our tests in the [test/](./test) directory.
+Testing is done with [mocha](https://www.npmjs.com/package/mocha).
+Make sure it's installed, then run:
+
+```sh
+npm test
+```
+
 ## What's on the Roadmap?
 
 We're looking to continue improving the shell and broaden its usefulness.
