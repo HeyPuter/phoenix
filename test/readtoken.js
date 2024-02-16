@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import assert from 'assert';
-import { readtoken, TOKENS } from '../src/ansi-shell/readtoken.js';
+import { readtoken, TOKENS } from '../src/ansi-shell/readline/readtoken.js';
 
 describe('readtoken', () => {
     const tcases = [
