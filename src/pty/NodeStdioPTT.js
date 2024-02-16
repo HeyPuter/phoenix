@@ -1,4 +1,5 @@
 import { ReadableStream, WritableStream } from 'stream/web';
+import { signals } from "../ansi-shell/signals.js";
 
 const writestream_node_to_web = node_stream => {
     return node_stream;
@@ -24,8 +25,14 @@ export class NodeStdioPTT {
             }
         });
         this.in = readableStream.getReader();
+        process.stdin.setRawMode(true);
         process.stdin.on('data', chunk => {
-            readController.enqueue(chunk);
+            const input = new Uint8Array(chunk);
+            readController.enqueue(input);
+            if (input.length === 1 && (input[0] === signals.SIGINT || input[0] === signals.SIGQUIT)) {
+                process.exit(1);
+                return;
+            }
         });
 
         this.out = writestream_node_to_web(process.stdout);
@@ -44,11 +51,6 @@ export class NodeStdioPTT {
             });
         });
 
-        // Trap SIGINT and SIGQUIT
-        process.on('SIGINT', () => {
-            readController.enqueue(new Uint8Array([3]));
-            process.exit(1);
-        });
         process.stdin.on('end', () => {
             globalThis.force_eot = true;
             readController.enqueue(new Uint8Array([4]));
