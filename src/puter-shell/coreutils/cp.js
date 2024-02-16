@@ -17,21 +17,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import path_ from "path-browserify";
+import { Exit } from "./coreutil_lib/exit.js";
 
 export default {
     name: 'cp',
     args: {
         $: 'simple-parser',
-        allowPositionals: true
+        allowPositionals: true,
+        options: {
+            recursive: {
+                type: 'boolean',
+                short: 'R'
+            }
+        }
     },
     execute: async ctx => {
-        const { positionals } = ctx.locals;
+        const { positionals, values } = ctx.locals;
         const { out, err } = ctx.externs;
         const { filesystem } = ctx.platform;
 
         if ( positionals.length < 1 ) {
             err.write('cp: missing file operand\n');
-            return;
+            throw new Exit(1);
         }
 
         const srcRelPath = positionals.shift();
@@ -39,7 +46,7 @@ export default {
         if ( positionals.length < 1 ) {
             const aft = positionals[0];
             err.write(`cp: missing destination file operand after '${aft}'\n`);
-            return;
+            throw new Exit(1);
         }
 
         const dstRelPath = positionals.shift();
@@ -54,6 +61,12 @@ export default {
 
         const srcAbsPath = resolve(srcRelPath);
         let   dstAbsPath = resolve(dstRelPath);
+
+        const srcStat = await filesystem.stat(srcAbsPath);
+        if ( srcStat && srcStat.is_dir && ! values.recursive ) {
+            err.write(`cp: -R not specified; skipping directory '${srcRelPath}'\n`);
+            throw new Exit(1);
+        }
 
         await filesystem.copy(srcAbsPath, dstAbsPath);
     }
