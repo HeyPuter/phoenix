@@ -27,9 +27,6 @@ import { CSI_HANDLERS } from "./rl_csi_handlers.js";
 
 const decoder = new TextDecoder();
 
-const CHAR_LF = '\n'.charCodeAt(0);
-const CHAR_CR = '\r'.charCodeAt(0);
-
 const cc = chr => chr.charCodeAt(0);
 
 const ReadlineProcessorBuilder = builder => builder
@@ -65,7 +62,7 @@ const ReadlineProcessorBuilder = builder => builder
     .state('start', async ctx => {
         const { consts, vars, externs, locals } = ctx;
 
-        if ( locals.byte === consts.CHAR_LF ) {
+        if ( locals.byte === consts.CHAR_LF || locals.byte === consts.CHAR_CR ) {
             externs.out.write('\n');
             ctx.setState('end');
             return;
