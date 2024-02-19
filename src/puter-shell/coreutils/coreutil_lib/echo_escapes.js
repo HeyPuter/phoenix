@@ -73,7 +73,6 @@ const echo_escapes = {
     'b': caller => caller.output(BS),
     'c': caller => caller.outputETX(),
     'e': caller => caller.output(ESC),
-    'e': caller => caller.output(ESC),
     'f': caller => caller.output(FF),
     'n': caller => caller.output('\n'),
     'r': caller => caller.output('\r'),
