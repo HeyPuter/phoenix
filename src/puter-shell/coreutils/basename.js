@@ -29,6 +29,9 @@ export default {
         if (string === undefined) {
             throw new Error('basename: Missing path argument');
         }
+        if (ctx.locals.positionals.length > 2) {
+            throw new Error('basename: Too many arguments, expected 1 or 2');
+        }
 
         // https://pubs.opengroup.org/onlinepubs/9699919799/utilities/basename.html
 
