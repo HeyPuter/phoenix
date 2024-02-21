@@ -4,7 +4,7 @@
   "description": "ANSI Terminal for Puter",
   "main": "exports.js",
   "scripts": {
-    "test": "mocha --recursive ./test"
+    "test": "mocha ./test"
   },
   "author": "Puter Technologies Inc.",
   "license": "AGPL-3.0-only",
