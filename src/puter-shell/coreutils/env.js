@@ -16,20 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { runBasenameTests } from "./coreutils/basename.js";
-import { runDirnameTests } from "./coreutils/dirname.js";
-import { runEchoTests } from "./coreutils/echo.js";
-import { runEnvTests } from "./coreutils/env.js";
-import { runFalseTests } from "./coreutils/false.js";
-import { runTrueTests } from "./coreutils/true.js";
-import { runWcTests } from "./coreutils/wc.js";
+export default {
+    name: 'env',
+    args: {
+        // TODO: add 'none-parser'
+        $: 'simple-parser',
+        allowPositionals: false
+    },
+    execute: async ctx => {
+        const env = ctx.env;
+        const out = ctx.externs.out;
 
-describe('coreutils', function () {
-    runBasenameTests();
-    runDirnameTests();
-    runEchoTests();
-    runEnvTests();
-    runFalseTests();
-    runTrueTests();
-    runWcTests();
-});
+        for ( const k in env ) {
+            await out.write(`${k}=${env[k]}\n`);
+        }
+    }
+};

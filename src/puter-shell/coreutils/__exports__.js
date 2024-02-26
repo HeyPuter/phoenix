@@ -25,7 +25,9 @@ import module_changelog from './changelog.js'
 import module_clear from './clear.js'
 import module_cp from './cp.js'
 import module_dcall from './dcall.js'
+import module_dirname from './dirname.js'
 import module_echo from './echo.js'
+import module_env from './env.js'
 import module_false from './false.js'
 import module_grep from './grep.js'
 import module_help from './help.js'
@@ -35,7 +37,6 @@ import module_ls from './ls.js'
 import module_mkdir from './mkdir.js'
 import module_mv from './mv.js'
 import module_neofetch from './neofetch.js'
-import module_printenv from './printenv.js'
 import module_printhist from './printhist.js'
 import module_pwd from './pwd.js'
 import module_rm from './rm.js'
@@ -47,6 +48,7 @@ import module_touch from './touch.js'
 import module_true from './true.js'
 import module_txt2img from './txt2img.js'
 import module_usages from './usages.js'
+import module_wc from './wc.js'
 
 export default {
     "ai": module_ai,
@@ -57,7 +59,9 @@ export default {
     "clear": module_clear,
     "cp": module_cp,
     "dcall": module_dcall,
+    "dirname": module_dirname,
     "echo": module_echo,
+    "env": module_env,
     "false": module_false,
     "grep": module_grep,
     "help": module_help,
@@ -67,7 +71,6 @@ export default {
     "mkdir": module_mkdir,
     "mv": module_mv,
     "neofetch": module_neofetch,
-    "printenv": module_printenv,
     "printhist": module_printhist,
     "pwd": module_pwd,
     "rm": module_rm,
@@ -79,4 +82,5 @@ export default {
     "true": module_true,
     "txt2img": module_txt2img,
     "usages": module_usages,
+    "wc": module_wc,
 };

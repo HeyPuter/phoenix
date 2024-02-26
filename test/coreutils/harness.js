@@ -39,11 +39,11 @@ export class WritableStringStream extends WritableStream {
 }
 
 // TODO: Flesh this out as needed.
-export const MakeTestContext = (command, { positionals = [],  values = {}, stdinInputs = [] }) => {
+export const MakeTestContext = (command, { positionals = [],  values = {}, stdinInputs = [], env = {} }) => {
     return new Context({
         cmdExecState: { valid: true },
         externs: new Context({
-            in_: new ReadableStream(stdinInputs).getReader(),
+            in_: ReadableStream.from(stdinInputs).getReader(),
             out: new WritableStringStream(),
             err: new WritableStringStream(),
             sig: null,
@@ -57,5 +57,6 @@ export const MakeTestContext = (command, { positionals = [],  values = {}, stdin
         platform: new Context({}),
         plugins: new Context({}),
         registries: new Context({}),
+        env: env,
     });
 }
