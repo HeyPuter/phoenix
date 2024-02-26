@@ -22,6 +22,7 @@ import { runEchoTests } from "./coreutils/echo.js";
 import { runEnvTests } from "./coreutils/env.js";
 import { runFalseTests } from "./coreutils/false.js";
 import { runTrueTests } from "./coreutils/true.js";
+import { runWcTests } from "./coreutils/wc.js";
 
 describe('coreutils', function () {
     runBasenameTests();
@@ -30,4 +31,5 @@ describe('coreutils', function () {
     runEnvTests();
     runFalseTests();
     runTrueTests();
+    runWcTests();
 });
