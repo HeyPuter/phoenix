@@ -25,6 +25,7 @@ import module_changelog from './changelog.js'
 import module_clear from './clear.js'
 import module_cp from './cp.js'
 import module_dcall from './dcall.js'
+import module_dirname from './dirname.js'
 import module_echo from './echo.js'
 import module_env from './env.js'
 import module_false from './false.js'
@@ -57,6 +58,7 @@ export default {
     "clear": module_clear,
     "cp": module_cp,
     "dcall": module_dcall,
+    "dirname": module_dirname,
     "echo": module_echo,
     "env": module_env,
     "false": module_false,
