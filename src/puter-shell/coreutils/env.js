@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 export default {
-    name: 'printenv',
+    name: 'env',
     args: {
         // TODO: add 'none-parser'
         $: 'simple-parser',
