@@ -18,12 +18,14 @@
  */
 import { runBasenameTests } from "./coreutils/basename.js";
 import { runEchoTests } from "./coreutils/echo.js";
+import { runEnvTests } from "./coreutils/env.js";
 import { runFalseTests } from "./coreutils/false.js";
 import { runTrueTests } from "./coreutils/true.js";
 
 describe('coreutils', function () {
     runBasenameTests();
     runEchoTests();
+    runEnvTests();
     runFalseTests();
     runTrueTests();
 });

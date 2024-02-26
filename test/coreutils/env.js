@@ -16,19 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-export default {
-    name: 'env',
-    args: {
-        // TODO: add 'none-parser'
-        $: 'simple-parser',
-        allowPositionals: false
-    },
-    execute: async ctx => {
-        const env = ctx.env;
-        const out = ctx.externs.out;
+import assert from 'assert';
+import { MakeTestContext } from './harness.js'
+import builtins from '../../src/puter-shell/coreutils/__exports__.js';
 
-        for ( const k in env ) {
-            await out.write(`${k}=${env[k]}\n`);
-        }
-    }
-};
+export const runEnvTests = () => {
+    describe('env', function () {
+        it('should return a non-zero exit code, and output the env variables', async function () {
+            let ctx = MakeTestContext(builtins.env, { env: {'a': '1', 'b': '2' } });
+            try {
+                await builtins.env.execute(ctx);
+            } catch (e) {
+                assert.fail(e);
+            }
+            assert.equal(ctx.externs.out.output, 'a=1\nb=2\n', 'env should output the env variables, one per line');
+            assert.equal(ctx.externs.err.output, '', 'env should not write to stderr');
+        });
+    });
+}
