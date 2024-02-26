@@ -43,7 +43,7 @@ export const MakeTestContext = (command, { positionals = [],  values = {}, stdin
     return new Context({
         cmdExecState: { valid: true },
         externs: new Context({
-            in_: new ReadableStream(stdinInputs).getReader(),
+            in_: ReadableStream.from(stdinInputs).getReader(),
             out: new WritableStringStream(),
             err: new WritableStringStream(),
             sig: null,
