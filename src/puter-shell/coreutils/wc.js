@@ -47,7 +47,14 @@ export default {
         const { filesystem } = ctx.platform;
 
         const paths = [...positionals];
-        if (paths.length < 1) paths.push('-');
+        // "If no input file operands are specified, no name shall be written and no <blank> characters preceding the
+        //  pathname shall be written."
+        // For convenience, we add '-' to paths, but make a note not to output the filename.
+        let emptyStdinPath = false;
+        if (paths.length < 1) {
+            emptyStdinPath = true;
+            paths.push('-');
+        }
 
         let { bytes: printBytes, chars: printChars, lines: printNewlines, words: printWords } = values;
         const anyOutputOptionsSpecified = printBytes || printChars || printNewlines || printWords;
@@ -128,7 +135,10 @@ export default {
             if (printWords)    append(count.words.toString().padStart(wordsWidth, ' '));
             if (printChars)    append(count.chars.toString().padStart(charsWidth, ' '));
             if (printBytes)    append(count.bytes.toString().padStart(bytesWidth, ' '));
-            append(`${count.filename}\n`);
+            // The only time emptyStdinPath is true, is if we had no file paths given as arguments. That means only one
+            // input (stdin), so this won't be called to print a "totals" line.
+            if (!emptyStdinPath) append(count.filename);
+            output += '\n';
             await ctx.externs.out.write(output);
         }
 

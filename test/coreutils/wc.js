@@ -33,7 +33,7 @@ export const runWcTests = () => {
                 description: 'reads from stdin when given no arguments',
                 positionals: [],
                 stdin: 'Well hello friends!',
-                expectedStdout: '0 3 19 -\n',
+                expectedStdout: '0 3 19\n',
             },
             {
                 description: 'handles empty stdin',
