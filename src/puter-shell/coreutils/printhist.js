@@ -18,6 +18,8 @@
  */
 export default {
     name: 'printhist',
+    usage: 'printhist',
+    description: 'Print shell history.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,

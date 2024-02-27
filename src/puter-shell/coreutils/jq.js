@@ -22,6 +22,9 @@ import { Exit } from './coreutil_lib/exit.js';
 
 export default {
     name: 'jq',
+    usage: 'jq FILTER [FILE...]',
+    description: 'Process JSON input FILE(s) according to FILTER.\n\n' +
+        'Reads from standard input if no FILE is provided.',
     input: {
         syncLines: true,
     },

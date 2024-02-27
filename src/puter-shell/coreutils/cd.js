@@ -20,6 +20,8 @@ import path from "path-browserify";
 
 export default {
     name: 'cd',
+    usage: 'cd PATH',
+    description: 'Change the current directory to PATH.',
     args: {
         $: 'simple-parser',
         allowPositionals: true

@@ -20,6 +20,8 @@ import path_ from "path-browserify";
 
 export default {
     name: 'pwd',
+    usage: 'pwd',
+    description: 'Print the current working directory.',
     args: {
         $: 'simple-parser',
         allowPositionals: true

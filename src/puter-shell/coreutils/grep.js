@@ -22,6 +22,8 @@ import path_ from "path-browserify";
 
 export default {
     name: 'grep',
+    usage: 'grep [OPTIONS] PATTERN FILE...',
+    description: 'Search FILE(s) for PATTERN, and print any matches.',
     input: {
         syncLines: true,
     },
@@ -30,18 +32,22 @@ export default {
         allowPositionals: true,
         options: {
             'ignore-case': {
+                description: 'Match the pattern case-insensitively',
                 type: 'boolean',
                 short: 'i'
             },
             'invert-match': {
+                description: 'Print lines that do not match the pattern',
                 type: 'boolean',
                 short: 'v'
             },
             'line-number': {
+                description: 'Print the line number before each result',
                 type: 'boolean',
                 short: 'n'
             },
             recursive: {
+                description: 'Recursively search in directories',
                 type: 'boolean',
                 short: 'r'
             }

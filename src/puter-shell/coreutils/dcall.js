@@ -18,6 +18,7 @@
  */
 export default {
     name: 'driver-call',
+    usage: 'driver-call METHOD [JSON]',
     args: {
         $: 'simple-parser',
         allowPositionals: true,

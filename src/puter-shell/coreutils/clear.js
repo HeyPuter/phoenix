@@ -18,6 +18,8 @@
  */
 export default {
     name: 'clear',
+    usage: 'clear',
+    description: 'Clear the terminal output.',
     args: {
         // TODO: add 'none-parser'
         $: 'simple-parser',

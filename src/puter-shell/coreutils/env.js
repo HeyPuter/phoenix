@@ -18,6 +18,8 @@
  */
 export default {
     name: 'env',
+    usage: 'env',
+    description: 'Print environment variables, one per line, as NAME=VALUE.',
     args: {
         // TODO: add 'none-parser'
         $: 'simple-parser',

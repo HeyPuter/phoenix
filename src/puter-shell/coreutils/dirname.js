@@ -18,6 +18,8 @@
  */
 export default {
     name: 'dirname',
+    usage: 'dirname PATH',
+    description: 'Print PATH without its final segment.',
     args: {
         $: 'simple-parser',
         allowPositionals: true

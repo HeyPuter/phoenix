@@ -20,18 +20,26 @@ import { processEscapes } from "./coreutil_lib/echo_escapes.js";
 
 export default {
     name: 'echo',
+    usage: 'echo [OPTIONS] INPUTS...',
+    description: 'Print the inputs to standard output.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
-            n: {
-                type: 'boolean'
+            'no-newline': {
+                description: 'Do not print a trailing newline',
+                type: 'boolean',
+                short: 'n'
             },
-            e: {
-                type: 'boolean'
+            'enable-escapes': {
+                description: 'Interpret backslash escape sequences',
+                type: 'boolean',
+                short: 'e'
             },
-            E: {
-                type: 'boolean'
+            'disable-escapes': {
+                description: 'Disable interpreting backslash escape sequences',
+                type: 'boolean',
+                short: 'E'
             }
         }
     },

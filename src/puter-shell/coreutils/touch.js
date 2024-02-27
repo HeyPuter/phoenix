@@ -20,6 +20,8 @@ import path_ from "path-browserify";
 
 export default {
     name: 'touch',
+    usage: 'touch FILE...',
+    description: 'Mark the FILE(s) as accessed and modified at the current time, creating them if they do not exist.',
     args: {
         $: 'simple-parser',
         allowPositionals: true

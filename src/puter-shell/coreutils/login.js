@@ -18,6 +18,8 @@
  */
 export default {
     name: 'login',
+    usage: 'login',
+    description: 'Log in to a Puter.com account.',
     args: {
         $: 'simple-parser',
         allowPositionals: false,

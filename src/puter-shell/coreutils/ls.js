@@ -59,32 +59,41 @@ const B_to_human_readable = B => {
 
 export default {
     name: 'ls',
+    usage: 'ls [OPTIONS] [PATH...]',
+    description: 'List directory contents.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
             all: {
+                description: 'List all entries, including those starting with `.`',
                 type: 'boolean',
                 short: 'a'
             },
             long: {
+                description: 'List entries in long format, as a table',
                 type: 'boolean',
                 short: 'l'
             },
             'human-readable': {
+                description: 'Print sizes in a human readable format (eg 12MiB, 3GiB), instead of byte counts',
                 type: 'boolean',
                 short: 'h'
             },
             time: {
-                type: 'string',
+                description: 'Specify which time to display, one of atime (access time), ctime (creation time), or mtime (modification time)',
+                type: 'string'
             },
             S: {
+                description: 'Sort the results',
                 type: 'boolean',
             },
             t: {
+                description: 'Sort by time, newest first. See --time',
                 type: 'boolean',
             },
             reverse: {
+                description: 'Reverse the sort direction',
                 type: 'boolean',
                 short: 'r',
             },

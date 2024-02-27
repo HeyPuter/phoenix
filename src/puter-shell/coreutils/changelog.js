@@ -29,11 +29,13 @@ function printVersion(ctx, version) {
 
 export default {
     name: 'changelog',
+    description: 'Print the changelog for the Phoenix Shell, ordered oldest to newest.',
     args: {
         $: 'simple-parser',
         allowPositionals: false,
         options: {
             latest: {
+                description: 'Print only the changes for the most recent version',
                 type: 'boolean'
             }
         }

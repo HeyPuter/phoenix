@@ -25,19 +25,24 @@ import path from "path-browserify";
 // DRY: very similar to `cd`
 export default {
     name: 'rm',
+    usage: 'rm [OPTIONS] PATH',
+    description: 'Remove the file or directory at PATH.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
             dir: {
+                description: 'Remove empty directories',
                 type: 'boolean',
                 short: 'd'
             },
             recursive: {
+                description: 'Recursively remove directories and their contents',
                 type: 'boolean',
                 short: 'r'
             },
             force: {
+                description: 'Ignore non-existent paths, and never prompt',
                 type: 'boolean',
                 short: 'f'
             }

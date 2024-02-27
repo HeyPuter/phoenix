@@ -20,6 +20,8 @@ import { Exit } from './coreutil_lib/exit.js';
 
 export default {
     name: 'false',
+    usage: 'false',
+    description: 'Do nothing, and return a failure code.',
     args: {
         $: 'simple-parser',
         allowPositionals: true
