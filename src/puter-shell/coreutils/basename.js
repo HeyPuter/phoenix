@@ -18,6 +18,9 @@
  */
 export default {
     name: 'basename',
+    usage: 'basename PATH [SUFFIX]',
+    description: 'Print PATH without leading directory segments.\n\n' +
+        'If SUFFIX is provided, it is removed from the end of the result.',
     args: {
         $: 'simple-parser',
         allowPositionals: true

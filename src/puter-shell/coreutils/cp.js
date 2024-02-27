@@ -21,11 +21,14 @@ import { Exit } from "./coreutil_lib/exit.js";
 
 export default {
     name: 'cp',
+    usage: ['cp [OPTIONS] SOURCE DESTINATION', 'cp [OPTIONS] SOURCE... DIRECTORY'],
+    description: 'Copy the SOURCE to DESTINATION, or multiple SOURCE(s) to DIRECTORY.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
             recursive: {
+                description: 'Copy directories recursively',
                 type: 'boolean',
                 short: 'R'
             }

@@ -23,7 +23,7 @@ import { printUsage } from "./coreutil_lib/help.js";
 export default {
     name: 'help',
     usage: ['help', 'help COMMAND'],
-    description: 'Print help information for a specific command, or list available commands.\n' +
+    description: 'Print help information for a specific command, or list available commands.\n\n' +
         'If COMMAND is provided, print the documentation for that command. ' +
         'Otherwise, list all the commands that are available.',
     args: {

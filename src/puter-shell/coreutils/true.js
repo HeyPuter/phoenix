@@ -18,6 +18,8 @@
  */
 export default {
     name: 'true',
+    usage: 'true',
+    description: 'Do nothing, and return a success code.',
     args: {
         $: 'simple-parser',
         allowPositionals: true

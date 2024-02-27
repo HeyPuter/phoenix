@@ -18,6 +18,8 @@
  */
 export default {
     name: 'tail',
+    usage: 'tail [OPTIONS]',
+    description: 'Read standard input and print the last lines to standard output.',
     input: {
         syncLines: true
     },
@@ -26,8 +28,10 @@ export default {
         allowPositionals: true,
         options: {
             lines: {
+                description: 'Print the last COUNT lines',
                 type: 'string',
-                short: 'n'
+                short: 'n',
+                valueName: 'COUNT',
             }
         }
     },

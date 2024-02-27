@@ -18,6 +18,8 @@
  */
 export default {
     name: 'txt2img',
+    usage: 'txt2img PROMPT',
+    description: 'Send PROMPT to an image-drawing AI, and print the result to standard output.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
@@ -30,12 +32,16 @@ export default {
             ctx.externs.err.write('txt2img: missing prompt\n');
             return;
         }
+        if ( positionals.length > 1 ) {
+            ctx.externs.err.write('txt2img: prompt must be wrapped in quotes\n');
+            return;
+        }
 
         const { drivers } = ctx.platform;
 
         let a_interface, a_method, a_args;
 
-        a_interface = 'puter-image-generation',
+        a_interface = 'puter-image-generation';
         a_method = 'generate';
         a_args = { prompt };
 

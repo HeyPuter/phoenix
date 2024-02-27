@@ -39,6 +39,8 @@ const logo = `
 
 export default {
     name: 'neofetch',
+    usage: 'neofetch',
+    description: 'Print information about the system.',
     execute: async ctx => {
         const cols = [17,18,19,26,27].reverse();
         const C25 = n => `\x1B[38;5;${n}m`;

@@ -20,6 +20,8 @@ import path from "path-browserify";
 
 export default {
     name: 'mv',
+    usage: 'mv SOURCE DESTINATION',
+    description: 'Move SOURCE file or directory to DESTINATION.',
     args: {
         $: 'simple-parser',
         allowPositionals: true

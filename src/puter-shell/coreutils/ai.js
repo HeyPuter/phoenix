@@ -18,6 +18,8 @@
  */
 export default {
     name: 'ai',
+    usage: 'ai PROMPT',
+    description: 'Send PROMPT to Puter\'s AI chatbot, and print its response.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
@@ -27,7 +29,11 @@ export default {
         const [ prompt ] = positionals;
 
         if ( ! prompt ) {
-            ctx.externs.err.write('txt2img: missing prompt\n');
+            ctx.externs.err.write('ai: missing prompt\n');
+            return;
+        }
+        if ( positionals.length > 1 ) {
+            ctx.externs.err.write('ai: prompt must be wrapped in quotes\n');
             return;
         }
 
@@ -36,7 +42,7 @@ export default {
 
         let a_interface, a_method, a_args;
 
-        a_interface = 'puter-chat-completion',
+        a_interface = 'puter-chat-completion';
         a_method = 'complete';
         a_args = {
             messages: [

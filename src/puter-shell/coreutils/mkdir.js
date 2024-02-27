@@ -23,11 +23,14 @@ import { EMPTY } from "../../util/singleton.js";
 // DRY: very similar to `cd`
 export default {
     name: 'mkdir',
+    usage: 'mkdir [OPTIONS] PATH',
+    description: 'Create a directory at PATH.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
             parents: {
+                description: 'Create parent directories if they do not exist. Do not treat existing directories as an error',
                 type: 'boolean',
                 short: 'p'
             }

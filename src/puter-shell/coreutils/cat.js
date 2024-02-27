@@ -20,6 +20,9 @@ import path from "path-browserify";
 
 export default {
     name: 'cat',
+    usage: 'cat [FILE...]',
+    description: 'Concatenate the FILE(s) and print the result.\n\n' +
+        'If no FILE is given, or a FILE is `-`, read the standard input.',
     args: {
         $: 'simple-parser',
         allowPositionals: true

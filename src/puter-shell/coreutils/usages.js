@@ -18,6 +18,8 @@
  */
 export default {
     name: 'usages',
+    usage: 'usages',
+    description: 'Print usage statistics, formatted as JSON.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,

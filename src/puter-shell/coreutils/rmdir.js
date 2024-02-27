@@ -25,11 +25,14 @@ import path from "path-browserify";
 // DRY: very similar to `cd`
 export default {
     name: 'rmdir',
+    usage: 'rmdir [OPTIONS] DIRECTORY',
+    description: 'Remove the DIRECTORY if it is empty.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
             parents: {
+                description: 'Also remove empty parent directories',
                 type: 'boolean',
                 short: 'p'
             }
