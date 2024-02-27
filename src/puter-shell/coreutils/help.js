@@ -16,20 +16,39 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path from "path-browserify";
-
 // TODO: fetch help information from command registry
+
+import { printUsage } from "./coreutil_lib/help.js";
 
 export default {
     name: 'help',
+    usage: ['help', 'help COMMAND'],
+    description: 'Print help information for a specific command, or list available commands.\n' +
+        'If COMMAND is provided, print the documentation for that command. ' +
+        'Otherwise, list all the commands that are available.',
     args: {
         $: 'simple-parser',
         allowPositionals: true
     },
     execute: async ctx => {
+        const { positionals } = ctx.locals;
         const { builtins } = ctx.registries;
 
         const { out } = ctx.externs;
+
+        if (positionals.length > 1) {
+            throw new Error('help: Too many arguments, expected 0 or 1');
+        }
+
+        if (positionals.length === 1) {
+            const commandName = positionals[0];
+            const command = builtins[commandName];
+            if (!command) {
+                throw new Error(`help: No builtin found named '${commandName}'`);
+            }
+            await printUsage(command, out);
+            return;
+        }
 
         const heading = txt => {
             out.write(`\x1B[34;1m~ ${txt} ~\x1B[0m\n`);
