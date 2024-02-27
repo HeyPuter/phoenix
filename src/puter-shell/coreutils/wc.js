@@ -18,45 +18,98 @@
  */
 import path from "path-browserify";
 
+const TAB_SIZE = 8;
+
 export default {
     name: 'wc',
     args: {
         $: 'simple-parser',
-        allowPositionals: true
+        allowPositionals: true,
+        options: {
+            bytes: {
+                type: 'boolean',
+                short: 'c'
+            },
+            chars: {
+                type: 'boolean',
+                short: 'm'
+            },
+            lines: {
+                type: 'boolean',
+                short: 'l'
+            },
+            'max-line-length': {
+                type: 'boolean',
+                short: 'L'
+            },
+            words: {
+                type: 'boolean',
+                short: 'w'
+            },
+        }
     },
     execute: async ctx => {
         const { positionals, values } = ctx.locals;
         const { filesystem } = ctx.platform;
 
         const paths = [...positionals];
-        if (paths.length < 1) paths.push('-');
+        // "If no input file operands are specified, no name shall be written and no <blank> characters preceding the
+        //  pathname shall be written."
+        // For convenience, we add '-' to paths, but make a note not to output the filename.
+        let emptyStdinPath = false;
+        if (paths.length < 1) {
+            emptyStdinPath = true;
+            paths.push('-');
+        }
+
+        let { bytes: printBytes, chars: printChars, lines: printNewlines, 'max-line-length': printMaxLineLengths, words: printWords } = values;
+        const anyOutputOptionsSpecified = printBytes || printChars || printNewlines || printMaxLineLengths || printWords;
+        if (!anyOutputOptionsSpecified) {
+            printBytes = true;
+            printNewlines = true;
+            printWords = true;
+        }
 
         let perFile = [];
         let newlinesWidth = 1;
         let wordsWidth = 1;
+        let charsWidth = 1;
         let bytesWidth = 1;
+        let maxLineLengthWidth = 1;
 
         for (const relPath of paths) {
             let counts = {
                 filename: relPath,
                 newlines: 0,
                 words: 0,
+                chars: 0,
                 bytes: 0,
+                maxLineLength: 0,
             };
 
             let inWord = false;
+            let currentLineLength = 0;
             let accumulateData = (input) => {
-                counts.bytes += input.length;
-                for (const byte of input) {
-                    const char = typeof input === 'string' ? byte : String.fromCharCode(byte);
+                const byteInput = typeof input === 'string' ? new TextEncoder().encode(input) : input;
+                const stringInput = typeof input === 'string' ? input : new TextDecoder().decode(input);
+                counts.bytes += byteInput.length;
+                counts.chars += stringInput.length;
+                for (const char of stringInput) {
                     // "The wc utility shall consider a word to be a non-zero-length string of characters delimited by white space."
                     if (/\s/.test(char)) {
                         if (char === '\r' || char === '\n') {
                             counts.newlines++;
+                            counts.maxLineLength = Math.max(counts.maxLineLength, currentLineLength);
+                            currentLineLength = 0;
+                        } else if (char === '\t') {
+                            currentLineLength = (Math.floor(currentLineLength / TAB_SIZE) + 1) * TAB_SIZE;
+                        } else {
+                            currentLineLength++;
                         }
                         inWord = false;
                         continue;
                     }
+                    currentLineLength++;
                     if (!inWord) {
                         counts.words++;
                         inWord = true;
@@ -79,30 +132,49 @@ export default {
                 const fileData = await filesystem.read(absPath);
                 accumulateData(fileData);
             }
+            counts.maxLineLength = Math.max(counts.maxLineLength, currentLineLength);
 
             newlinesWidth = Math.max(newlinesWidth, counts.newlines.toString().length);
             wordsWidth = Math.max(wordsWidth, counts.words.toString().length);
+            charsWidth = Math.max(charsWidth, counts.chars.toString().length);
             bytesWidth = Math.max(bytesWidth, counts.bytes.toString().length);
+            maxLineLengthWidth = Math.max(maxLineLengthWidth, counts.maxLineLength.toString().length);
             perFile.push(counts);
         }
 
         let printCounts = async (count) => {
-            const paddedNewlines = count.newlines.toString().padStart(newlinesWidth, ' ');
-            const paddedWords = count.words.toString().padStart(wordsWidth, ' ');
-            const paddedBytes = count.bytes.toString().padStart(bytesWidth, ' ');
-            await ctx.externs.out.write(`${paddedNewlines} ${paddedWords} ${paddedBytes} ${count.filename}\n`);
+            let output = '';
+            const append = (string) => {
+                if (output.length !== 0) output += ' ';
+                output += string;
+            };
+
+            if (printNewlines)       append(count.newlines.toString().padStart(newlinesWidth, ' '));
+            if (printWords)          append(count.words.toString().padStart(wordsWidth, ' '));
+            if (printChars)          append(count.chars.toString().padStart(charsWidth, ' '));
+            if (printBytes)          append(count.bytes.toString().padStart(bytesWidth, ' '));
+            if (printMaxLineLengths) append(count.maxLineLength.toString().padStart(maxLineLengthWidth, ' '));
+            // The only time emptyStdinPath is true, is if we had no file paths given as arguments. That means only one
+            // input (stdin), so this won't be called to print a "totals" line.
+            if (!emptyStdinPath) append(count.filename);
+            output += '\n';
+            await ctx.externs.out.write(output);
         }
 
         let totalCounts = {
             filename: 'total', // POSIX: This is locale-dependent
             newlines: 0,
             words: 0,
+            chars: 0,
             bytes: 0,
+            maxLineLength: 0,
         };
         for (const count of perFile) {
             totalCounts.newlines += count.newlines;
             totalCounts.words += count.words;
+            totalCounts.chars += count.chars;
             totalCounts.bytes += count.bytes;
+            totalCounts.maxLineLength = Math.max(totalCounts.maxLineLength, count.maxLineLength);
             await printCounts(count);
         }
         if (perFile.length > 1) {
