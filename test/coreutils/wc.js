@@ -83,11 +83,25 @@ export const runWcTests = () => {
                 expectedStdout: '27 -\n',
             },
             {
-                description: '-lwmc outputs everything',
-                options: { bytes: true, chars: true, lines: true, words: true },
+                description: '-L outputs the maximum line length',
+                options: { 'max-line-length': true },
                 positionals: ['-'],
                 stdin: '🖥️ Well\nhello\nmy friends!\n',
-                expectedStdout: '3 5 27 31 -\n',
+                expectedStdout: '11 -\n',
+            },
+            {
+                description: '-L treats tabs as jumping to the next multiple of 8 columns',
+                options: { 'max-line-length': true },
+                positionals: ['-'],
+                stdin: 'hi\tmum\t!\n',
+                expectedStdout: '17 -\n',
+            },
+            {
+                description: '-lwmcL outputs everything',
+                options: { bytes: true, chars: true, lines: true, 'max-line-length': true, words: true },
+                positionals: ['-'],
+                stdin: '🖥️ Well\nhello\nmy friends!\n',
+                expectedStdout: '3 5 27 31 11 -\n',
             },
             // TODO: Test with files once the harness supports that.
         ];

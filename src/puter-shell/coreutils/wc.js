@@ -18,6 +18,8 @@
  */
 import path from "path-browserify";
 
+const TAB_SIZE = 8;
+
 export default {
     name: 'wc',
     args: {
@@ -35,6 +37,10 @@ export default {
             lines: {
                 type: 'boolean',
                 short: 'l'
+            },
+            'max-line-length': {
+                type: 'boolean',
+                short: 'L'
             },
             words: {
                 type: 'boolean',
@@ -56,8 +62,8 @@ export default {
             paths.push('-');
         }
 
-        let { bytes: printBytes, chars: printChars, lines: printNewlines, words: printWords } = values;
-        const anyOutputOptionsSpecified = printBytes || printChars || printNewlines || printWords;
+        let { bytes: printBytes, chars: printChars, lines: printNewlines, 'max-line-length': printMaxLineLengths, words: printWords } = values;
+        const anyOutputOptionsSpecified = printBytes || printChars || printNewlines || printMaxLineLengths || printWords;
         if (!anyOutputOptionsSpecified) {
             printBytes = true;
             printNewlines = true;
@@ -69,6 +75,7 @@ export default {
         let wordsWidth = 1;
         let charsWidth = 1;
         let bytesWidth = 1;
+        let maxLineLengthWidth = 1;
 
         for (const relPath of paths) {
             let counts = {
@@ -77,9 +84,11 @@ export default {
                 words: 0,
                 chars: 0,
                 bytes: 0,
+                maxLineLength: 0,
             };
 
             let inWord = false;
+            let currentLineLength = 0;
             let accumulateData = (input) => {
                 const byteInput = typeof input === 'string' ? new TextEncoder().encode(input) : input;
                 const stringInput = typeof input === 'string' ? input : new TextDecoder().decode(input);
@@ -90,10 +99,17 @@ export default {
                     if (/\s/.test(char)) {
                         if (char === '\r' || char === '\n') {
                             counts.newlines++;
+                            counts.maxLineLength = Math.max(counts.maxLineLength, currentLineLength);
+                            currentLineLength = 0;
+                        } else if (char === '\t') {
+                            currentLineLength = (Math.floor(currentLineLength / TAB_SIZE) + 1) * TAB_SIZE;
+                        } else {
+                            currentLineLength++;
                         }
                         inWord = false;
                         continue;
                     }
+                    currentLineLength++;
                     if (!inWord) {
                         counts.words++;
                         inWord = true;
@@ -116,11 +132,13 @@ export default {
                 const fileData = await filesystem.read(absPath);
                 accumulateData(fileData);
             }
+            counts.maxLineLength = Math.max(counts.maxLineLength, currentLineLength);
 
             newlinesWidth = Math.max(newlinesWidth, counts.newlines.toString().length);
             wordsWidth = Math.max(wordsWidth, counts.words.toString().length);
             charsWidth = Math.max(charsWidth, counts.chars.toString().length);
             bytesWidth = Math.max(bytesWidth, counts.bytes.toString().length);
+            maxLineLengthWidth = Math.max(maxLineLengthWidth, counts.maxLineLength.toString().length);
             perFile.push(counts);
         }
 
@@ -131,10 +149,11 @@ export default {
                 output += string;
             };
 
-            if (printNewlines) append(count.newlines.toString().padStart(newlinesWidth, ' '));
-            if (printWords)    append(count.words.toString().padStart(wordsWidth, ' '));
-            if (printChars)    append(count.chars.toString().padStart(charsWidth, ' '));
-            if (printBytes)    append(count.bytes.toString().padStart(bytesWidth, ' '));
+            if (printNewlines)       append(count.newlines.toString().padStart(newlinesWidth, ' '));
+            if (printWords)          append(count.words.toString().padStart(wordsWidth, ' '));
+            if (printChars)          append(count.chars.toString().padStart(charsWidth, ' '));
+            if (printBytes)          append(count.bytes.toString().padStart(bytesWidth, ' '));
+            if (printMaxLineLengths) append(count.maxLineLength.toString().padStart(maxLineLengthWidth, ' '));
             // The only time emptyStdinPath is true, is if we had no file paths given as arguments. That means only one
             // input (stdin), so this won't be called to print a "totals" line.
             if (!emptyStdinPath) append(count.filename);
@@ -148,12 +167,14 @@ export default {
             words: 0,
             chars: 0,
             bytes: 0,
+            maxLineLength: 0,
         };
         for (const count of perFile) {
             totalCounts.newlines += count.newlines;
             totalCounts.words += count.words;
             totalCounts.chars += count.chars;
             totalCounts.bytes += count.bytes;
+            totalCounts.maxLineLength = Math.max(totalCounts.maxLineLength, count.maxLineLength);
             await printCounts(count);
         }
         if (perFile.length > 1) {
