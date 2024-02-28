@@ -19,6 +19,7 @@
 import path from "path-browserify";
 import { validate_string } from "./coreutil_lib/validate.js";
 import { EMPTY } from "../../util/singleton.js";
+import { Exit } from './coreutil_lib/exit.js';
 
 // DRY: very similar to `cd`
 export default {
@@ -45,7 +46,12 @@ export default {
 
         let [ target ] = positionals;
 
-        validate_string(target, { name: 'path' });
+        try {
+            validate_string(target, { name: 'path' });
+        } catch (e) {
+            await ctx.externs.err.write(`mkdir: ${e.message}\n`);
+            throw new Exit(1);
+        }
 
         if ( ! target.startsWith('/') ) {
             target = path.resolve(ctx.vars.pwd, target);
@@ -54,7 +60,8 @@ export default {
         const result = await filesystem.mkdir(target, { createMissingParents: values.parents });
 
         if ( result && result.$ === 'error' ) {
-            throw new Error(result.message);
+            await ctx.externs.err.write(`mkdir: ${result.message}\n`);
+            throw new Exit(1);
         }
     }
 };

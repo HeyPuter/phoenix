@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { Exit } from './coreutil_lib/exit.js';
+
 export default {
     name: 'ai',
     usage: 'ai PROMPT',
@@ -29,12 +31,12 @@ export default {
         const [ prompt ] = positionals;
 
         if ( ! prompt ) {
-            ctx.externs.err.write('ai: missing prompt\n');
-            return;
+            await ctx.externs.err.write('ai: missing prompt\n');
+            throw new Exit(1);
         }
         if ( positionals.length > 1 ) {
-            ctx.externs.err.write('ai: prompt must be wrapped in quotes\n');
-            return;
+            await ctx.externs.err.write('ai: prompt must be wrapped in quotes\n');
+            throw new Exit(1);
         }
 
         const { drivers } = ctx.platform;

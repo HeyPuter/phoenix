@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import path_ from "path-browserify";
+import { Exit } from './coreutil_lib/exit.js';
 
 export default {
     name: 'touch',
@@ -32,8 +33,8 @@ export default {
         const POSIX = filesystem.capabilities['readdir.posix-mode'];
 
         if ( positionals.length === 0 ) {
-            await ctx.externs.err.write('touch: missing file operand');
-            return;
+            await ctx.externs.err.write('touch: missing file operand\n');
+            throw new Exit(1);
         }
 
         // DRY: also done in mkdir, cat, mv, and ls
@@ -51,10 +52,10 @@ export default {
             try {
                 stat = await filesystem.stat(path);
             } catch (e) {
-                if ( POSIX ) {
-                    if ( e.code !== 'ENOENT' ) throw e;
-                } else {
-                    if ( e.code !== 'subject_does_not_exist' ) throw e;
+                if ( (POSIX && e.code !== 'ENOENT')
+                    || (!POSIX && e.code !== 'subject_does_not_exist') ) {
+                    await ctx.externs.err.write(`touch: ${e.message}\n`);
+                    throw new Exit(1);
                 }
             }
 

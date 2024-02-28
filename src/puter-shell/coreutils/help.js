@@ -19,6 +19,7 @@
 // TODO: fetch help information from command registry
 
 import { printUsage } from "./coreutil_lib/help.js";
+import { Exit } from './coreutil_lib/exit.js';
 
 export default {
     name: 'help',
@@ -34,17 +35,19 @@ export default {
         const { positionals } = ctx.locals;
         const { builtins } = ctx.registries;
 
-        const { out } = ctx.externs;
+        const { out, err } = ctx.externs;
 
         if (positionals.length > 1) {
-            throw new Error('help: Too many arguments, expected 0 or 1');
+            await err.write('help: Too many arguments, expected 0 or 1\n');
+            throw new Exit(1);
         }
 
         if (positionals.length === 1) {
             const commandName = positionals[0];
             const command = builtins[commandName];
             if (!command) {
-                throw new Error(`help: No builtin found named '${commandName}'`);
+                await err.write(`help: No builtin found named '${commandName}'\n`);
+                throw new Exit(1);
             }
             await printUsage(command, out);
             return;

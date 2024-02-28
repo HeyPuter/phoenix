@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { Exit } from './coreutil_lib/exit.js';
+
 export default {
     name: 'login',
     usage: 'login',
@@ -33,7 +35,8 @@ export default {
         console.log('this is athe puter sdk', puterSDK);
 
         if ( puterSDK.APIOrigin === undefined ) {
-            throw new Error('API origin not set');
+            await ctx.externs.err.write('login: API origin not set\n');
+            throw new Exit(1);
         }
 
         const res = await puterSDK.auth.signIn();

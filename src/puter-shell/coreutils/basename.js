@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { Exit } from './coreutil_lib/exit.js';
+
 export default {
     name: 'basename',
     usage: 'basename PATH [SUFFIX]',
@@ -30,10 +32,12 @@ export default {
         const suffix = ctx.locals.positionals[1];
 
         if (string === undefined) {
-            throw new Error('basename: Missing path argument');
+            await ctx.externs.err.write('basename: Missing path argument\n');
+            throw new Exit(1);
         }
         if (ctx.locals.positionals.length > 2) {
-            throw new Error('basename: Too many arguments, expected 1 or 2');
+            await ctx.externs.err.write('basename: Too many arguments, expected 1 or 2\n');
+            throw new Exit(1);
         }
 
         // https://pubs.opengroup.org/onlinepubs/9699919799/utilities/basename.html

@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import path from "path-browserify";
+import { Exit } from './coreutil_lib/exit.js';
 
 export default {
     name: 'mv',
@@ -32,16 +33,16 @@ export default {
         const { filesystem } = ctx.platform;
 
         if ( positionals.length < 1 ) {
-            err.write('mv: missing file operand\n');
-            return;
+            await err.write('mv: missing file operand\n');
+            throw new Exit(1);
         }
 
         const srcRelPath = positionals.shift();
 
         if ( positionals.length < 1 ) {
             const aft = positionals[0];
-            err.write(`mv: missing destination file operand after '${aft}'\n`);
-            return;
+            await err.write(`mv: missing destination file operand after '${aft}'\n`);
+            throw new Exit(1);
         }
 
         const dstRelPath = positionals.shift();

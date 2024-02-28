@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { Exit } from './coreutil_lib/exit.js';
+
 export default {
     name: 'dirname',
     usage: 'dirname PATH',
@@ -31,10 +33,12 @@ export default {
         }
 
         if (string === undefined) {
-            throw new Error('dirname: Missing path argument');
+            await ctx.externs.err.write('dirname: Missing path argument\n');
+            throw new Exit(1);
         }
         if (ctx.locals.positionals.length > 1) {
-            throw new Error('dirname: Too many arguments, expected 1');
+            await ctx.externs.err.write('dirname: Too many arguments, expected 1\n');
+            throw new Exit(1);
         }
 
         // https://pubs.opengroup.org/onlinepubs/9699919799/utilities/dirname.html
