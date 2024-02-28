@@ -34,6 +34,7 @@ import module_help from './help.js'
 import module_jq from './jq.js'
 import module_login from './login.js'
 import module_ls from './ls.js'
+import module_man from './man.js'
 import module_mkdir from './mkdir.js'
 import module_mv from './mv.js'
 import module_neofetch from './neofetch.js'
@@ -69,6 +70,7 @@ export default {
     "jq": module_jq,
     "login": module_login,
     "ls": module_ls,
+    "man": module_man,
     "mkdir": module_mkdir,
     "mv": module_mv,
     "neofetch": module_neofetch,
