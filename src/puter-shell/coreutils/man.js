@@ -16,22 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { runBasenameTests } from "./coreutils/basename.js";
-import { runDirnameTests } from "./coreutils/dirname.js";
-import { runEchoTests } from "./coreutils/echo.js";
-import { runEnvTests } from "./coreutils/env.js";
-import { runFalseTests } from "./coreutils/false.js";
-import { runSleepTests } from "./coreutils/sleep.js";
-import { runTrueTests } from "./coreutils/true.js";
-import { runWcTests } from "./coreutils/wc.js";
-
-describe('coreutils', function () {
-    runBasenameTests();
-    runDirnameTests();
-    runEchoTests();
-    runEnvTests();
-    runFalseTests();
-    runSleepTests();
-    runTrueTests();
-    runWcTests();
-});
+export default {
+    name: 'man',
+    usage: 'man',
+    description: 'Stub command. Please use `help` instead.',
+    args: {
+        $: 'simple-parser',
+        allowPositionals: true
+    },
+    execute: async ctx => {
+        await ctx.externs.out.write('`\x1B[34;1mman\x1B[0m` is not supported. ' +
+            'Please use `\x1B[34;1mhelp COMMAND\x1B[0m` for documentation.\n');
+    }
+};

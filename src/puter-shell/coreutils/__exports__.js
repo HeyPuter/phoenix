@@ -34,6 +34,7 @@ import module_help from './help.js'
 import module_jq from './jq.js'
 import module_login from './login.js'
 import module_ls from './ls.js'
+import module_man from './man.js'
 import module_mkdir from './mkdir.js'
 import module_mv from './mv.js'
 import module_neofetch from './neofetch.js'
@@ -42,6 +43,7 @@ import module_pwd from './pwd.js'
 import module_rm from './rm.js'
 import module_rmdir from './rmdir.js'
 import module_sample_data from './sample-data.js'
+import module_sleep from './sleep.js'
 import module_tail from './tail.js'
 import module_test from './test.js'
 import module_touch from './touch.js'
@@ -68,6 +70,7 @@ export default {
     "jq": module_jq,
     "login": module_login,
     "ls": module_ls,
+    "man": module_man,
     "mkdir": module_mkdir,
     "mv": module_mv,
     "neofetch": module_neofetch,
@@ -76,6 +79,7 @@ export default {
     "rm": module_rm,
     "rmdir": module_rmdir,
     "sample-data": module_sample_data,
+    "sleep": module_sleep,
     "tail": module_tail,
     "test": module_test,
     "touch": module_touch,

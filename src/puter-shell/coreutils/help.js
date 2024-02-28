@@ -55,6 +55,7 @@ export default {
         };
 
         heading('available commands');
+        out.write('Use \x1B[34;1mhelp COMMAND-NAME\x1B[0m for more information');
         for ( const k in builtins ) {
             out.write('  - ' + k + '\n');
         }
