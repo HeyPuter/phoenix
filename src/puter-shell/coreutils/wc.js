@@ -101,9 +101,11 @@ export default {
             let inWord = false;
             let currentLineLength = 0;
             let accumulateData = (input) => {
-                const byteInput = typeof input === 'string' ? new TextEncoder().encode(input) : input;
+                if (printBytes) {
+                    const byteInput = typeof input === 'string' ? new TextEncoder().encode(input) : input;
+                    counts.bytes += byteInput.length;
+                }
                 const stringInput = typeof input === 'string' ? input : new TextDecoder().decode(input);
-                counts.bytes += byteInput.length;
                 counts.chars += stringInput.length;
                 for (const char of stringInput) {
                     // "The wc utility shall consider a word to be a non-zero-length string of characters delimited by white space."
