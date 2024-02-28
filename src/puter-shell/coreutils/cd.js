@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import path from "path-browserify";
+import { Exit } from './coreutil_lib/exit.js';
 
 export default {
     name: 'cd',
@@ -41,8 +42,8 @@ export default {
         const result = await filesystem.readdir(target);
 
         if ( result.$ === 'error' ) {
-            ctx.externs.err.write('cd: error: ' + result.message + '\n');
-            return;
+            await ctx.externs.err.write('cd: error: ' + result.message + '\n');
+            throw new Exit(1);
         }
 
         ctx.vars.pwd = target;
