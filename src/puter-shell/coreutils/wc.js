@@ -22,27 +22,38 @@ const TAB_SIZE = 8;
 
 export default {
     name: 'wc',
+    usage: 'wc [OPTIONS] [FILE...]',
+    description: 'Count newlines, words, and bytes in each specified FILE, and print them in a table.\n\n' +
+        'If no FILE is specified, or FILE is `-`, read standard input. ' +
+        'If more than one FILE is specified, also print a line for the totals.\n\n' +
+        'The outputs are always printed in the order: newlines, words, characters, bytes, maximum line length, followed by the file name. ' +
+        'If no options are given to output specific counts, the default is `-lwc`.',
     args: {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
             bytes: {
+                description: 'Output the number of bytes in each file',
                 type: 'boolean',
                 short: 'c'
             },
             chars: {
+                description: 'Output the number of characters in each file',
                 type: 'boolean',
                 short: 'm'
             },
             lines: {
+                description: 'Output the number of newlines in each file',
                 type: 'boolean',
                 short: 'l'
             },
             'max-line-length': {
+                description: 'Output the maximum line length in each file. Tabs are expanded to the nearest multiple of 8',
                 type: 'boolean',
                 short: 'L'
             },
             words: {
+                description: 'Output the number of words in each file. A word is a sequence of non-whitespace characters',
                 type: 'boolean',
                 short: 'w'
             },
