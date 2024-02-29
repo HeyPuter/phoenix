@@ -17,12 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { Exit } from './coreutil_lib/exit.js';
+import { resolveRelativePath } from '../../util/path.js';
 
 export default {
     name: 'tail',
-    usage: 'tail [OPTIONS]',
-    description: 'Read standard input and print the last lines to standard output.\n\n' +
-        'Defaults to 10 lines unless --lines is given.',
+    usage: 'tail [OPTIONS] [FILE]',
+    description: 'Read a file and print the last lines to standard output.\n\n' +
+        'Defaults to 10 lines unless --lines is given. ' +
+        'If no FILE is provided, or FILE is `-`, read standard input.',
     input: {
         syncLines: true
     },
@@ -39,26 +41,57 @@ export default {
         }
     },
     execute: async ctx => {
-        const { in_, out } = ctx.externs;
+        const { in_, out, err } = ctx.externs;
+        const { positionals, values } = ctx.locals;
+        const { filesystem } = ctx.platform;
+
+        if (positionals.length > 1) {
+            // TODO: Support multiple files (this is an extension to POSIX, but available in the GNU tail)
+            await err.write('tail: Only one FILE parameter is allowed\n');
+            throw new Exit(1);
+        }
+        const relPath = positionals[0] || '-';
 
         let lineCount = 10;
 
-        if (ctx.locals.values.lines) {
-            const parsedLineCount = Number.parseFloat(ctx.locals.values.lines);
+        if (values.lines) {
+            const parsedLineCount = Number.parseFloat(values.lines);
             if (isNaN(parsedLineCount) || ! Number.isInteger(parsedLineCount) || parsedLineCount < 1) {
-                await ctx.externs.err.write(`tail: Invalid number of lines '${ctx.locals.values.lines}'\n`);
+                await err.write(`tail: Invalid number of lines '${values.lines}'\n`);
                 throw new Exit(1);
             }
             lineCount = parsedLineCount;
         }
 
-        let items = await in_.collect();
-        if ( items.length > lineCount ) {
-            items = items.slice(-1 * lineCount);
+        let lines = [];
+        if (relPath === '-') {
+            lines = await in_.collect();
+        } else {
+            const absPath = resolveRelativePath(ctx.vars, relPath);
+            const fileData = await filesystem.read(absPath);
+            // DRY: Similar logic in wc
+            if (fileData instanceof Blob) {
+                const arrayBuffer = await fileData.arrayBuffer();
+                const fileText = new TextDecoder().decode(arrayBuffer);
+                lines = fileText.split(/\n|\r|\r\n/).map(it => it + '\n');
+            } else if (typeof fileData === 'string') {
+                lines = fileData.split(/\n|\r|\r\n/).map(it => it + '\n');
+            } else {
+                // ArrayBuffer or TypedArray
+                const fileText = new TextDecoder().decode(fileData);
+                lines = fileText.split(/\n|\r|\r\n/).map(it => it + '\n');
+            }
+        }
+        if ( lines.length > 0 && lines[lines.length - 1] === '\n') {
+            // Ignore trailing blank line
+            lines.pop();
+        }
+        if ( lines.length > lineCount ) {
+            lines = lines.slice(-1 * lineCount);
         }
 
-        for ( const item of items ) {
-            await out.write(item);
+        for ( const line of lines ) {
+            await out.write(line);
         }
     }
 };
