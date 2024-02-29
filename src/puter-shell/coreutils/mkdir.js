@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path from "path-browserify";
 import { validate_string } from "./coreutil_lib/validate.js";
 import { EMPTY } from "../../util/singleton.js";
 import { Exit } from './coreutil_lib/exit.js';
+import { resolveRelativePath } from '../../util/path.js';
 
 // DRY: very similar to `cd`
 export default {
@@ -53,9 +53,7 @@ export default {
             throw new Exit(1);
         }
 
-        if ( ! target.startsWith('/') ) {
-            target = path.resolve(ctx.vars.pwd, target);
-        }
+        target = resolveRelativePath(ctx.vars, target);
 
         const result = await filesystem.mkdir(target, { createMissingParents: values.parents });
 

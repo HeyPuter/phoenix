@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path from "path-browserify";
+import { resolveRelativePath } from '../../util/path.js';
 
 // TODO: add logic to check if directory is empty
 // TODO: add check for `--dir`
@@ -45,10 +45,7 @@ export default {
         const { filesystem } = ctx.platform;
 
         let [ target ] = positionals;
-
-        if ( ! target.startsWith('/') ) {
-            target = path.resolve(ctx.vars.pwd, target);
-        }
+        target = resolveRelativePath(ctx.vars, target);
 
         await filesystem.rmdir(target);
     }

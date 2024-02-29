@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path from "path-browserify";
+import { resolveRelativePath } from '../../util/path.js';
 
 const TAB_SIZE = 8;
 
@@ -139,9 +139,7 @@ export default {
                     accumulateData(chunk);
                 }
             } else {
-                // DRY: also done in mkdir
-                const absPath = relPath.startsWith('/') ? relPath :
-                    path.resolve(ctx.vars.pwd, relPath);
+                const absPath = resolveRelativePath(ctx.vars, relPath);
                 const fileData = await filesystem.read(absPath);
                 accumulateData(fileData);
             }

@@ -17,33 +17,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import path_ from "path-browserify";
-import { resolveRelativePath } from '../../util/path.js';
 
-export class FileCompleter {
-    async getCompetions (ctx, inputState) {
-        const { filesystem } = ctx.platform;
-
-        if ( inputState.input === '' ) {
-            return [];
-        }
-
-        let path = resolveRelativePath(ctx.vars, inputState.input);
-        let dir = path_.dirname(path);
-        let base = path_.basename(path);
-
-        const completions = [];
-
-        const result = await filesystem.readdir(dir);
-        if ( result == undefined ) {
-            return [];
-        }
-
-        for ( const item of result ) {
-            if ( item.name.startsWith(base) ) {
-                completions.push(item.name.slice(base.length));
-            }
-        }
-        
-        return completions;
+export const resolveRelativePath = (vars, relativePath) => {
+    if ( relativePath.startsWith('/') ) {
+        return relativePath;
     }
-}
+    if ( relativePath.startsWith('~') ) {
+        return path_.resolve(vars.home, '.' + relativePath.slice(1));
+    }
+    return path_.resolve(vars.pwd, relativePath);
+};
