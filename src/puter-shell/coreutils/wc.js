@@ -100,13 +100,25 @@ export default {
 
             let inWord = false;
             let currentLineLength = 0;
-            let accumulateData = (input) => {
-                if (printBytes) {
-                    const byteInput = typeof input === 'string' ? new TextEncoder().encode(input) : input;
-                    counts.bytes += byteInput.length;
+            let accumulateData = async (input) => {
+                let stringInput;
+                if (input instanceof Blob) {
+                    const arrayBuffer = await input.arrayBuffer();
+                    stringInput = new TextDecoder().decode(arrayBuffer);
+                    counts.bytes += arrayBuffer.byteLength;
+                } else if (typeof input === 'string') {
+                    stringInput = input;
+                    if (printBytes) {
+                        const byteInput = new TextEncoder().encode(input);
+                        counts.bytes += byteInput.length;
+                    }
+                } else {
+                    // ArrayBuffer or TypedArray
+                    stringInput = new TextDecoder().decode(input);
+                    counts.bytes += input.length;
                 }
-                const stringInput = typeof input === 'string' ? input : new TextDecoder().decode(input);
                 counts.chars += stringInput.length;
+
                 for (const char of stringInput) {
                     // "The wc utility shall consider a word to be a non-zero-length string of characters delimited by white space."
                     if (/\s/.test(char)) {
@@ -136,14 +148,14 @@ export default {
                     ({ value: chunk, done } = await ctx.externs.in_.read());
                 }
                 for ( await nextChunk() ; ! done ; await nextChunk() ) {
-                    accumulateData(chunk);
+                    await accumulateData(chunk);
                 }
             } else {
                 // DRY: also done in mkdir
                 const absPath = relPath.startsWith('/') ? relPath :
                     path.resolve(ctx.vars.pwd, relPath);
                 const fileData = await filesystem.read(absPath);
-                accumulateData(fileData);
+                await accumulateData(fileData);
             }
             counts.maxLineLength = Math.max(counts.maxLineLength, currentLineLength);
 
