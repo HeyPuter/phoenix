@@ -16,10 +16,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { Exit } from './coreutil_lib/exit.js';
+
 export default {
     name: 'tail',
     usage: 'tail [OPTIONS]',
-    description: 'Read standard input and print the last lines to standard output.',
+    description: 'Read standard input and print the last lines to standard output.\n\n' +
+        'Defaults to 10 lines unless --lines is given.',
     input: {
         syncLines: true
     },
@@ -36,16 +39,22 @@ export default {
         }
     },
     execute: async ctx => {
-        // ctx.params to access processed args
-        // ctx.args to access raw args
-
         const { in_, out } = ctx.externs;
 
-        const amount = Number.parseInt(ctx.locals.values.lines);
+        let lineCount = 10;
+
+        if (ctx.locals.values.lines) {
+            const parsedLineCount = Number.parseFloat(ctx.locals.values.lines);
+            if (isNaN(parsedLineCount) || ! Number.isInteger(parsedLineCount) || parsedLineCount < 1) {
+                await ctx.externs.err.write(`tail: Invalid number of lines '${ctx.locals.values.lines}'\n`);
+                throw new Exit(1);
+            }
+            lineCount = parsedLineCount;
+        }
 
         let items = await in_.collect();
-        if ( items.length > amount ) {
-            items = items.slice(-1 * amount);
+        if ( items.length > lineCount ) {
+            items = items.slice(-1 * lineCount);
         }
 
         for ( const item of items ) {
