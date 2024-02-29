@@ -17,6 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { Context } from "contextlink";
+import { SyncLinesReader } from '../../src/ansi-shell/ioutil/SyncLinesReader.js';
+import { CommandStdinDecorator } from '../../src/ansi-shell/pipeline/iowrappers.js';
 
 export class WritableStringStream extends WritableStream {
     constructor() {
@@ -40,10 +42,17 @@ export class WritableStringStream extends WritableStream {
 
 // TODO: Flesh this out as needed.
 export const MakeTestContext = (command, { positionals = [],  values = {}, stdinInputs = [], env = {} }) => {
+
+    let in_ = ReadableStream.from(stdinInputs).getReader();
+    if (command.input?.syncLines) {
+        in_ = new SyncLinesReader({ delegate: in_ });
+    }
+    in_ = new CommandStdinDecorator(in_);
+
     return new Context({
         cmdExecState: { valid: true },
         externs: new Context({
-            in_: ReadableStream.from(stdinInputs).getReader(),
+            in_,
             out: new WritableStringStream(),
             err: new WritableStringStream(),
             sig: null,
