@@ -21,6 +21,7 @@ import { runDirnameTests } from "./coreutils/dirname.js";
 import { runEchoTests } from "./coreutils/echo.js";
 import { runEnvTests } from "./coreutils/env.js";
 import { runFalseTests } from "./coreutils/false.js";
+import { runHeadTests } from "./coreutils/head.js";
 import { runSleepTests } from "./coreutils/sleep.js";
 import { runTailTests } from "./coreutils/tail.js";
 import { runTrueTests } from "./coreutils/true.js";
@@ -32,6 +33,7 @@ describe('coreutils', function () {
     runEchoTests();
     runEnvTests();
     runFalseTests();
+    runHeadTests();
     runSleepTests();
     runTailTests();
     runTrueTests();
