@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path from "path-browserify";
 import { Exit } from './coreutil_lib/exit.js';
+import { resolveRelativePath } from '../../util/path.js';
 
 export default {
     name: 'cd',
@@ -34,10 +34,7 @@ export default {
         const { filesystem } = ctx.platform;
 
         let [ target ] = positionals;
-
-        if ( ! target.startsWith('/') ) {
-            target = path.resolve(ctx.vars.pwd, target);
-        }
+        target = resolveRelativePath(ctx.vars, target);
 
         const result = await filesystem.readdir(target);
 

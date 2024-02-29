@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { resolveRelativePath } from '../../util/path.js';
+
 const lxor = (a, b) => a ? !b : b;
 
 import path_ from "path-browserify";
@@ -143,9 +145,7 @@ export default {
                     await do_grep_line(value);
                 }
             } else {
-                if ( ! file.startsWith('/') ) {
-                    file = path_.resolve(ctx.vars.pwd, file);
-                }
+                file = resolveRelativePath(ctx.vars, file);
                 const stat = await filesystem.stat(file);
                 if ( stat.is_dir ) {
                     if ( values.recursive ) {

@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-// INCONST: called 'path' instead of 'path_' elsewhere
-import path_ from "path-browserify";
 import columnify from "columnify";
 import cli_columns from "cli-columns";
+import { resolveRelativePath } from '../../util/path.js';
 
 // formatLsTimestamp(): written by AI
 function formatLsTimestamp(unixTimestamp) {
@@ -110,18 +109,6 @@ export default {
         const paths = positionals.length < 1
             ? [pwd] : positionals ;
 
-
-        // DRY: also done in mkdir, cat, and mv
-        const resolve = relPath => {
-            if ( relPath.startsWith('/') ) {
-                return relPath;
-            }
-            if ( relPath.startsWith('~') ) {
-                return path_.resolve(ctx.vars.home, relPath.slice(1));
-            }
-            return path_.resolve(ctx.vars.pwd, relPath);
-        }
-
         const showHeadings = paths.length > 1 ? async ({ i, path }) => {
             if ( i !== 0 ) ctx.externs.out.write('\n');
             await ctx.externs.out.write(path + ':\n');
@@ -130,7 +117,7 @@ export default {
         for ( let i=0 ; i < paths.length ; i++ ) {
             let path = paths[i];
             await showHeadings({ i, path });
-            path = resolve(path);
+            path = resolveRelativePath(ctx.vars, path);
             let result = await filesystem.readdir(path);
             console.log('ls items', result);
 

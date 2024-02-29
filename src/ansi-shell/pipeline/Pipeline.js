@@ -16,16 +16,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path_ from "path-browserify";
-
-// DRY: used by commands as well
-const resolve = (ctx, relPath) => {
-    if ( relPath.startsWith('/') ) {
-        return relPath;
-    }
-    return path_.resolve(ctx.vars.pwd, relPath);
-};
-
 import { SyncLinesReader } from "../ioutil/SyncLinesReader.js";
 import { TOKENS } from "../readline/readtoken.js";
 import { ByteWriter } from "../ioutil/ByteWriter.js";
@@ -39,6 +29,7 @@ import { NullifyWriter } from "../ioutil/NullifyWriter.js";
 import { ConcreteSyntaxError } from "../ConcreteSyntaxError.js";
 import { SignalReader } from "../ioutil/SignalReader.js";
 import { Exit } from "../../puter-shell/coreutils/coreutil_lib/exit.js";
+import { resolveRelativePath } from '../../util/path.js';
 
 class Token {
     static createFromAST (ctx, ast) {
@@ -206,7 +197,7 @@ export class PreparedCommand {
                 ? await this.inputRedirect.resolve(this.ctx)
                 : this.inputRedirect;
             const response = await filesystem.read(
-                resolve(this.ctx, dest_path));
+                resolveRelativePath(this.ctx.vars, dest_path));
             in_ = new MemReader(response);
         }
 
@@ -316,7 +307,7 @@ export class PreparedCommand {
             const dest_path = outputRedirect instanceof Token
                 ? await outputRedirect.resolve(this.ctx)
                 : outputRedirect;
-            const path = resolve(ctx, dest_path);
+            const path = resolveRelativePath(ctx.vars, dest_path);
             console.log('it should work?', {
                 path,
                 outputMemWriters,

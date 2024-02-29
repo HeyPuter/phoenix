@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path from "path-browserify";
 import { Exit } from './coreutil_lib/exit.js';
+import { resolveRelativePath } from '../../util/path.js';
 
 export default {
     name: 'mv',
@@ -47,16 +47,8 @@ export default {
 
         const dstRelPath = positionals.shift();
 
-        // DRY: also done in mkdir and cat
-        const resolve = relPath => {
-            if ( relPath.startsWith('/') ) {
-                return relPath;
-            }
-            return path.resolve(ctx.vars.pwd, relPath);
-        }
-
-        const srcAbsPath = resolve(srcRelPath);
-        let   dstAbsPath = resolve(dstRelPath);
+        const srcAbsPath = resolveRelativePath(ctx.vars, srcRelPath);
+        let   dstAbsPath = resolveRelativePath(ctx.vars, dstRelPath);
 
         await filesystem.move(srcAbsPath, dstAbsPath);
     }

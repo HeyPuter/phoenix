@@ -18,14 +18,14 @@
  */
 import path_ from "path-browserify";
 import { Pipeline } from "../../ansi-shell/pipeline/Pipeline.js";
+import { resolveRelativePath } from '../../util/path.js';
 
 export class ScriptCommandProvider {
     async lookup (id, { ctx }) {
         const is_path = id.match(/^[.\/]/);
         if ( ! is_path ) return undefined;
 
-        const absPath = id.startsWith('/') ? id :
-            path_.resolve(ctx.vars.pwd, id);
+        const absPath = resolveRelativePath(ctx.vars, id);
         
         const { filesystem } = ctx.platform;
 
