@@ -203,6 +203,10 @@ export default {
 
             const POSIX = filesystem.capabilities['readdir.posix-mode'];
 
+            const simpleTypeForItem = (item) => {
+                return (item.is_dir ? 'd' : item.is_symlink ? 'l' : '-')
+                    + ( (item.subdomains && item.subdomains.length) ? 's' : '-' );
+            };
 
             if ( values.long ) {
                 const time = values.time || 'mtime';
@@ -216,16 +220,9 @@ export default {
                                 ? ` +${item.subdomains.length - 1}`
                                 : ''
                         )
-                    let type, mode;
-                    if ( POSIX ) {
-                        mode = item.mode_human_readable;
-                        type = mode.slice(0, 1) + '-';
-                    } else {
-                        type = item.is_dir ? 'd-' : item.is_symlink ? 'l-' : '--';
-                    }
-                    if ( item.subdomains && item.subdomains.length ) {
-                        type = type.slice(0, 1) + 's';
-                    }
+                    const type = simpleTypeForItem(item);
+                    const mode = POSIX ? item.mode_human_readable : null;
+
                     let size = item.size;
                     if ( values['human-readable'] ) {
                         size = B_to_human_readable(size);
@@ -268,11 +265,7 @@ export default {
             console.log('what is', cli_columns);
 
             const names = result.map(item => {
-                let type = item.is_dir ? 'd-' : item.is_symlink ? 'l-' : '--';
-                if ( item.subdomains && item.subdomains.length ) {
-                    type = type.slice(0, 1) + 's';
-                }
-                return col(type, item.name);
+                return col(simpleTypeForItem(item), item.name);
             });
             const text = cli_columns(names, {
                 width: ctx.env.COLS,
