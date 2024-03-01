@@ -57,13 +57,13 @@ export class SyncLinesReader extends ProxyReader {
                 return { value };
             }
 
-            if ( ! value.includes('\n') ) {
+            if ( ! value.match(/\n|\r|\r\n/) ) {
                 this.fragment += value;
                 continue;
             }
 
-            // guarenteed to be 2 items, because value includes '\n'
-            const lines = value.split('\n');
+            // Guaranteed to be 2 items, because value includes a newline
+            const lines = value.split(/\n|\r|\r\n/);
 
             // The first line continues from the existing fragment
             const firstLine = this.fragment + lines.shift();

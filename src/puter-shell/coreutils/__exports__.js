@@ -30,6 +30,7 @@ import module_echo from './echo.js'
 import module_env from './env.js'
 import module_false from './false.js'
 import module_grep from './grep.js'
+import module_head from './head.js'
 import module_help from './help.js'
 import module_jq from './jq.js'
 import module_login from './login.js'
@@ -66,6 +67,7 @@ export default {
     "env": module_env,
     "false": module_false,
     "grep": module_grep,
+    "head": module_head,
     "help": module_help,
     "jq": module_jq,
     "login": module_login,

@@ -20,9 +20,9 @@ import { Exit } from './coreutil_lib/exit.js';
 import { resolveRelativePath } from '../../util/path.js';
 
 export default {
-    name: 'tail',
-    usage: 'tail [OPTIONS] [FILE]',
-    description: 'Read a file and print the last lines to standard output.\n\n' +
+    name: 'head',
+    usage: 'head [OPTIONS] [FILE]',
+    description: 'Read a file and print the first lines to standard output.\n\n' +
         'Defaults to 10 lines unless --lines is given. ' +
         'If no FILE is provided, or FILE is `-`, read standard input.',
     input: {
@@ -46,8 +46,8 @@ export default {
         const { filesystem } = ctx.platform;
 
         if (positionals.length > 1) {
-            // TODO: Support multiple files (this is an extension to POSIX, but available in the GNU tail)
-            await err.write('tail: Only one FILE parameter is allowed\n');
+            // TODO: Support multiple files (this is POSIX)
+            await err.write('head: Only one FILE parameter is allowed\n');
             throw new Exit(1);
         }
         const relPath = positionals[0] || '-';
@@ -57,19 +57,20 @@ export default {
         if (values.lines) {
             const parsedLineCount = Number.parseFloat(values.lines);
             if (isNaN(parsedLineCount) || ! Number.isInteger(parsedLineCount) || parsedLineCount < 1) {
-                await err.write(`tail: Invalid number of lines '${values.lines}'\n`);
+                await err.write(`head: Invalid number of lines '${values.lines}'\n`);
                 throw new Exit(1);
             }
             lineCount = parsedLineCount;
         }
 
+        // TODO: head can stop reading from the input as soon as it completes lineCount lines.
         let lines = [];
         if (relPath === '-') {
             lines = await in_.collect();
         } else {
             const absPath = resolveRelativePath(ctx.vars, relPath);
             const fileData = await filesystem.read(absPath);
-            // DRY: Similar logic in wc
+            // DRY: Similar logic in wc and tail
             if (fileData instanceof Blob) {
                 const arrayBuffer = await fileData.arrayBuffer();
                 const fileText = new TextDecoder().decode(arrayBuffer);
@@ -82,12 +83,8 @@ export default {
                 lines = fileText.split(/\n|\r|\r\n/).map(it => it + '\n');
             }
         }
-        if ( lines.length > 0 && lines[lines.length - 1] === '\n') {
-            // Ignore trailing blank line
-            lines.pop();
-        }
         if ( lines.length > lineCount ) {
-            lines = lines.slice(-1 * lineCount);
+            lines = lines.slice(0, lineCount);
         }
 
         for ( const line of lines ) {
