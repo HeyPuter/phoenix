@@ -30,6 +30,21 @@ export default {
         $: 'simple-parser',
         allowPositionals: true,
         options: {
+            'dictionary-order': {
+                description: 'Only consider alphanumeric characters and whitespace',
+                type: 'boolean',
+                short: 'd'
+            },
+            'ignore-case': {
+                description: 'Sort case-insensitively',
+                type: 'boolean',
+                short: 'f'
+            },
+            'ignore-nonprinting': {
+                description: 'Only consider printable characters',
+                type: 'boolean',
+                short: 'i'
+            },
             output: {
                 description: 'Output to this file, instead of standard output',
                 type: 'string',
@@ -39,6 +54,11 @@ export default {
                 description: 'Remove duplicates of previous lines',
                 type: 'boolean',
                 short: 'u'
+            },
+            reverse: {
+                description: 'Sort in reverse order',
+                type: 'boolean',
+                short: 'r'
             },
         }
     },
@@ -75,12 +95,79 @@ export default {
             }
         }
 
-        lines.sort();
+        const compareStrings = (a,b) => {
+            let aIndex = 0;
+            let bIndex = 0;
+
+            const skipIgnored = (string, index) => {
+                if (values['dictionary-order'] && values['ignore-nonprinting']) {
+                    // Combining --dictionary-order and --ignore-nonprinting is unspecified.
+                    // We'll treat that as "must be alphanumeric only".
+                    while (index < string.length && ! /[a-zA-Z0-9]/.test(string[index])) {
+                        index++;
+                    }
+                    return index;
+                }
+                if (values['dictionary-order']) {
+                    // Only consider whitespace and alphanumeric characters
+                    while (index < string.length && ! /[a-zA-Z0-9\s]/.test(string[index])) {
+                        index++;
+                    }
+                    return index;
+                }
+                if (values['ignore-nonprinting']) {
+                    // Only consider printing characters
+                    // So, ignore anything below an ascii space, inclusive. TODO: detect unicode control characters too?
+                    while (index < string.length && string[index] <= ' ') {
+                        index++;
+                    }
+                    return index;
+                }
+
+                return index;
+            };
+
+            aIndex = skipIgnored(a, aIndex);
+            bIndex = skipIgnored(b, bIndex);
+            while (aIndex < a.length && bIndex < b.length) {
+                // POSIX: Sorting should be locale-dependent
+                let comparedCharA = a[aIndex];
+                let comparedCharB = b[bIndex];
+                if (values['ignore-case']) {
+                    comparedCharA = comparedCharA.toUpperCase();
+                    comparedCharB = comparedCharB.toUpperCase();
+                }
+
+                if (comparedCharA !== comparedCharB) {
+                    if (values.reverse) {
+                        return comparedCharA < comparedCharB ? 1 : -1;
+                    }
+                    return comparedCharA < comparedCharB ? -1 : 1;
+                }
+
+                aIndex++;
+                bIndex++;
+                aIndex = skipIgnored(a, aIndex);
+                bIndex = skipIgnored(b, bIndex);
+            }
+
+            // If we got here, we reached the end of one of the strings.
+            // If we reached the end of both, they're equal. Otherwise, return whichever ended.
+            if (aIndex >= a.length) {
+                if (bIndex >= b.length) {
+                    return 0;
+                }
+                return -1;
+            }
+            return 1;
+        };
+
+        lines.sort(compareStrings);
 
         let resultLines = lines;
         if (values.unique) {
             resultLines = lines.filter((value, index, array) => {
-                return !index || value !== array[index - 1];
+                return !index || compareStrings(value, array[index - 1]) !== 0;
             });
         }
 
