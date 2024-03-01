@@ -35,6 +35,11 @@ export default {
                 type: 'string',
                 short: 'o'
             },
+            unique: {
+                description: 'Remove duplicates of previous lines',
+                type: 'boolean',
+                short: 'u'
+            },
         }
     },
     execute: async ctx => {
@@ -72,11 +77,18 @@ export default {
 
         lines.sort();
 
+        let resultLines = lines;
+        if (values.unique) {
+            resultLines = lines.filter((value, index, array) => {
+                return !index || value !== array[index - 1];
+            });
+        }
+
         if (values.output) {
             const outputPath = resolveRelativePath(ctx.vars, values.output);
-            await filesystem.write(outputPath, lines.join(''));
+            await filesystem.write(outputPath, resultLines.join(''));
         } else {
-            for (const line of lines) {
+            for (const line of resultLines) {
                 await out.write(line);
             }
         }

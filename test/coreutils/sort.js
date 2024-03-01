@@ -55,6 +55,14 @@ export const runSortTests = () => {
                 expectedStdout: 'a\na\na\n',
                 expectedStderr: '',
             },
+            {
+                description: 'removes duplicates when -u/--unique is specified',
+                options: { unique: true },
+                positionals: ['-'],
+                stdin: 'a\nd\na\nb\nc\nc\nb\na\n',
+                expectedStdout: 'a\nb\nc\nd\n',
+                expectedStderr: '',
+            },
             // TODO: Test with files once the harness supports that.
         ];
         for (const { description, options, positionals, stdin, expectedStdout, expectedStderr } of testCases) {
