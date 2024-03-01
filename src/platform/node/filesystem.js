@@ -36,12 +36,14 @@ export const CreateFilesystemProvider = () => {
             const groups = {};
 
             for ( const name of names ) {
-                const stat = await fs.promises.stat(path_.join(path, name));
+                const filePath = path_.join(path, name);
+                const stat = await fs.promises.lstat(filePath);
 
                 items.push({
                     name,
                     is_dir: stat.isDirectory(),
                     is_symlink: stat.isSymbolicLink(),
+                    symlink_path: stat.isSymbolicLink() ? await fs.promises.readlink(filePath) : null,
                     size: stat.size,
                     modified: stat.mtimeMs / 1000,
                     created: stat.ctimeMs / 1000,
@@ -56,7 +58,7 @@ export const CreateFilesystemProvider = () => {
             return items;
         },
         stat: async (path) => {
-            const stat = await fs.promises.stat(path);
+            const stat = await fs.promises.lstat(path);
             const fullPath = await fs.promises.realpath(path);
             const parsedPath = path_.parse(fullPath);
             // TODO: Fill in more of these?
@@ -72,7 +74,7 @@ export const CreateFilesystemProvider = () => {
                 is_public: null,
                 is_shortcut: null,
                 is_symlink: stat.isSymbolicLink(),
-                symlink_path: null,
+                symlink_path: stat.isSymbolicLink() ? await fs.promises.readlink(path) : null,
                 sort_by: null,
                 sort_order: null,
                 immutable: null,
