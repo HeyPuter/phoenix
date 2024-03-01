@@ -29,6 +29,13 @@ export default {
     args: {
         $: 'simple-parser',
         allowPositionals: true,
+        options: {
+            output: {
+                description: 'Output to this file, instead of standard output',
+                type: 'string',
+                short: 'o'
+            },
+        }
     },
     execute: async ctx => {
         const { in_, out, err } = ctx.externs;
@@ -65,8 +72,13 @@ export default {
 
         lines.sort();
 
-        for ( const line of lines ) {
-            await out.write(line);
+        if (values.output) {
+            const outputPath = resolveRelativePath(ctx.vars, values.output);
+            await filesystem.write(outputPath, lines.join(''));
+        } else {
+            for (const line of lines) {
+                await out.write(line);
+            }
         }
     }
 };
