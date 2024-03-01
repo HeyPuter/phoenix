@@ -23,6 +23,7 @@ import { runEnvTests } from "./coreutils/env.js";
 import { runFalseTests } from "./coreutils/false.js";
 import { runHeadTests } from "./coreutils/head.js";
 import { runSleepTests } from "./coreutils/sleep.js";
+import { runSortTests } from "./coreutils/sort.js";
 import { runTailTests } from "./coreutils/tail.js";
 import { runTrueTests } from "./coreutils/true.js";
 import { runWcTests } from "./coreutils/wc.js";
@@ -35,6 +36,7 @@ describe('coreutils', function () {
     runFalseTests();
     runHeadTests();
     runSleepTests();
+    runSortTests();
     runTailTests();
     runTrueTests();
     runWcTests();
