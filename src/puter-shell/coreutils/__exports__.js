@@ -45,6 +45,7 @@ import module_rm from './rm.js'
 import module_rmdir from './rmdir.js'
 import module_sample_data from './sample-data.js'
 import module_sleep from './sleep.js'
+import module_sort from './sort.js'
 import module_tail from './tail.js'
 import module_test from './test.js'
 import module_touch from './touch.js'
@@ -82,6 +83,7 @@ export default {
     "rmdir": module_rmdir,
     "sample-data": module_sample_data,
     "sleep": module_sleep,
+    "sort": module_sort,
     "tail": module_tail,
     "test": module_test,
     "touch": module_touch,
