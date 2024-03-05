@@ -20,7 +20,7 @@ import { parseArgs } from '@pkgjs/parseargs';
 
 export default {
     name: 'simple-parser',
-    process (ctx, spec) {
+    async process (ctx, spec) {
         console.log({
             ...spec,
             args: ctx.locals.args
@@ -30,7 +30,7 @@ export default {
             if ( ! ctx.locals.args ) debugger;
             result = parseArgs({ ...spec, args: ctx.locals.args });
         } catch (e) {
-            ctx.externs.out.write(
+            await ctx.externs.out.write(
                 '\x1B[31;1m' +
                 'error parsing arguments: ' +
                 e.message + '\x1B[0m\n');

@@ -253,7 +253,7 @@ export class PreparedCommand {
             const argProcessor = argparsers[argProcessorId];
             const spec = { ...command.args };
             delete spec.$;
-            argProcessor.process(ctx, spec);
+            await argProcessor.process(ctx, spec);
         }
 
         if ( ! ctx.cmdExecState.valid ) {
