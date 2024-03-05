@@ -18,6 +18,7 @@
  */
 import { Exit } from './coreutil_lib/exit.js';
 import { resolveRelativePath } from '../../util/path.js';
+import { ErrorCodes } from '../../platform/PosixError.js';
 
 export default {
     name: 'touch',
@@ -30,7 +31,6 @@ export default {
     execute: async ctx => {
         const { positionals } = ctx.locals;
         const { filesystem } = ctx.platform;
-        const POSIX = filesystem.capabilities['readdir.posix-mode'];
 
         if ( positionals.length === 0 ) {
             await ctx.externs.err.write('touch: missing file operand\n');
@@ -44,8 +44,7 @@ export default {
             try {
                 stat = await filesystem.stat(path);
             } catch (e) {
-                if ( (POSIX && e.code !== 'ENOENT')
-                    || (!POSIX && e.code !== 'subject_does_not_exist') ) {
+                if (e.posixCode !== ErrorCodes.ENOENT) {
                     await ctx.externs.err.write(`touch: ${e.message}\n`);
                     throw new Exit(1);
                 }
