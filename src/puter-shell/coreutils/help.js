@@ -49,7 +49,7 @@ export default {
                 await err.write(`help: No builtin found named '${commandName}'\n`);
                 throw new Exit(1);
             }
-            await printUsage(command, out);
+            await printUsage(command, out, ctx.vars);
             return;
         }
 
