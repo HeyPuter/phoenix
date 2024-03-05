@@ -20,8 +20,14 @@ export const printUsage = async (command, out) => {
     const { name, usage, description, args } = command;
     const { options } = args;
 
-    const heading = txt => {
-        out.write(`\x1B[34;1m${txt}:\x1B[0m\n`);
+    const heading = text => {
+        out.write(`\x1B[34;1m${text}:\x1B[0m\n`);
+    };
+    const colorOption = text => {
+        return `\x1B[92m${text}\x1B[0m`;
+    };
+    const colorOptionArgument = text => {
+        return `\x1B[91m${text}\x1B[0m`;
     };
 
     heading('Usage');
@@ -54,14 +60,14 @@ export const printUsage = async (command, out) => {
             let optionText = '';
             const option = options[optionName];
             if (option.short) {
-                optionText += `-${option.short}, `;
+                optionText += colorOption('-' + option.short) + ', ';
             } else {
                 optionText += `    `;
             }
-            optionText += `--${optionName}`;
+            optionText += colorOption(`--${optionName}`);
             if (option.type !== 'boolean') {
                 const valueName = option.valueName || 'VALUE';
-                optionText += `=${valueName}`;
+                optionText += `=${colorOptionArgument(valueName)}`;
             }
             if (option.description) {
                 optionText += `\t ${option.description}`;
