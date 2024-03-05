@@ -19,6 +19,10 @@
 import path_ from "path-browserify";
 
 export const resolveRelativePath = (vars, relativePath) => {
+    if (!relativePath) {
+        // If relativePath is undefined, return home directory
+        return vars.home;
+    }
     if ( relativePath.startsWith('/') ) {
         return relativePath;
     }
