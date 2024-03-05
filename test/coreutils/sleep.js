@@ -85,8 +85,9 @@ export const runSleepTests = () => {
                     assert.fail(e);
                 }
                 const endTimeMs = performance.now();
-                const actualDurationMs = endTimeMs- startTimeMs;
-                assert.ok(actualDurationMs >= (durationS * 1000), `takes at least ${durationS} seconds`);
+                const actualDurationMs = endTimeMs - startTimeMs;
+                assert.ok(Math.abs(actualDurationMs - (durationS * 1000)) <= 10,
+                    `should pause for ${durationS} seconds, instead was ${actualDurationMs / 1000}`);
 
                 assert.equal(ctx.externs.out.output, '', 'sleep should not write to stdout');
                 assert.equal(ctx.externs.err.output, '', 'sleep should not write to stderr');
