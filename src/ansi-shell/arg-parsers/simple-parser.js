@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { parseArgs } from '@pkgjs/parseargs';
+import { DEFAULT_OPTIONS } from '../../puter-shell/coreutils/coreutil_lib/help.js';
 
 export default {
     name: 'simple-parser',
@@ -25,6 +26,10 @@ export default {
             ...spec,
             args: ctx.locals.args
         });
+
+        // Insert standard options
+        spec.options = Object.assign(spec.options || {}, DEFAULT_OPTIONS);
+
         let result;
         try {
             if ( ! ctx.locals.args ) debugger;
@@ -37,6 +42,11 @@ export default {
             ctx.cmdExecState.valid = false;
             return;
         }
+
+        if (result.values.help) {
+            ctx.cmdExecState.printHelpAndExit = true;
+        }
+
         ctx.locals.values = result.values;
         ctx.locals.positionals = result.positionals;
     }

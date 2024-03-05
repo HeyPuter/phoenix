@@ -20,9 +20,16 @@ import { wrapText } from '../../../util/wrap-text.js';
 
 const TAB_SIZE = 8;
 
+export const DEFAULT_OPTIONS = {
+    help: {
+        description: 'Display this help text, and exit',
+        type: 'boolean',
+    },
+};
+
 export const printUsage = async (command, out, vars) => {
     const { name, usage, description, args } = command;
-    const { options } = args;
+    const options = Object.assign(DEFAULT_OPTIONS, args.options);
 
     const heading = text => {
         out.write(`\x1B[34;1m${text}:\x1B[0m\n`);
