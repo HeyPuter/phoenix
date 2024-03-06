@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path_ from "path-browserify";
 
 export default {
     name: 'pwd',
@@ -24,9 +23,9 @@ export default {
     description: 'Print the current working directory.',
     args: {
         $: 'simple-parser',
-        allowPositionals: true
+        allowPositionals: false,
     },
     execute: async ctx => {
-        ctx.externs.out.write(ctx.vars.pwd + '\n');
+        await ctx.externs.out.write(ctx.vars.pwd + '\n');
     }
 }
