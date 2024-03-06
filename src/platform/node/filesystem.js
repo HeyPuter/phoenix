@@ -20,10 +20,51 @@ import fs from 'fs';
 import path_ from 'path';
 
 import modeString from 'fs-mode-to-string';
-import { DestinationIsDirectoryError, DestinationIsNotDirectoryError } from "../definitions.js";
+import { ErrorCodes, PosixError } from '../PosixError.js';
+
+function convertNodeError(e) {
+    switch (e.code) {
+        case 'EACCES': return new PosixError(ErrorCodes.EACCES, e.message);
+        case 'EADDRINUSE': return new PosixError(ErrorCodes.EADDRINUSE, e.message);
+        case 'ECONNREFUSED': return new PosixError(ErrorCodes.ECONNREFUSED, e.message);
+        case 'ECONNRESET': return new PosixError(ErrorCodes.ECONNRESET, e.message);
+        case 'EEXIST': return new PosixError(ErrorCodes.EEXIST, e.message);
+        case 'EIO': return new PosixError(ErrorCodes.EIO, e.message);
+        case 'EISDIR': return new PosixError(ErrorCodes.EISDIR, e.message);
+        case 'EMFILE': return new PosixError(ErrorCodes.EMFILE, e.message);
+        case 'ENOENT': return new PosixError(ErrorCodes.ENOENT, e.message);
+        case 'ENOTDIR': return new PosixError(ErrorCodes.ENOTDIR, e.message);
+        case 'ENOTEMPTY': return new PosixError(ErrorCodes.ENOTEMPTY, e.message);
+        // ENOTFOUND is Node-specific. ECONNREFUSED is similar enough.
+        case 'ENOTFOUND': return new PosixError(ErrorCodes.ECONNREFUSED, e.message);
+        case 'EPERM': return new PosixError(ErrorCodes.EPERM, e.message);
+        case 'EPIPE': return new PosixError(ErrorCodes.EPIPE, e.message);
+        case 'ETIMEDOUT': return new PosixError(ErrorCodes.ETIMEDOUT, e.message);
+    }
+    // Some other kind of error
+    return e;
+}
+
+// DRY: Almost the same as puter/filesystem.js
+function wrapAPIs(apis) {
+    for (const method in apis) {
+        if (typeof apis[method] !== 'function') {
+            continue;
+        }
+        const original = apis[method];
+        apis[method] = async (...args) => {
+            try {
+                return await original(...args);
+            } catch (e) {
+                throw convertNodeError(e);
+            }
+        };
+    }
+    return apis;
+}
 
 export const CreateFilesystemProvider = () => {
-    return {
+    return wrapAPIs({
         capabilities: {
             'readdir.posix-mode': true,
         },
@@ -116,7 +157,7 @@ export const CreateFilesystemProvider = () => {
             const stat = await fs.promises.stat(path);
 
             if ( stat.isDirectory() && ! recursive ) {
-                throw new DestinationIsDirectoryError(path);
+                throw PosixError.IsDirectory(path);
             }
 
             return await fs.promises.rm(path, { recursive });
@@ -125,7 +166,7 @@ export const CreateFilesystemProvider = () => {
             const stat = await fs.promises.stat(path);
 
             if ( !stat.isDirectory() ) {
-                throw new DestinationIsNotDirectoryError(path);
+                throw PosixError.IsNotDirectory(path);
             }
 
             return await fs.promises.rmdir(path);
@@ -163,7 +204,7 @@ export const CreateFilesystemProvider = () => {
 
             // `dir -> file`: invalid
             if ( srcIsDir && destStat && ! destStat.isDirectory() ) {
-                throw Error('Cannot copy a directory into a file');
+                throw new PosixError(ErrorCodes.ENOTDIR, 'Cannot copy a directory into a file');
             }
 
             // `file -> dir`: fs.promises.cp() expects the new path to include the filename.
@@ -174,5 +215,5 @@ export const CreateFilesystemProvider = () => {
 
             return await fs.promises.cp(oldPath, newPath, { recursive: srcIsDir });
         }
-    };
+    });
 };
