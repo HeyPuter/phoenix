@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 // TODO: Detect ANSI escape sequences in the text and treat them as 0 width?
+// TODO: Ensure this works with multi-byte characters (UTF-8)
 export const wrapText = (text, width) => {
     // If width was invalid, just return the original text as a failsafe.
     if (typeof width !== 'number' || width < 1)
