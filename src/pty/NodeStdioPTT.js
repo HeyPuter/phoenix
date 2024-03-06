@@ -62,6 +62,11 @@ export class NodeStdioPTT {
             this.ioctl_listeners[name] = [];
         }
         this.ioctl_listeners[name].push(listener);
+
+        // Hack: Pretend the window got resized, so that listeners get notified of the current size.
+        if (name === 'ioctl.set') {
+            process.stdout.emit('resize');
+        }
     }
 
     emit (name, evt) {

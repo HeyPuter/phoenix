@@ -17,26 +17,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { parseArgs } from '@pkgjs/parseargs';
+import { DEFAULT_OPTIONS } from '../../puter-shell/coreutils/coreutil_lib/help.js';
 
 export default {
     name: 'simple-parser',
-    process (ctx, spec) {
+    async process (ctx, spec) {
         console.log({
             ...spec,
             args: ctx.locals.args
         });
+
+        // Insert standard options
+        spec.options = Object.assign(spec.options || {}, DEFAULT_OPTIONS);
+
         let result;
         try {
             if ( ! ctx.locals.args ) debugger;
             result = parseArgs({ ...spec, args: ctx.locals.args });
         } catch (e) {
-            ctx.externs.out.write(
+            await ctx.externs.out.write(
                 '\x1B[31;1m' +
                 'error parsing arguments: ' +
                 e.message + '\x1B[0m\n');
             ctx.cmdExecState.valid = false;
             return;
         }
+
+        if (result.values.help) {
+            ctx.cmdExecState.printHelpAndExit = true;
+        }
+
         ctx.locals.values = result.values;
         ctx.locals.positionals = result.positionals;
     }

@@ -30,6 +30,7 @@ import { ConcreteSyntaxError } from "../ConcreteSyntaxError.js";
 import { SignalReader } from "../ioutil/SignalReader.js";
 import { Exit } from "../../puter-shell/coreutils/coreutil_lib/exit.js";
 import { resolveRelativePath } from '../../util/path.js';
+import { printUsage } from '../../puter-shell/coreutils/coreutil_lib/help.js';
 
 class Token {
     static createFromAST (ctx, ast) {
@@ -240,7 +241,8 @@ export class PreparedCommand {
                 sig,
             },
             cmdExecState: {
-                valid: true
+                valid: true,
+                printHelpAndExit: false,
             },
             locals: {
                 command,
@@ -253,12 +255,19 @@ export class PreparedCommand {
             const argProcessor = argparsers[argProcessorId];
             const spec = { ...command.args };
             delete spec.$;
-            argProcessor.process(ctx, spec);
+            await argProcessor.process(ctx, spec);
         }
 
         if ( ! ctx.cmdExecState.valid ) {
             ctx.locals.exit = -1;
-            ctx.externs.out.close();
+            await ctx.externs.out.close();
+            return;
+        }
+
+        if ( ctx.cmdExecState.printHelpAndExit ) {
+            ctx.locals.exit = 0;
+            await printUsage(command, ctx.externs.out, ctx.vars);
+            await ctx.externs.out.close();
             return;
         }
 
