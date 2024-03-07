@@ -17,11 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import assert from 'assert';
+import sinon from 'sinon';
 import { MakeTestContext } from './harness.js';
 import builtins from '../../src/puter-shell/coreutils/__exports__.js';
 
 export const runSleepTests = () => {
     describe('sleep', function () {
+        let clock;
+        beforeEach(() => {
+            clock = sinon.useFakeTimers();
+        });
+        afterEach(() => {
+            clock.restore();
+        });
+
         const failureCases = [
             {
                 description: 'expects at least 1 argument',
@@ -73,21 +82,25 @@ export const runSleepTests = () => {
                 positionals: ['1.5'],
                 durationS: 1.5,
             },
+            {
+                description: 'sleep 27',
+                positionals: ['27'],
+                durationS: 27,
+            },
         ];
         for (const { description, positionals, durationS } of testCases) {
             it(description, async () => {
+                const durationMs = durationS * 1000;
                 let ctx = MakeTestContext(builtins.sleep, { positionals });
                 const startTimeMs = performance.now();
-                try {
-                    const result = await builtins.sleep.execute(ctx);
-                    assert.equal(result, undefined);
-                } catch (e) {
-                    assert.fail(e);
-                }
-                const endTimeMs = performance.now();
-                const actualDurationMs = endTimeMs - startTimeMs;
-                assert.ok(Math.abs(actualDurationMs - (durationS * 1000)) <= 10,
-                    `should pause for ${durationS} seconds, instead was ${actualDurationMs / 1000}`);
+                let endTimeMs;
+                builtins.sleep.execute(ctx)
+                    .then(() => { endTimeMs = performance.now(); })
+                    .catch((e) => { assert.fail(e); });
+                await clock.tickAsync(durationMs - 5);
+                assert.ok(endTimeMs === undefined, `sleep took less than ${durationS}s, took ${(endTimeMs - startTimeMs) / 1000}s`);
+                await clock.tickAsync(10);
+                assert.ok(endTimeMs !== undefined, `sleep took more than ${durationS}s, not done after ${(durationS + 0.005)}s`);
 
                 assert.equal(ctx.externs.out.output, '', 'sleep should not write to stdout');
                 assert.equal(ctx.externs.err.output, '', 'sleep should not write to stderr');
