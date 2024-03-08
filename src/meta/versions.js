@@ -18,6 +18,36 @@
  */
 export const SHELL_VERSIONS = [
     {
+        v: '0.2.2',
+        changes: [
+            'wc works with BLOB inputs',
+            '"~" path resolution fixed',
+            '"head" command added',
+            '"tail" command updated',
+            '"ls" symlink support improved',
+            '"sort" command added',
+            'Testing improved',
+            '"cd" with no arguments works',
+            'Filesystem errors are more consistent',
+            '"help" output improved',
+            '"pwd" argument processing updated'
+
+        ]
+    },
+    {
+        v: '0.2.1',
+        changes: [
+            'commands: true, false',
+            'commands: basename, dirname',
+            'more node.js support',
+            'wc command',
+            'sleep command',
+            'improved coreutils documentation',
+            'updates to existing coreutils',
+            'readline fixes',
+        ]
+    },
+    {
         v: '0.2.0',
         changes: [
             'brand change: Phoenix Shell',
