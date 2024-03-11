@@ -22,6 +22,7 @@ import { runEchoTests } from "./coreutils/echo.js";
 import { runEnvTests } from "./coreutils/env.js";
 import { runFalseTests } from "./coreutils/false.js";
 import { runHeadTests } from "./coreutils/head.js";
+import { runPrintfTests } from './coreutils/printf.js';
 import { runSleepTests } from "./coreutils/sleep.js";
 import { runSortTests } from "./coreutils/sort.js";
 import { runTailTests } from "./coreutils/tail.js";
@@ -35,6 +36,7 @@ describe('coreutils', function () {
     runEnvTests();
     runFalseTests();
     runHeadTests();
+    runPrintfTests();
     runSleepTests();
     runSortTests();
     runTailTests();

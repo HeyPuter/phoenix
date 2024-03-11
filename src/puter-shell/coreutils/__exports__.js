@@ -39,6 +39,7 @@ import module_man from './man.js'
 import module_mkdir from './mkdir.js'
 import module_mv from './mv.js'
 import module_neofetch from './neofetch.js'
+import module_printf from './printf.js'
 import module_printhist from './printhist.js'
 import module_pwd from './pwd.js'
 import module_rm from './rm.js'
@@ -77,6 +78,7 @@ export default {
     "mkdir": module_mkdir,
     "mv": module_mv,
     "neofetch": module_neofetch,
+    "printf": module_printf,
     "printhist": module_printhist,
     "pwd": module_pwd,
     "rm": module_rm,
