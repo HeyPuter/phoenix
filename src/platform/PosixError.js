@@ -57,6 +57,15 @@ export const ErrorMetadata = new Map([
     [ErrorCodes.ECONNREFUSED, { code: 111, description: 'Connection refused' }],
 ]);
 
+export const errorFromIntegerCode = (code) => {
+    for (const [errorCode, metadata] of ErrorMetadata) {
+        if (metadata.code === code) {
+            return errorCode;
+        }
+    }
+    return undefined;
+};
+
 export class PosixError extends Error {
     // posixErrorCode can be either a string, or one of the ErrorCodes above.
     // If message is undefined, a default message will be used.
