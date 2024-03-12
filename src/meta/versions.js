@@ -18,6 +18,15 @@
  */
 export const SHELL_VERSIONS = [
     {
+        v: '0.2.3',
+        changes: [
+            '"printf" command added',
+            '"help" command updated',
+            '"errno" command added',
+            'POSIX error code associations added',
+        ]
+    },
+    {
         v: '0.2.2',
         changes: [
             'wc works with BLOB inputs',
