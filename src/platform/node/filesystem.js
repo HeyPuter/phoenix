@@ -157,7 +157,7 @@ export const CreateFilesystemProvider = () => {
             const stat = await fs.promises.stat(path);
 
             if ( stat.isDirectory() && ! recursive ) {
-                throw PosixError.IsDirectory(path);
+                throw PosixError.IsDirectory({ path });
             }
 
             return await fs.promises.rm(path, { recursive });
@@ -166,7 +166,7 @@ export const CreateFilesystemProvider = () => {
             const stat = await fs.promises.stat(path);
 
             if ( !stat.isDirectory() ) {
-                throw PosixError.IsNotDirectory(path);
+                throw PosixError.IsNotDirectory({ path });
             }
 
             return await fs.promises.rmdir(path);

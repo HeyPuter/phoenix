@@ -20,6 +20,7 @@ import { runBasenameTests } from "./coreutils/basename.js";
 import { runDirnameTests } from "./coreutils/dirname.js";
 import { runEchoTests } from "./coreutils/echo.js";
 import { runEnvTests } from "./coreutils/env.js";
+import { runErrnoTests } from './coreutils/errno.js';
 import { runFalseTests } from "./coreutils/false.js";
 import { runHeadTests } from "./coreutils/head.js";
 import { runPrintfTests } from './coreutils/printf.js';
@@ -34,6 +35,7 @@ describe('coreutils', function () {
     runDirnameTests();
     runEchoTests();
     runEnvTests();
+    runErrnoTests();
     runFalseTests();
     runHeadTests();
     runPrintfTests();
