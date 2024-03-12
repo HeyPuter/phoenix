@@ -46,6 +46,7 @@ import module_pwd from './pwd.js'
 import module_rm from './rm.js'
 import module_rmdir from './rmdir.js'
 import module_sample_data from './sample-data.js'
+import module_sed from './sed.js'
 import module_sleep from './sleep.js'
 import module_sort from './sort.js'
 import module_tail from './tail.js'
@@ -86,6 +87,7 @@ export default {
     "rm": module_rm,
     "rmdir": module_rmdir,
     "sample-data": module_sample_data,
+    "sed": module_sed,
     "sleep": module_sleep,
     "sort": module_sort,
     "tail": module_tail,
