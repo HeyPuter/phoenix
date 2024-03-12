@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { Exit } from './coreutil_lib/exit.js';
-import { resolveRelativePath } from '../../util/path.js';
+import { fileLines } from '../../util/file.js';
 
 export default {
     name: 'head',
@@ -41,9 +41,8 @@ export default {
         }
     },
     execute: async ctx => {
-        const { in_, out, err } = ctx.externs;
+        const { out, err } = ctx.externs;
         const { positionals, values } = ctx.locals;
-        const { filesystem } = ctx.platform;
 
         if (positionals.length > 1) {
             // TODO: Support multiple files (this is POSIX)
@@ -63,32 +62,12 @@ export default {
             lineCount = parsedLineCount;
         }
 
-        // TODO: head can stop reading from the input as soon as it completes lineCount lines.
-        let lines = [];
-        if (relPath === '-') {
-            lines = await in_.collect();
-        } else {
-            const absPath = resolveRelativePath(ctx.vars, relPath);
-            const fileData = await filesystem.read(absPath);
-            // DRY: Similar logic in wc and tail
-            if (fileData instanceof Blob) {
-                const arrayBuffer = await fileData.arrayBuffer();
-                const fileText = new TextDecoder().decode(arrayBuffer);
-                lines = fileText.split(/\n|\r|\r\n/).map(it => it + '\n');
-            } else if (typeof fileData === 'string') {
-                lines = fileData.split(/\n|\r|\r\n/).map(it => it + '\n');
-            } else {
-                // ArrayBuffer or TypedArray
-                const fileText = new TextDecoder().decode(fileData);
-                lines = fileText.split(/\n|\r|\r\n/).map(it => it + '\n');
-            }
-        }
-        if ( lines.length > lineCount ) {
-            lines = lines.slice(0, lineCount);
-        }
-
-        for ( const line of lines ) {
+        let processedLineCount = 0;
+        for await (const line of fileLines(ctx, relPath)) {
             await out.write(line);
+            processedLineCount++;
+            if (processedLineCount >= lineCount)
+                break;
         }
     }
 };

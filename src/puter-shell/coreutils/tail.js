@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { Exit } from './coreutil_lib/exit.js';
-import { resolveRelativePath } from '../../util/path.js';
+import { fileLines } from '../../util/file.js';
 
 export default {
     name: 'tail',
@@ -41,9 +41,8 @@ export default {
         }
     },
     execute: async ctx => {
-        const { in_, out, err } = ctx.externs;
+        const { out, err } = ctx.externs;
         const { positionals, values } = ctx.locals;
-        const { filesystem } = ctx.platform;
 
         if (positionals.length > 1) {
             // TODO: Support multiple files (this is an extension to POSIX, but available in the GNU tail)
@@ -64,30 +63,21 @@ export default {
         }
 
         let lines = [];
-        if (relPath === '-') {
-            lines = await in_.collect();
-        } else {
-            const absPath = resolveRelativePath(ctx.vars, relPath);
-            const fileData = await filesystem.read(absPath);
-            // DRY: Similar logic in wc
-            if (fileData instanceof Blob) {
-                const arrayBuffer = await fileData.arrayBuffer();
-                const fileText = new TextDecoder().decode(arrayBuffer);
-                lines = fileText.split(/\n|\r|\r\n/).map(it => it + '\n');
-            } else if (typeof fileData === 'string') {
-                lines = fileData.split(/\n|\r|\r\n/).map(it => it + '\n');
-            } else {
-                // ArrayBuffer or TypedArray
-                const fileText = new TextDecoder().decode(fileData);
-                lines = fileText.split(/\n|\r|\r\n/).map(it => it + '\n');
+        for await (const line of fileLines(ctx, relPath)) {
+            lines.push(line);
+            // We keep lineCount+1 lines, to account for a possible trailing blank line.
+            if (lines.length > lineCount + 1) {
+                lines.shift();
             }
         }
+
+        // Ignore trailing blank line
         if ( lines.length > 0 && lines[lines.length - 1] === '\n') {
-            // Ignore trailing blank line
             lines.pop();
         }
+        // Now we remove the extra line if it's there.
         if ( lines.length > lineCount ) {
-            lines = lines.slice(-1 * lineCount);
+            lines.shift();
         }
 
         for ( const line of lines ) {
