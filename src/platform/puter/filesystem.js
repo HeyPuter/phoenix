@@ -157,7 +157,7 @@ export const CreateFilesystemProvider = ({
             const stat = await puterSDK.fs.stat(path);
 
             if ( stat.is_dir && ! recursive ) {
-                throw PosixError.IsDirectory(path);
+                throw PosixError.IsDirectory({ path });
             }
 
             return await puterSDK.fs.delete(path, { recursive });
@@ -168,7 +168,7 @@ export const CreateFilesystemProvider = ({
             const stat = await puterSDK.fs.stat(path);
 
             if ( ! stat.is_dir ) {
-                throw PosixError.IsNotDirectory(path);
+                throw PosixError.IsNotDirectory({ path });
             }
 
             return await puterSDK.fs.delete(path, { recursive: false });
