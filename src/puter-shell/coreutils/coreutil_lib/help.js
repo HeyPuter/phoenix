@@ -29,7 +29,8 @@ export const DEFAULT_OPTIONS = {
 
 export const printUsage = async (command, out, vars) => {
     const { name, usage, description, args } = command;
-    const options = Object.assign(DEFAULT_OPTIONS, args.options);
+    const options = Object.create(DEFAULT_OPTIONS);
+    Object.assign(options, args.options);
 
     const heading = text => {
         out.write(`\x1B[34;1m${text}:\x1B[0m\n`);
