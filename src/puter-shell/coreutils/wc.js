@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { resolveRelativePath } from '../../util/path.js';
+import { fileLines } from '../../util/file.js';
 
 const TAB_SIZE = 8;
 
@@ -100,26 +101,15 @@ export default {
 
             let inWord = false;
             let currentLineLength = 0;
-            let accumulateData = async (input) => {
-                let stringInput;
-                if (input instanceof Blob) {
-                    const arrayBuffer = await input.arrayBuffer();
-                    stringInput = new TextDecoder().decode(arrayBuffer);
-                    counts.bytes += arrayBuffer.byteLength;
-                } else if (typeof input === 'string') {
-                    stringInput = input;
-                    if (printBytes) {
-                        const byteInput = new TextEncoder().encode(input);
-                        counts.bytes += byteInput.length;
-                    }
-                } else {
-                    // ArrayBuffer or TypedArray
-                    stringInput = new TextDecoder().decode(input);
-                    counts.bytes += input.length;
-                }
-                counts.chars += stringInput.length;
 
-                for (const char of stringInput) {
+            for await (const line of fileLines(ctx, relPath)) {
+                counts.chars += line.length;
+                if (printBytes) {
+                    const byteInput = new TextEncoder().encode(line);
+                    counts.bytes += byteInput.length;
+                }
+
+                for (const char of line) {
                     // "The wc utility shall consider a word to be a non-zero-length string of characters delimited by white space."
                     if (/\s/.test(char)) {
                         if (char === '\r' || char === '\n') {
@@ -142,19 +132,6 @@ export default {
                 }
             }
 
-            if (relPath === '-') {
-                let chunk, done;
-                const nextChunk = async () => {
-                    ({ value: chunk, done } = await ctx.externs.in_.read());
-                }
-                for ( await nextChunk() ; ! done ; await nextChunk() ) {
-                    await accumulateData(chunk);
-                }
-            } else {
-                const absPath = resolveRelativePath(ctx.vars, relPath);
-                const fileData = await filesystem.read(absPath);
-                await accumulateData(fileData);
-            }
             counts.maxLineLength = Math.max(counts.maxLineLength, currentLineLength);
 
             newlinesWidth = Math.max(newlinesWidth, counts.newlines.toString().length);
