@@ -21,6 +21,41 @@ import { launchPuterShell } from './puter-shell/main.js';
 import { NodeStdioPTT } from './pty/NodeStdioPTT.js';
 import { CreateFilesystemProvider } from './platform/node/filesystem.js';
 import { CreateEnvProvider } from './platform/node/env.js';
+import { parseArgs } from '@pkgjs/parseargs';
+import capcon from 'capture-console';
+import fs from 'fs';
+
+const { values } = parseArgs({
+    options: {
+        'log': {
+            type: 'string',
+        }
+    },
+    args: process.argv.slice(2),
+});
+const logFile = await (async () => {
+    if (!values.log)
+        return;
+    return await fs.promises.open(values.log, 'w');
+})();
+
+
+// Capture console.foo() output and either send it to the log file, or to nowhere.
+for (const [name, oldMethod] of Object.entries(console)) {
+    console[name] = async (...args) => {
+        let result;
+        const stdio = capcon.interceptStdio(() => {
+            result = oldMethod(...args);
+        });
+
+        if (logFile) {
+            await logFile.write(stdio.stdout);
+            await logFile.write(stdio.stderr);
+        }
+
+        return result;
+    };
+}
 
 const ctx = new Context({
     ptt: new NodeStdioPTT(),
