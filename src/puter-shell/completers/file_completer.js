@@ -20,7 +20,7 @@ import path_ from "path-browserify";
 import { resolveRelativePath } from '../../util/path.js';
 
 export class FileCompleter {
-    async getCompetions (ctx, inputState) {
+    async getCompletions (ctx, inputState) {
         const { filesystem } = ctx.platform;
 
         if ( inputState.input === '' ) {
@@ -34,7 +34,7 @@ export class FileCompleter {
         const completions = [];
 
         const result = await filesystem.readdir(dir);
-        if ( result == undefined ) {
+        if ( result === undefined ) {
             return [];
         }
 

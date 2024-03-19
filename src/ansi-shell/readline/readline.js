@@ -116,7 +116,7 @@ const ReadlineProcessorBuilder = builder => builder
 
             if ( completer === null ) return;
             
-            const completions = await completer.getCompetions(
+            const completions = await completer.getCompletions(
                 externs.commandCtx,
                 inputState,
             );
