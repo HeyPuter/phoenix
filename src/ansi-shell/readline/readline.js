@@ -17,9 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { Context } from "../../context/context.js";
+import { CommandCompleter } from "../../puter-shell/completers/command_completer.js";
 import { FileCompleter } from "../../puter-shell/completers/file_completer.js";
 import { Uint8List } from "../../util/bytes.js";
-import { Log } from "../../util/log.js";
 import { StatefulProcessorBuilder } from "../../util/statemachine.js";
 import { ANSIContext } from "../ANSIContext.js";
 import { readline_comprehend } from "./rl_comprehend.js";
@@ -109,9 +109,14 @@ const ReadlineProcessorBuilder = builder => builder
                 completer = new FileCompleter();
             }
 
-            // TODO: try to get a completer from the command
             if ( inputState.$ === 'command' ) {
-                completer = new FileCompleter();
+                if ( inputState.tokens.length === 1 ) {
+                    // Match first token against command names
+                    completer = new CommandCompleter();
+                } else {
+                    // Match everything else against file names
+                    completer = new FileCompleter();
+                }
             }
 
             if ( completer === null ) return;
