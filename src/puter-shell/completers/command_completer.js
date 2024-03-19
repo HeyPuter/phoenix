@@ -16,34 +16,24 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import path_ from "path-browserify";
-import { resolveRelativePath } from '../../util/path.js';
-
-export class FileCompleter {
+export class CommandCompleter {
     async getCompletions (ctx, inputState) {
-        const { filesystem } = ctx.platform;
+        const { builtins } = ctx.registries;
+        const query = inputState.input;
 
-        if ( inputState.input === '' ) {
+        if ( query === '' ) {
             return [];
         }
-
-        let path = resolveRelativePath(ctx.vars, inputState.input);
-        let dir = path_.dirname(path);
-        let base = path_.basename(path);
 
         const completions = [];
 
-        const result = await filesystem.readdir(dir);
-        if ( result === undefined ) {
-            return [];
-        }
-
-        for ( const item of result ) {
-            if ( item.name.startsWith(base) ) {
-                completions.push(item.name.slice(base.length));
+        // TODO: Match executable names as well as builtins
+        for ( const commandName of Object.keys(builtins) ) {
+            if ( commandName.startsWith(query) ) {
+                completions.push(commandName.slice(query.length));
             }
         }
-        
+
         return completions;
     }
 }
