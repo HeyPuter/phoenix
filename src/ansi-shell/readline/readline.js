@@ -19,6 +19,7 @@
 import { Context } from "../../context/context.js";
 import { CommandCompleter } from "../../puter-shell/completers/command_completer.js";
 import { FileCompleter } from "../../puter-shell/completers/file_completer.js";
+import { OptionCompleter } from '../../puter-shell/completers/option_completer.js';
 import { Uint8List } from "../../util/bytes.js";
 import { StatefulProcessorBuilder } from "../../util/statemachine.js";
 import { ANSIContext } from "../ANSIContext.js";
@@ -113,6 +114,9 @@ const ReadlineProcessorBuilder = builder => builder
                 if ( inputState.tokens.length === 1 ) {
                     // Match first token against command names
                     completer = new CommandCompleter();
+                } else if ( inputState.input.startsWith('--') ) {
+                    // Match `--*` against option names, if they exist
+                    completer = new OptionCompleter();
                 } else {
                     // Match everything else against file names
                     completer = new FileCompleter();
