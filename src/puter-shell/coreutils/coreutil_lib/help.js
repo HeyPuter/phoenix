@@ -28,12 +28,12 @@ export const DEFAULT_OPTIONS = {
 };
 
 export const printUsage = async (command, out, vars) => {
-    const { name, usage, description, args } = command;
+    const { name, usage, description, args, helpSections } = command;
     const options = Object.create(DEFAULT_OPTIONS);
     Object.assign(options, args.options);
 
-    const heading = text => {
-        out.write(`\x1B[34;1m${text}:\x1B[0m\n`);
+    const heading = async text => {
+        await out.write(`\x1B[34;1m${text}:\x1B[0m\n`);
     };
     const colorOption = text => {
         return `\x1B[92m${text}\x1B[0m`;
@@ -42,7 +42,7 @@ export const printUsage = async (command, out, vars) => {
         return `\x1B[91m${text}\x1B[0m`;
     };
 
-    heading('Usage');
+    await heading('Usage');
     if (!usage) {
         let output = name;
         if (options) {
@@ -51,26 +51,26 @@ export const printUsage = async (command, out, vars) => {
         if (args.allowPositionals) {
             output += ' INPUTS...';
         }
-        out.write(`  ${output}\n\n`);
+        await out.write(`  ${output}\n\n`);
     } else if (typeof usage === 'string') {
-        out.write(`  ${usage}\n\n`);
+        await out.write(`  ${usage}\n\n`);
     } else {
         for (const line of usage) {
-            out.write(`  ${line}\n`);
+            await out.write(`  ${line}\n`);
         }
-        out.write('\n');
+        await out.write('\n');
     }
 
     if (description) {
         const wrappedLines = wrapText(description, vars.size.cols);
         for (const line of wrappedLines) {
-            out.write(`${line}\n`);
+            await out.write(`${line}\n`);
         }
-        out.write(`\n`);
+        await out.write(`\n`);
     }
 
     if (options) {
-        heading('Options');
+        await heading('Options');
 
         for (const optionName in options) {
             let optionText = '  ';
@@ -119,8 +119,17 @@ export const printUsage = async (command, out, vars) => {
             } else {
                 optionText += '\n';
             }
-            out.write(optionText);
+            await out.write(optionText);
         }
-        out.write('\n');
+        await out.write('\n');
+    }
+
+    if (helpSections) {
+        for (const [title, contents] of Object.entries(helpSections)) {
+            await heading(title);
+            // FIXME: Wrap the text nicely.
+            await out.write(contents);
+            await out.write('\n\n');
+        }
     }
 }

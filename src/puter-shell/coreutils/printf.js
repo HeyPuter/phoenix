@@ -342,11 +342,59 @@ function formatOutput(parsedFormat, remainingArguments) {
     }
 }
 
+function highlight(text) {
+    return `\x1B[92m${text}\x1B[0m`;
+}
+
 // https://pubs.opengroup.org/onlinepubs/9699919799/utilities/printf.html
 export default {
     name: 'printf',
     usage: 'printf FORMAT [ARGUMENT...]',
-    description: 'Write a formatted string.',
+    description: 'Write a formatted string to standard output.\n\n' +
+        'The output is determined by FORMAT, with any escape sequences replaced, and any format strings applied to the following ARGUMENTs.\n\n' +
+        'FORMAT is written repeatedly until all ARGUMENTs are consumed. If FORMAT does not consume any ARGUMENTs, it is only written once.',
+    helpSections: {
+        'Escape Sequences': 'The following escape sequences are understood:\n\n' +
+            `    ${highlight('\\\\')}     A literal \\\n` +
+            `    ${highlight('\\a')}     Terminal BELL\n` +
+            `    ${highlight('\\b')}     Backspace\n` +
+            `    ${highlight('\\f')}     Form-feed\n` +
+            `    ${highlight('\\n')}     Newline\n` +
+            `    ${highlight('\\r')}     Carriage return\n` +
+            `    ${highlight('\\t')}     Horizontal tab\n` +
+            `    ${highlight('\\v')}     Vertical tab\n` +
+            `    ${highlight('\\###')}   A byte with the octal value of ### (between 1 and 3 digits)`,
+        'Format Strings': 'Format strings behave like C printf. ' +
+            'A format string is, in order: a `%`, zero or more flags, a width, a precision, and a conversion specifier. ' +
+            'All except the initial `%` and the conversion specifier are optional.\n\n' +
+            'Flags:\n\n' +
+            `    ${highlight('-')}       Left-justify the result\n` +
+            `    ${highlight('+')}       For numeric types, always include a sign character\n` +
+            `    ${highlight('\' \'')}     ${highlight('(space)')} For numeric types, include a space where the sign would go for positive numbers. Overridden by ${highlight('+')}.\n`+
+            `    ${highlight('#')}       Use alternative form, depending on the conversion:\n` +
+            `            ${highlight('o')}              Ensure result is always prefixed with a '0'\n` +
+            `            ${highlight('x,X')}            Prefix result with '0x' or '0X' respectively\n` +
+            `            ${highlight('e,E,f,F,g,G')}    Always include a decimal point. For ${highlight('g,G')}, also keep trailing 0s\n\n` +
+            'Width:\n\n' +
+            'A number, for how many characters the result should occupy.\n\n' +
+            'Precision:\n\n' +
+            'A \'.\' followed optionally by a number. If no number is specified, it is taken as 0. Effect depends on the conversion:\n\n' +
+            `    ${highlight('d,i,o,u,x,X')}    Determines the minimum number of digits\n` +
+            `    ${highlight('e,E,f,F')}        Determines the number of digits after the decimal point\n\n` +
+            `    ${highlight('g,G')}            Determines the number of significant figures\n\n` +
+            `    ${highlight('s')}              Determines the maximum number of characters to be printed\n\n` +
+            'Conversion specifiers:\n\n' +
+            `    ${highlight('%')}       A literal '%'\n` +
+            `    ${highlight('s')}       ARGUMENT as a string\n` +
+            `    ${highlight('c')}       The first character of ARGUMENT as a string\n` +
+            `    ${highlight('d,i')}     ARGUMENT as a number, formatted as a signed decimal integer\n` +
+            `    ${highlight('u')}       ARGUMENT as a number, formatted as an unsigned decimal integer\n` +
+            `    ${highlight('o')}       ARGUMENT as a number, formatted as an unsigned octal integer\n` +
+            `    ${highlight('x,X')}     ARGUMENT as a number, formatted as an unsigned hexadecimal integer, in lower or uppercase respectively\n` +
+            `    ${highlight('e,E')}     ARGUMENT as a number, formatted as a float in exponential notation, in lower or uppercase respectively\n` +
+            `    ${highlight('f,F')}     ARGUMENT as a number, formatted as a float in decimal notation, in lower or uppercase respectively\n` +
+            `    ${highlight('g,G')}     ARGUMENT as a number, formatted as a float in either decimal or exponential notation, in lower or uppercase respectively`,
+    },
     args: {
         $: 'simple-parser',
         allowPositionals: true
