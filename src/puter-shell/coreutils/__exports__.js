@@ -23,6 +23,7 @@ import module_cat from './cat.js'
 import module_cd from './cd.js'
 import module_changelog from './changelog.js'
 import module_clear from './clear.js'
+import module_concept_parser from './concept-parser.js'
 import module_cp from './cp.js'
 import module_dcall from './dcall.js'
 import module_dirname from './dirname.js'
@@ -63,6 +64,7 @@ export default {
     "cd": module_cd,
     "changelog": module_changelog,
     "clear": module_clear,
+    "concept-parser": module_concept_parser,
     "cp": module_cp,
     "dcall": module_dcall,
     "dirname": module_dirname,
