@@ -1,6 +1,7 @@
-# Phoenix
-
-![animated demo](./doc/readme-gif.gif)
+<h2 align="center">Phoenix</h2>
+<h3 align="center">Puter's pure-javascript shell</h3>
+<h3 align="center"><img alt="" src="./doc/readme-gif.gif"></h3>
+<hr>
 
 `phoenix` is a pure-javascript shell built for [puter.com](https://puter.com).
 Following the spirit of open-source initiatives we've seen like
