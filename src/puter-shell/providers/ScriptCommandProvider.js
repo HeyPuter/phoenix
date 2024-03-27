@@ -22,30 +22,46 @@ import { resolveRelativePath } from '../../util/path.js';
 
 export class ScriptCommandProvider {
     async lookup (id, { ctx }) {
+        const { filesystem } = ctx.platform;
+
         const is_path = id.match(/^[.\/]/);
         if ( ! is_path ) return undefined;
 
         const absPath = resolveRelativePath(ctx.vars, id);
-        
-        const { filesystem } = ctx.platform;
-
-        const script_blob = await filesystem.read(absPath);
-        const script_text = await script_blob.text();
-
-        console.log('result though?', script_text);
-
-        // note: it's still called `parseLineForProcessing` but
-        // it has since been extended to parse the entire file
-        const ast = ctx.externs.parser.parseScript(script_text);
-        const statements = ast[0].statements;
+        try {
+            await filesystem.stat(absPath);
+            // TODO: More rigorous check that it's an executable text file
+        } catch (e) {
+            return undefined;
+        }
 
         return {
+            path: id,
             async execute (ctx) {
+                const script_blob = await filesystem.read(absPath);
+                const script_text = await script_blob.text();
+
+                console.log('result though?', script_text);
+
+                // note: it's still called `parseLineForProcessing` but
+                // it has since been extended to parse the entire file
+                const ast = ctx.externs.parser.parseScript(script_text);
+                const statements = ast[0].statements;
+
                 for (const stmt of statements) {
                     const pipeline = await Pipeline.createFromAST(ctx, stmt);
                     await pipeline.execute(ctx);
                 }
             }
         };
+    }
+
+    // Only a single script can match a given path
+    async lookupAll (...a) {
+        const result = await this.lookup(...a);
+        if ( result ) {
+            return [ result ];
+        }
+        return undefined;
     }
 }

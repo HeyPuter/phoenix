@@ -29,4 +29,17 @@ export class CompositeCommandProvider {
             }
         }
     }
+
+    async lookupAll (...a) {
+        const results = [];
+        for (const provider of this.providers) {
+            const commands = await provider.lookupAll(...a);
+            if ( commands ) {
+                results.push(...commands);
+            }
+        }
+
+        if ( results.length === 0 ) return undefined;
+        return results;
+    }
 }

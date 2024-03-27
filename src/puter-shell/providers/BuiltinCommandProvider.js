@@ -22,4 +22,13 @@ export class BuiltinCommandProvider {
     async lookup (id) {
         return builtins[id];
     }
+
+    // Only a single builtin can match a given name
+    async lookupAll (...a) {
+        const result = await this.lookup(...a);
+        if ( result ) {
+            return [ result ];
+        }
+        return undefined;
+    }
 }
