@@ -54,4 +54,13 @@ export class ScriptCommandProvider {
             }
         };
     }
+
+    // Only a single script can match a given path
+    async lookupAll (...a) {
+        const result = await this.lookup(...a);
+        if ( result ) {
+            return [ result ];
+        }
+        return undefined;
+    }
 }
