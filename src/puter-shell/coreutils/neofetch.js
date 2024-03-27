@@ -89,7 +89,7 @@ export default {
         lines[15] += '\x1B[0m';
 
         for ( const line of lines ) {
-            ctx.externs.out.write(line + '\n');
+            await ctx.externs.out.write(line + '\n');
         }
     }
 }

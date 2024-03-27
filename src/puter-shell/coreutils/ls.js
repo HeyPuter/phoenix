@@ -110,7 +110,7 @@ export default {
             ? [pwd] : positionals ;
 
         const showHeadings = paths.length > 1 ? async ({ i, path }) => {
-            if ( i !== 0 ) ctx.externs.out.write('\n');
+            if ( i !== 0 ) await ctx.externs.out.write('\n');
             await ctx.externs.out.write(path + ':\n');
         } : () => {};
         

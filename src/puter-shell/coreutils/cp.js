@@ -40,7 +40,7 @@ export default {
         const { filesystem } = ctx.platform;
 
         if ( positionals.length < 1 ) {
-            err.write('cp: missing file operand\n');
+            await err.write('cp: missing file operand\n');
             throw new Exit(1);
         }
 
@@ -48,7 +48,7 @@ export default {
 
         if ( positionals.length < 1 ) {
             const aft = positionals[0];
-            err.write(`cp: missing destination file operand after '${aft}'\n`);
+            await err.write(`cp: missing destination file operand after '${aft}'\n`);
             throw new Exit(1);
         }
 
@@ -59,7 +59,7 @@ export default {
 
         const srcStat = await filesystem.stat(srcAbsPath);
         if ( srcStat && srcStat.is_dir && ! values.recursive ) {
-            err.write(`cp: -R not specified; skipping directory '${srcRelPath}'\n`);
+            await err.write(`cp: -R not specified; skipping directory '${srcRelPath}'\n`);
             throw new Exit(1);
         }
 
