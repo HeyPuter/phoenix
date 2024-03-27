@@ -26,6 +26,6 @@ export default {
         allowPositionals: false
     },
     execute: async ctx => {
-        ctx.externs.out.write('\x1B[H\x1B[2J');
+        await ctx.externs.out.write('\x1B[H\x1B[2J');
     }
 };
