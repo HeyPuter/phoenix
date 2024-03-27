@@ -371,6 +371,7 @@ export class Pipeline {
             let cmdOut = pipe.in;
             cmdOut = new ByteWriter({ delegate: cmdOut });
             cmdCtx.externs.out = cmdOut;
+            cmdCtx.externs.commandProvider = ctx.externs.commandProvider;
             nextIn = pipe.out;
 
             // TODO: need to consider redirect from out to err

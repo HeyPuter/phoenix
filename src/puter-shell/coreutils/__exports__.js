@@ -55,6 +55,7 @@ import module_true from './true.js'
 import module_txt2img from './txt2img.js'
 import module_usages from './usages.js'
 import module_wc from './wc.js'
+import module_which from './which.js'
 
 export default {
     "ai": module_ai,
@@ -95,4 +96,5 @@ export default {
     "txt2img": module_txt2img,
     "usages": module_usages,
     "wc": module_wc,
+    "which": module_which,
 };

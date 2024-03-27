@@ -36,6 +36,7 @@ export class ScriptCommandProvider {
         }
 
         return {
+            path: id,
             async execute (ctx) {
                 const script_blob = await filesystem.read(absPath);
                 const script_text = await script_blob.text();
