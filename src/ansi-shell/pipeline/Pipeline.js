@@ -281,7 +281,15 @@ export class PreparedCommand {
                 });
             }
         }
-        
+
+        // FIXME: This is really sketchy...
+        //        `await execute(ctx);` should automatically throw any promise rejections,
+        //        but for some reason Node crashes first, unless we set this handler,
+        //        EVEN IF IT DOES NOTHING. I also can't find a place to safely remove it,
+        //        so apologies if it makes debugging promises harder.
+        const rejectionCatcher = (reason, promise) => {};
+        process.on('unhandledRejection', rejectionCatcher);
+
         let exit_code = 0;
         try {
             await execute(ctx);
@@ -306,7 +314,7 @@ export class PreparedCommand {
 
         // ctx.externs.in?.close?.();
         // ctx.externs.out?.close?.();
-        ctx.externs.out.close();
+        await ctx.externs.out.close();
 
         // TODO: need write command from puter-shell before this can be done
         for ( let i=0 ; i < this.outputRedirects.length ; i++ ) {
