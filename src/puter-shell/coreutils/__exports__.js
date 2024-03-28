@@ -24,6 +24,7 @@ import module_cd from './cd.js'
 import module_changelog from './changelog.js'
 import module_clear from './clear.js'
 import module_cp from './cp.js'
+import module_date from './date.js'
 import module_dcall from './dcall.js'
 import module_dirname from './dirname.js'
 import module_echo from './echo.js'
@@ -64,6 +65,7 @@ export default {
     "changelog": module_changelog,
     "clear": module_clear,
     "cp": module_cp,
+    "date": module_date,
     "dcall": module_dcall,
     "dirname": module_dirname,
     "echo": module_echo,
